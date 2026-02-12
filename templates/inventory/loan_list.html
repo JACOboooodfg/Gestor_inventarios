@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Préstamos - Inventario Escolar{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">
+            <i class="fas fa-handshake text-blue-600 mr-3"></i>Préstamos
+        </h1>
+        <div class="flex space-x-4 text-sm">
+            <span class="text-gray-600">Total: <strong>{{ total_count }}</strong></span>
+            <span class="text-green-600">Activos: <strong>{{ active_count }}</strong></span>
+            <span class="text-red-600">Vencidos: <strong>{{ overdue_count }}</strong></span>
+        </div>
+    </div>
+    <div class="space-x-3">
+        <a href="{% url 'loan_create' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg inline-flex items-center">
+            <i class="fas fa-plus mr-2"></i> Nuevo Préstamo
+        </a>
+        <a href="{% url 'export_loans' %}?{{ request.GET.urlencode }}" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg inline-flex items-center">
+            <i class="fas fa-file-export mr-2"></i> Exportar Excel
+        </a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+    <form method="get" class="flex items-end space-x-4">
+        <div class="flex-1">
+            <label class="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+            <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="">Todos</option>
+                <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Activos</option>
+                <option value="returned" {% if request.GET.status == 'returned' %}selected{% endif %}>Devueltos</option>
+                <option value="overdue" {% if request.GET.status == 'overdue' %}selected{% endif %}>Vencidos</option>
+                <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelados</option>
+            </select>
+        </div>
+        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+            <i class="fas fa-filter mr-2"></i> Filtrar
+        </button>
+        <a href="{% url 'loan_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition">
+            <i class="fas fa-times mr-2"></i> Limpiar
+        </a>
+    </form>
+</div>
+
+<!-- Lista de Préstamos -->
+<div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    {% if loans %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b-2 border-gray-200">
+                <tr>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Artículo</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Solicitante</th>
+                    <th class="px-4 py-3 text-center font-semibold text-gray-700">Cantidad</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Fecha Préstamo</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Fecha Devolución</th>
+                    <th class="px-4 py-3 text-center font-semibold text-gray-700">Estado</th>
+                    <th class="px-4 py-3 text-center font-semibold text-gray-700">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for loan in loans %}
+                <tr class="hover:bg-gray-50 transition {% if loan.is_overdue %}bg-red-50{% endif %}">
+                    <td class="px-4 py-3">
+                        <a href="{% url 'article_detail' loan.article.pk %}" class="text-blue-600 hover:underline font-semibold">
+                            {{ loan.article.name }}
+                        </a>
+                        <p class="text-xs text-gray-500">{{ loan.article.category.name }}</p>
+                    </td>
+                    <td class="px-4 py-3">
+                        <p class="font-semibold">{{ loan.borrower_name }}</p>
+                        {% if loan.borrower_id %}
+                        <p class="text-xs text-gray-500">ID: {{ loan.borrower_id }}</p>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-center font-bold">{{ loan.quantity }}</td>
+                    <td class="px-4 py-3 text-gray-600">{{ loan.loan_date|date:"d/m/Y" }}</td>
+                    <td class="px-4 py-3">
+                        <p class="text-gray-600">{{ loan.due_date|date:"d/m/Y" }}</p>
+                        {% if loan.is_overdue and loan.status == 'active' %}
+                        <p class="text-xs text-red-600 font-semibold">
+                            <i class="fas fa-exclamation-triangle"></i> Vencido hace {{ loan.days_overdue }} días
+                        </p>
+                        {% endif %}
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold
+                            {% if loan.status == 'active' %}bg-green-100 text-green-800
+                            {% elif loan.status == 'returned' %}bg-blue-100 text-blue-800
+                            {% elif loan.status == 'overdue' %}bg-red-100 text-red-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ loan.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        {% if loan.status == 'active' or loan.status == 'overdue' %}
+                        <a href="{% url 'loan_return' loan.pk %}" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-xs font-semibold inline-block">
+                            <i class="fas fa-check mr-1"></i> Devolver
+                        </a>
+                        {% else %}
+                        <span class="text-gray-400 text-xs">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-16">
+        <i class="fas fa-handshake text-gray-300 text-6xl mb-4"></i>
+        <p class="text-gray-500 text-lg">No hay préstamos registrados</p>
+        <a href="{% url 'loan_create' %}" class="text-blue-600 hover:underline mt-2 inline-block">
+            <i class="fas fa-plus mr-1"></i> Registrar el primer préstamo
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

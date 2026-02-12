@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Movimientos - Inventario Escolar{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">
+            <i class="fas fa-exchange-alt text-blue-600 mr-3"></i>Movimientos de Inventario
+        </h1>
+        <p class="text-gray-600">{{ total_count }} movimientos registrados</p>
+    </div>
+    <div class="space-x-3">
+        <a href="{% url 'movement_create' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg inline-flex items-center">
+            <i class="fas fa-plus mr-2"></i> Registrar Movimiento
+        </a>
+        <a href="{% url 'export_movements' %}?{{ request.GET.urlencode }}" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg inline-flex items-center">
+            <i class="fas fa-file-export mr-2"></i> Exportar Excel
+        </a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+    <form method="get" class="space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Tipo de Movimiento</label>
+                <select name="type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                    <option value="">Todos</option>
+                    <option value="entry" {% if request.GET.type == 'entry' %}selected{% endif %}>Entrada</option>
+                    <option value="exit" {% if request.GET.type == 'exit' %}selected{% endif %}>Salida</option>
+                    <option value="adjustment" {% if request.GET.type == 'adjustment' %}selected{% endif %}>Ajuste</option>
+                    <option value="transfer" {% if request.GET.type == 'transfer' %}selected{% endif %}>Transferencia</option>
+                    <option value="loan" {% if request.GET.type == 'loan' %}selected{% endif %}>Préstamo</option>
+                    <option value="return" {% if request.GET.type == 'return' %}selected{% endif %}>Devolución</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Desde</label>
+                <input type="date" name="date_from" value="{{ request.GET.date_from }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Hasta</label>
+                <input type="date" name="date_to" value="{{ request.GET.date_to }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            </div>
+        </div>
+        <div class="flex space-x-3">
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition">
+                <i class="fas fa-filter mr-2"></i> Filtrar
+            </button>
+            <a href="{% url 'movement_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition">
+                <i class="fas fa-times mr-2"></i> Limpiar
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Lista de Movimientos -->
+<div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    {% if movements %}
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+            <thead class="bg-gray-50 border-b-2 border-gray-200">
+                <tr>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Fecha</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Tipo</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Artículo</th>
+                    <th class="px-4 py-3 text-center font-semibold text-gray-700">Cantidad</th>
+                    <th class="px-4 py-3 text-center font-semibold text-gray-700">Anterior</th>
+                    <th class="px-4 py-3 text-center font-semibold text-gray-700">Nueva</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Motivo</th>
+                    <th class="px-4 py-3 text-left font-semibold text-gray-700">Usuario</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for movement in movements %}
+                <tr class="hover:bg-gray-50 transition">
+                    <td class="px-4 py-3 text-gray-600">{{ movement.created_at|date:"d/m/Y H:i" }}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold
+                            {% if movement.movement_type == 'entry' %}bg-green-100 text-green-800
+                            {% elif movement.movement_type == 'exit' %}bg-red-100 text-red-800
+                            {% elif movement.movement_type == 'loan' %}bg-purple-100 text-purple-800
+                            {% elif movement.movement_type == 'return' %}bg-blue-100 text-blue-800
+                            {% elif movement.movement_type == 'transfer' %}bg-yellow-100 text-yellow-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ movement.get_movement_type_display }}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3">
+                        <a href="{% url 'article_detail' movement.article.pk %}" class="text-blue-600 hover:underline font-semibold">
+                            {{ movement.article.name }}
+                        </a>
+                        <p class="text-xs text-gray-500">{{ movement.article.category.name }}</p>
+                    </td>
+                    <td class="px-4 py-3 text-center font-bold">{{ movement.quantity }}</td>
+                    <td class="px-4 py-3 text-center text-gray-600">{{ movement.previous_quantity }}</td>
+                    <td class="px-4 py-3 text-center font-semibold">{{ movement.new_quantity }}</td>
+                    <td class="px-4 py-3 text-gray-600">{{ movement.reason|truncatewords:10 }}</td>
+                    <td class="px-4 py-3 text-gray-600">{{ movement.user.username|default:"Sistema" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-16">
+        <i class="fas fa-exchange-alt text-gray-300 text-6xl mb-4"></i>
+        <p class="text-gray-500 text-lg">No hay movimientos registrados</p>
+        <a href="{% url 'movement_create' %}" class="text-blue-600 hover:underline mt-2 inline-block">
+            <i class="fas fa-plus mr-1"></i> Registrar el primer movimiento
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Categorías - Inventario Escolar{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-8">
+    <h1 class="text-4xl font-bold text-gray-800">
+        <i class="fas fa-tags text-blue-600 mr-3"></i>Categorías
+    </h1>
+    <a href="{% url 'category_create' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg">
+        <i class="fas fa-plus mr-2"></i> Nueva Categoría
+    </a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for category in categories %}
+    <div class="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition border-l-4" style="border-color: {{ category.color }};">
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h3 class="text-2xl font-bold text-gray-800">{{ category.name }}</h3>
+                <p class="text-gray-600 text-sm mt-1">{{ category.description|truncatewords:15 }}</p>
+            </div>
+            <div class="flex space-x-2">
+                <a href="{% url 'category_update' category.pk %}" class="text-blue-600 hover:text-blue-800">
+                    <i class="fas fa-edit"></i>
+                </a>
+                <a href="{% url 'category_delete' category.pk %}" class="text-red-600 hover:text-red-800">
+                    <i class="fas fa-trash"></i>
+                </a>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mt-4 pt-4 border-t">
+            <div>
+                <p class="text-sm text-gray-600">Artículos</p>
+                <p class="text-2xl font-bold" style="color: {{ category.color }};">{{ category.total_items }}</p>
+            </div>
+            <div>
+                <p class="text-sm text-gray-600">Cantidad Total</p>
+                <p class="text-2xl font-bold text-gray-800">{{ category.total_quantity|default:"0" }}</p>
+            </div>
+        </div>
+        <div class="mt-4">
+            <a href="{% url 'category_inventory' category.pk %}" class="block w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white text-center font-semibold py-3 px-4 rounded-lg transition shadow-md hover:shadow-lg">
+                <i class="fas fa-warehouse mr-2"></i> Ver Inventario
+            </a>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-3 text-center py-16">
+        <i class="fas fa-tags text-gray-300 text-6xl mb-4"></i>
+        <p class="text-gray-500 text-lg">No hay categorías creadas</p>
+        <a href="{% url 'category_create' %}" class="text-blue-600 hover:underline mt-2 inline-block">
+            <i class="fas fa-plus mr-1"></i> Crear la primera categoría
+        </a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

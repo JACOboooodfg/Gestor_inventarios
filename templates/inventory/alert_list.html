@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Alertas - Inventario Escolar{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-8">
+    <div>
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">
+            <i class="fas fa-bell text-blue-600 mr-3"></i>Alertas del Sistema
+        </h1>
+        <p class="text-gray-600">{{ unread_count }} alerta(s) sin leer</p>
+    </div>
+    <a href="{% url 'alert_mark_all_read' %}" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg">
+        <i class="fas fa-check-double mr-2"></i> Marcar Todas como Leídas
+    </a>
+</div>
+
+<!-- Filtros -->
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+    <div class="flex space-x-4">
+        <a href="{% url 'alert_list' %}" class="px-4 py-2 rounded-lg {% if not request.GET.read %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition">
+            Todas
+        </a>
+        <a href="?read=unread" class="px-4 py-2 rounded-lg {% if request.GET.read == 'unread' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition">
+            Sin Leer ({{ unread_count }})
+        </a>
+        <a href="?read=read" class="px-4 py-2 rounded-lg {% if request.GET.read == 'read' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition">
+            Leídas
+        </a>
+    </div>
+</div>
+
+<!-- Lista de Alertas -->
+<div class="space-y-4">
+    {% if alerts %}
+        {% for alert in alerts %}
+        <div class="bg-white rounded-lg shadow-lg overflow-hidden {% if not alert.is_read %}border-l-4 {% if alert.alert_type == 'low_stock' %}border-yellow-500{% elif alert.alert_type == 'overdue_loan' %}border-red-500{% else %}border-blue-500{% endif %}{% endif %}">
+            <div class="p-6">
+                <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                        <div class="flex items-center mb-2">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold mr-3
+                                {% if alert.alert_type == 'low_stock' %}bg-yellow-100 text-yellow-800
+                                {% elif alert.alert_type == 'overdue_loan' %}bg-red-100 text-red-800
+                                {% elif alert.alert_type == 'maintenance' %}bg-orange-100 text-orange-800
+                                {% else %}bg-blue-100 text-blue-800{% endif %}">
+                                {{ alert.get_alert_type_display }}
+                            </span>
+                            <span class="text-sm text-gray-500">{{ alert.created_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        
+                        <p class="text-gray-800 mb-2">{{ alert.message }}</p>
+                        
+                        {% if alert.article %}
+                        <a href="{% url 'article_detail' alert.article.pk %}" class="text-blue-600 hover:underline text-sm">
+                            <i class="fas fa-box mr-1"></i> Ver artículo: {{ alert.article.name }}
+                        </a>
+                        {% endif %}
+                        
+                        {% if alert.loan %}
+                        <a href="{% url 'loan_list' %}" class="text-blue-600 hover:underline text-sm">
+                            <i class="fas fa-handshake mr-1"></i> Ver préstamos
+                        </a>
+                        {% endif %}
+                        
+                        {% if alert.is_read %}
+                        <p class="text-xs text-gray-500 mt-2">
+                            <i class="fas fa-check mr-1"></i> Leída por {{ alert.read_by.username }} el {{ alert.read_at|date:"d/m/Y H:i" }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="ml-4">
+                        {% if not alert.is_read %}
+                        <a href="{% url 'alert_mark_read' alert.pk %}" class="text-blue-600 hover:text-blue-800" title="Marcar como leída">
+                            <i class="fas fa-check-circle text-2xl"></i>
+                        </a>
+                        {% else %}
+                        <i class="fas fa-check-circle text-2xl text-green-500"></i>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+    <div class="bg-white rounded-lg shadow-lg p-16 text-center">
+        <i class="fas fa-bell-slash text-gray-300 text-6xl mb-4"></i>
+        <p class="text-gray-500 text-lg">No hay alertas</p>
+        <p class="text-gray-400 text-sm mt-2">El sistema está funcionando correctamente</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

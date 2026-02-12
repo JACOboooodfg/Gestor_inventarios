@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}Importar Artículos - Vista Mejorada{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-4xl font-bold text-gray-800 mb-2">
+            <i class="fas fa-file-import text-green-600 mr-3"></i>Importar Artículos desde Excel
+        </h1>
+        <p class="text-gray-600">Carga masiva con mapeo inteligente de columnas</p>
+    </div>
+
+    {% if step == 'upload' %}
+    <!-- PASO 1: SUBIR ARCHIVO -->
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="mb-6">
+            <div class="flex items-center mb-4">
+                <div class="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full mr-3">1</div>
+                <h2 class="text-2xl font-bold text-gray-800">Subir Archivo Excel</h2>
+            </div>
+        </div>
+
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-6 mb-6 rounded">
+            <h3 class="font-semibold text-blue-800 mb-3 flex items-center">
+                <i class="fas fa-info-circle mr-2"></i>
+                Ventajas de esta importación mejorada
+            </h3>
+            <ul class="list-disc list-inside text-sm text-blue-700 space-y-2">
+                <li><strong>Detección automática</strong> de columnas - el sistema identifica tus campos</li>
+                <li><strong>Vista previa</strong> antes de importar - revisa tus datos antes de guardar</li>
+                <li><strong>Mapeo flexible</strong> - puedes tener cualquier nombre de columnas</li>
+                <li><strong>Creación automática</strong> de categorías si no existen</li>
+                <li><strong>Validación inteligente</strong> - te muestra errores específicos por fila</li>
+            </ul>
+        </div>
+
+        <div class="bg-gray-50 border-l-4 border-gray-400 p-6 mb-6 rounded">
+            <h3 class="font-semibold text-gray-800 mb-3">📋 Columnas recomendadas (pero no obligatorias)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-700">
+                <div><span class="font-semibold text-red-600">* nombre</span> - Requerido</div>
+                <div><span class="font-semibold">codigo</span> - Se auto-genera si está vacío</div>
+                <div><span class="font-semibold">categoria</span> - Se crea si no existe</div>
+                <div><span class="font-semibold">ubicacion</span> - Debe existir previamente</div>
+                <div><span class="font-semibold">cantidad</span> - Número de unidades</div>
+                <div><span class="font-semibold">unidad</span> - ej: pieza, litro, kg</div>
+                <div><span class="font-semibold">cantidad_minima</span> - Para alertas</div>
+                <div><span class="font-semibold">precio</span> - Opcional</div>
+                <div><span class="font-semibold">estado</span> - available, in_use, etc.</div>
+                <div><span class="font-semibold">codigo_barras</span> - Opcional</div>
+                <div><span class="font-semibold">descripcion</span> - Texto descriptivo</div>
+                <div><span class="font-semibold">notas</span> - Comentarios adicionales</div>
+            </div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition">
+                <i class="fas fa-cloud-upload-alt text-6xl text-gray-400 mb-4"></i>
+                <label for="id_excel_file" class="cursor-pointer">
+                    <span class="text-lg font-semibold text-gray-700">Arrastra tu archivo aquí o haz click para seleccionar</span>
+                    <p class="text-sm text-gray-500 mt-2">Archivos .xlsx o .xls</p>
+                </label>
+                {{ form.excel_file }}
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-6 border-t">
+                <a href="{% url 'article_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition">
+                    <i class="fas fa-times mr-2"></i>Cancelar
+                </a>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg">
+                    <i class="fas fa-arrow-right mr-2"></i>Siguiente: Vista Previa
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% elif step == 'preview' %}
+    <!-- PASO 2: PREVIEW Y MAPEO -->
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="mb-6">
+            <div class="flex items-center mb-4">
+                <div class="flex items-center justify-center w-10 h-10 bg-green-600 text-white rounded-full mr-3">2</div>
+                <h2 class="text-2xl font-bold text-gray-800">Mapeo de Columnas y Vista Previa</h2>
+            </div>
+            <p class="text-gray-600">Revisa cómo se interpretarán tus datos y ajusta si es necesario</p>
+        </div>
+
+        <form method="post" id="import-form">
+            {% csrf_token %}
+            <input type="hidden" name="confirm_mapping" value="1">
+            <input type="hidden" name="column_mapping" id="column_mapping" value="">
+
+            <!-- Mapeo de Columnas -->
+            <div class="bg-blue-50 rounded-lg p-6 mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-map-marked-alt text-blue-600 mr-2"></i>Mapeo de Columnas
+                </h3>
+                <p class="text-sm text-gray-600 mb-4">El sistema detectó automáticamente tus columnas. Verifica que el mapeo sea correcto:</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for header in headers %}
+                    <div class="bg-white rounded-lg p-4 border border-gray-200">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Columna en Excel: <span class="font-bold text-blue-600">{{ header.original }}</span>
+                        </label>
+                        <select name="mapping_{{ header.clean }}" class="column-mapping w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" data-original="{{ header.original }}">
+                            <option value="ignore">-- Ignorar esta columna --</option>
+                            <option value="nombre" {% if field_mappings[header.original].suggested == 'nombre' %}selected{% endif %}>Nombre del Artículo *</option>
+                            <option value="codigo" {% if field_mappings[header.original].suggested == 'codigo' %}selected{% endif %}>Código</option>
+                            <option value="categoria" {% if field_mappings[header.original].suggested == 'categoria' %}selected{% endif %}>Categoría</option>
+                            <option value="ubicacion" {% if field_mappings[header.original].suggested == 'ubicacion' %}selected{% endif %}>Ubicación</option>
+                            <option value="cantidad" {% if field_mappings[header.original].suggested == 'cantidad' %}selected{% endif %}>Cantidad</option>
+                            <option value="unidad" {% if field_mappings[header.original].suggested == 'unidad' %}selected{% endif %}>Unidad</option>
+                            <option value="cantidad_minima" {% if field_mappings[header.original].suggested == 'cantidad_minima' %}selected{% endif %}>Cantidad Mínima</option>
+                            <option value="precio" {% if field_mappings[header.original].suggested == 'precio' %}selected{% endif %}>Precio</option>
+                            <option value="estado" {% if field_mappings[header.original].suggested == 'estado' %}selected{% endif %}>Estado</option>
+                            <option value="codigo_barras" {% if field_mappings[header.original].suggested == 'codigo_barras' %}selected{% endif %}>Código de Barras</option>
+                            <option value="descripcion" {% if field_mappings[header.original].suggested == 'descripcion' %}selected{% endif %}>Descripción</option>
+                            <option value="notas" {% if field_mappings[header.original].suggested == 'notas' %}selected{% endif %}>Notas</option>
+                        </select>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Vista Previa de Datos -->
+            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                <h3 class="text-xl font-bold text-gray-800 mb-4">
+                    <i class="fas fa-eye text-purple-600 mr-2"></i>Vista Previa (Primeras 10 filas)
+                </h3>
+                
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-200">
+                            <tr>
+                                <th class="px-3 py-2 text-left font-semibold">#</th>
+                                {% for header in headers %}
+                                <th class="px-3 py-2 text-left font-semibold">{{ header.original }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            {% for row in preview_data %}
+                            <tr class="hover:bg-white transition">
+                                <td class="px-3 py-2 font-mono text-gray-500">{{ row.row_number }}</td>
+                                {% for header in headers %}
+                                <td class="px-3 py-2">
+                                    <span class="{% if not row.data[header.clean] %}text-gray-400 italic{% endif %}">
+                                        {{ row.data[header.clean]|default:"vacío" }}
+                                    </span>
+                                </td>
+                                {% endfor %}
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="flex justify-end space-x-3 pt-6 border-t">
+                <a href="{% url 'import_preview' %}" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition">
+                    <i class="fas fa-arrow-left mr-2"></i>Volver
+                </a>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg">
+                    <i class="fas fa-check mr-2"></i>Confirmar e Importar
+                </button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+// Guardar mapeo de columnas antes de enviar el formulario
+document.getElementById('import-form')?.addEventListener('submit', function(e) {
+    const mappings = {};
+    document.querySelectorAll('.column-mapping').forEach(select => {
+        const original = select.getAttribute('data-original');
+        mappings[original] = select.value;
+    });
+    document.getElementById('column_mapping').value = JSON.stringify(mappings);
+});
+
+// Drag and drop para archivo
+const fileInput = document.getElementById('id_excel_file');
+const dropZone = fileInput?.closest('.border-dashed');
+
+if (dropZone) {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('border-blue-500', 'bg-blue-50'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('border-blue-500', 'bg-blue-50'), false);
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+    });
+}
+</script>
+{% endblock %}

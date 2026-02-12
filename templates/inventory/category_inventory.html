@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventario: {{ category.name }} - Inventario Escolar{% endblock %}
+
+{% block content %}
+<!-- Header con info de la categoría -->
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8 border-l-4" style="border-color: {{ category.color }};">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div class="flex-1">
+            <div class="flex items-center mb-2">
+                <a href="{% url 'category_list' %}" class="text-gray-500 hover:text-gray-700 mr-3">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </a>
+                <h1 class="text-4xl font-bold text-gray-800">
+                    <i class="fas fa-{{ category.icon }} mr-3" style="color: {{ category.color }};"></i>
+                    {{ category.name }}
+                </h1>
+            </div>
+            <p class="text-gray-600 ml-12">{{ category.description }}</p>
+        </div>
+        
+        <!-- Estadísticas rápidas -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 md:mt-0 md:ml-6">
+            <div class="text-center">
+                <p class="text-sm text-gray-600">Artículos</p>
+                <p class="text-2xl font-bold" style="color: {{ category.color }};">{{ total_items }}</p>
+            </div>
+            <div class="text-center">
+                <p class="text-sm text-gray-600">Cantidad Total</p>
+                <p class="text-2xl font-bold text-gray-800">{{ total_quantity }}</p>
+            </div>
+            <div class="text-center">
+                <p class="text-sm text-gray-600">Stock Bajo</p>
+                <p class="text-2xl font-bold text-red-600">{{ low_stock_count }}</p>
+            </div>
+            <div class="text-center">
+                <p class="text-sm text-gray-600">Valor Total</p>
+                <p class="text-2xl font-bold text-green-600">${{ total_value|floatformat:2 }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Acciones y filtros -->
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
+        <!-- Búsqueda y filtros -->
+        <form method="get" class="flex-1 flex flex-wrap gap-3">
+            <input type="text" name="q" value="{{ search_query }}" 
+                   placeholder="Buscar en {{ category.name }}..." 
+                   class="flex-1 min-w-[200px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+            
+            <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="">Todos los estados</option>
+                <option value="available" {% if request.GET.status == 'available' %}selected{% endif %}>Disponible</option>
+                <option value="in_use" {% if request.GET.status == 'in_use' %}selected{% endif %}>En uso</option>
+                <option value="maintenance" {% if request.GET.status == 'maintenance' %}selected{% endif %}>Mantenimiento</option>
+                <option value="damaged" {% if request.GET.status == 'damaged' %}selected{% endif %}>Dañado</option>
+                <option value="retired" {% if request.GET.status == 'retired' %}selected{% endif %}>Retirado</option>
+            </select>
+            
+            <select name="location" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+                <option value="">Todas las ubicaciones</option>
+                {% for location in locations %}
+                <option value="{{ location.id }}" {% if request.GET.location == location.id|stringformat:"s" %}selected{% endif %}>
+                    {{ location.name }}
+                </option>
+                {% endfor %}
+            </select>
+            
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition">
+                <i class="fas fa-search mr-2"></i> Filtrar
+            </button>
+            
+            {% if search_query or request.GET.status or request.GET.location %}
+            <a href="{% url 'category_inventory' category.pk %}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold transition">
+                <i class="fas fa-times mr-2"></i> Limpiar
+            </a>
+            {% endif %}
+        </form>
+        
+        <!-- Botones de acción -->
+        <div class="flex flex-wrap gap-3">
+            <a href="{% url 'category_import' category.pk %}" class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg font-semibold transition shadow-lg">
+                <i class="fas fa-file-import mr-2"></i> Importar
+            </a>
+            <a href="{% url 'category_export' category.pk %}?{{ request.GET.urlencode }}" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition shadow-lg">
+                <i class="fas fa-file-export mr-2"></i> Exportar
+            </a>
+            <a href="{% url 'article_create' %}?category={{ category.pk }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition shadow-lg">
+                <i class="fas fa-plus mr-2"></i> Nuevo Artículo
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Tabla de artículos -->
+<div class="bg-white rounded-lg shadow-lg overflow-hidden">
+    {% if articles %}
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50 border-b-2 border-gray-200">
+                <tr>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Imagen</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
+                        <a href="?sort=name&{{ request.GET.urlencode }}" class="hover:text-blue-600">
+                            Artículo <i class="fas fa-sort text-xs"></i>
+                        </a>
+                    </th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Código</th>
+                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Ubicación</th>
+                    <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">
+                        <a href="?sort=-quantity&{{ request.GET.urlencode }}" class="hover:text-blue-600">
+                            Cantidad <i class="fas fa-sort text-xs"></i>
+                        </a>
+                    </th>
+                    <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Estado</th>
+                    <th class="px-6 py-4 text-right text-sm font-semibold text-gray-700">Precio</th>
+                    <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for article in articles %}
+                <tr class="hover:bg-gray-50 transition {% if article.is_low_stock %}bg-yellow-50{% endif %}">
+                    <td class="px-6 py-4">
+                        {% if article.image %}
+                        <img src="{{ article.image.url }}" alt="{{ article.name }}" class="w-16 h-16 object-cover rounded">
+                        {% else %}
+                        <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
+                            <i class="fas fa-box text-gray-400 text-2xl"></i>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        <a href="{% url 'article_detail' article.pk %}" class="font-semibold text-blue-600 hover:underline">
+                            {{ article.name }}
+                        </a>
+                        {% if article.description %}
+                        <p class="text-sm text-gray-500">{{ article.description|truncatewords:8 }}</p>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 font-mono text-sm text-gray-600">{{ article.code }}</td>
+                    <td class="px-6 py-4 text-gray-600">
+                        {% if article.location %}
+                        {{ article.location.name }}
+                        {% else %}
+                        <span class="text-gray-400 italic">Sin ubicación</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="font-bold {% if article.is_low_stock %}text-red-600{% else %}text-gray-800{% endif %}">
+                            {{ article.quantity }}
+                        </span>
+                        <span class="text-sm text-gray-500">{{ article.unit }}</span>
+                        {% if article.is_low_stock %}
+                        <p class="text-xs text-red-600 mt-1">
+                            <i class="fas fa-exclamation-triangle"></i> Stock bajo
+                        </p>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold
+                            {% if article.status == 'available' %}bg-green-100 text-green-800
+                            {% elif article.status == 'in_use' %}bg-blue-100 text-blue-800
+                            {% elif article.status == 'maintenance' %}bg-yellow-100 text-yellow-800
+                            {% elif article.status == 'damaged' %}bg-red-100 text-red-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ article.get_status_display }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        {% if article.price %}
+                        <span class="font-semibold text-green-600">${{ article.price|floatformat:2 }}</span>
+                        {% else %}
+                        <span class="text-gray-400">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex justify-center space-x-2">
+                            <a href="{% url 'article_detail' article.pk %}" class="text-blue-600 hover:text-blue-800" title="Ver">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{% url 'article_update' article.pk %}" class="text-green-600 hover:text-green-800" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button onclick="toggleArticleStatus({{ article.pk }}, this)" 
+                                    class="{% if article.status == 'available' %}text-yellow-600 hover:text-yellow-800{% else %}text-green-600 hover:text-green-800{% endif %}" 
+                                    title="{% if article.status == 'available' %}Deshabilitar{% else %}Habilitar{% endif %}"
+                                    data-status="{{ article.status }}">
+                                <i class="fas {% if article.status == 'available' %}fa-toggle-on{% else %}fa-toggle-off{% endif %}"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-16">
+        <i class="fas fa-box-open text-gray-300 text-6xl mb-4"></i>
+        <p class="text-gray-500 text-lg mb-4">No hay artículos en esta categoría</p>
+        <a href="{% url 'article_create' %}?category={{ category.pk }}" class="text-blue-600 hover:underline font-semibold">
+            <i class="fas fa-plus mr-2"></i> Agregar el primer artículo
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleArticleStatus(articleId, button) {
+    if (!confirm('¿Estás seguro de cambiar el estado de este artículo?')) {
+        return;
+    }
+
+    fetch(`/articles/${articleId}/toggle-status/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al cambiar el estado');
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

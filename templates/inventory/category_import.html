@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Importar a {{ category.name }} - Inventario Escolar{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Breadcrumb -->
+    <div class="mb-6 flex items-center text-sm text-gray-600">
+        <a href="{% url 'category_list' %}" class="hover:text-blue-600">Categorías</a>
+        <i class="fas fa-chevron-right mx-2 text-xs"></i>
+        <a href="{% url 'category_inventory' category.pk %}" class="hover:text-blue-600">{{ category.name }}</a>
+        <i class="fas fa-chevron-right mx-2 text-xs"></i>
+        <span class="text-gray-800 font-semibold">Importar</span>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <div class="flex items-center mb-6 pb-6 border-b-4" style="border-color: {{ category.color }};">
+            <i class="fas fa-{{ category.icon }} text-6xl mr-6" style="color: {{ category.color }};"></i>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800">Importar Artículos</h1>
+                <p class="text-gray-600 mt-1">Categoría: <strong>{{ category.name }}</strong></p>
+            </div>
+        </div>
+
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-6 mb-6 rounded">
+            <h3 class="font-semibold text-blue-800 mb-3 flex items-center">
+                <i class="fas fa-info-circle mr-2"></i>
+                Importación Específica para {{ category.name }}
+            </h3>
+            <ul class="list-disc list-inside text-sm text-blue-700 space-y-2">
+                <li><strong>Todos los artículos</strong> se asignarán automáticamente a la categoría <strong>{{ category.name }}</strong></li>
+                <li>El sistema detecta automáticamente las columnas de tu Excel</li>
+                <li>Puedes ver una vista previa antes de importar</li>
+                <li>Las ubicaciones deben existir previamente en el sistema</li>
+            </ul>
+        </div>
+
+        <div class="bg-gray-50 border-l-4 border-gray-400 p-6 mb-6 rounded">
+            <h3 class="font-semibold text-gray-800 mb-3">📋 Columnas Recomendadas en tu Excel</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-700">
+                <div><span class="font-semibold text-red-600">* nombre</span> - Requerido</div>
+                <div><span class="font-semibold">codigo</span> - Se auto-genera si está vacío</div>
+                <div><span class="font-semibold">ubicacion</span> - Debe existir previamente</div>
+                <div><span class="font-semibold">cantidad</span> - Número de unidades</div>
+                <div><span class="font-semibold">unidad</span> - ej: pieza, litro, kg</div>
+                <div><span class="font-semibold">cantidad_minima</span> - Para alertas</div>
+                <div><span class="font-semibold">precio</span> - Opcional</div>
+                <div><span class="font-semibold">estado</span> - available, in_use, etc.</div>
+                <div><span class="font-semibold">codigo_barras</span> - Opcional</div>
+                <div><span class="font-semibold">descripcion</span> - Texto descriptivo</div>
+                <div><span class="font-semibold">notas</span> - Comentarios adicionales</div>
+            </div>
+            <p class="text-xs text-gray-600 mt-3">
+                <i class="fas fa-lightbulb mr-1"></i>
+                <strong>Nota:</strong> No necesitas incluir la columna "categoria" - todos los artículos se importarán automáticamente a <strong>{{ category.name }}</strong>
+            </p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition">
+                <i class="fas fa-cloud-upload-alt text-6xl text-gray-400 mb-4"></i>
+                <label for="id_excel_file" class="cursor-pointer">
+                    <span class="text-lg font-semibold text-gray-700">Arrastra tu archivo Excel aquí o haz click para seleccionar</span>
+                    <p class="text-sm text-gray-500 mt-2">Archivos .xlsx o .xls - Los artículos se importarán a <strong>{{ category.name }}</strong></p>
+                </label>
+                {{ form.excel_file }}
+            </div>
+            
+            <div class="flex justify-between items-center pt-6 border-t">
+                <a href="{% url 'category_inventory' category.pk %}" class="text-blue-600 hover:text-blue-800 font-semibold">
+                    <i class="fas fa-arrow-left mr-2"></i>Volver al inventario
+                </a>
+                <div class="flex space-x-3">
+                    <a href="{% url 'category_inventory' category.pk %}" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition">
+                        Cancelar
+                    </a>
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg">
+                        <i class="fas fa-upload mr-2"></i>Importar Artículos
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Ejemplo de archivo -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mt-8">
+        <h3 class="text-xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-file-excel text-green-600 mr-2"></i>
+            Ejemplo de Archivo Excel
+        </h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm border">
+                <thead class="bg-green-600 text-white">
+                    <tr>
+                        <th class="px-4 py-2 border">nombre</th>
+                        <th class="px-4 py-2 border">cantidad</th>
+                        <th class="px-4 py-2 border">ubicacion</th>
+                        <th class="px-4 py-2 border">unidad</th>
+                        <th class="px-4 py-2 border">precio</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="bg-white">
+                        <td class="px-4 py-2 border">Microscopio Digital</td>
+                        <td class="px-4 py-2 border">15</td>
+                        <td class="px-4 py-2 border">Laboratorio</td>
+                        <td class="px-4 py-2 border">unidad</td>
+                        <td class="px-4 py-2 border">250.00</td>
+                    </tr>
+                    <tr class="bg-gray-50">
+                        <td class="px-4 py-2 border">Tubo de Ensayo</td>
+                        <td class="px-4 py-2 border">200</td>
+                        <td class="px-4 py-2 border">Laboratorio</td>
+                        <td class="px-4 py-2 border">pieza</td>
+                        <td class="px-4 py-2 border">2.50</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="text-xs text-gray-500 mt-3">
+            Todos estos artículos se importarán automáticamente a la categoría <strong>{{ category.name }}</strong>
+        </p>
+    </div>
+</div>
+
+<script>
+// Drag and drop para archivo
+const fileInput = document.getElementById('id_excel_file');
+const dropZone = fileInput?.closest('.border-dashed');
+
+if (dropZone) {
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+    });
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.add('border-blue-500', 'bg-blue-50'), false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, () => dropZone.classList.remove('border-blue-500', 'bg-blue-50'), false);
+    });
+
+    dropZone.addEventListener('drop', function(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+        
+        // Mostrar nombre del archivo
+        if (files.length > 0) {
+            const fileName = files[0].name;
+            dropZone.querySelector('span').textContent = `Archivo seleccionado: ${fileName}`;
+        }
+    });
+    
+    // Mostrar nombre cuando se selecciona con click
+    fileInput.addEventListener('change', function(e) {
+        if (this.files.length > 0) {
+            const fileName = this.files[0].name;
+            dropZone.querySelector('span').textContent = `Archivo seleccionado: ${fileName}`;
+        }
+    });
+}
+</script>
+{% endblock %}

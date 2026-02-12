@@ -1,0 +1,184 @@
+{% extends 'base.html' %}
+
+{% block title %}Reportes - Inventario Escolar{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-4xl font-bold text-gray-800 mb-2">
+        <i class="fas fa-chart-bar text-blue-600 mr-3"></i>Reportes y Estadísticas
+    </h1>
+    <p class="text-gray-600">Análisis del inventario y actividad</p>
+</div>
+
+<!-- Resumen por Categorías -->
+<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">
+        <i class="fas fa-tags text-green-600 mr-2"></i>Reporte por Categorías
+    </h2>
+    
+    {% if category_report %}
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Categoría</th>
+                    <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Artículos</th>
+                    <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Cantidad Total</th>
+                    <th class="px-6 py-3 text-right text-sm font-semibold text-gray-700">Valor Total</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for category in category_report %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold" style="background-color: {{ category.color }}20; color: {{ category.color }};">
+                            {{ category.name }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-center font-semibold">{{ category.total_items }}</td>
+                    <td class="px-6 py-4 text-center font-semibold">{{ category.total_quantity }}</td>
+                    <td class="px-6 py-4 text-right font-bold text-green-600">
+                        ${{ category.total_value|floatformat:2 }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="bg-gray-100 font-bold">
+                <tr>
+                    <td class="px-6 py-4">TOTAL</td>
+                    <td class="px-6 py-4 text-center">{{ category_report|length }}</td>
+                    <td class="px-6 py-4 text-center">—</td>
+                    <td class="px-6 py-4 text-right text-green-600">
+                        ${% widthratio category_report|length 1 category_report|length %}
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-gray-500 text-center py-8">No hay datos de categorías</p>
+    {% endif %}
+</div>
+
+<!-- Movimientos del Último Mes -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-exchange-alt text-purple-600 mr-2"></i>Movimientos (Último Mes)
+        </h2>
+        
+        {% if movement_stats %}
+        <div class="space-y-3">
+            {% for stat in movement_stats %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex items-center">
+                    <span class="px-3 py-1 rounded-full text-xs font-semibold mr-3
+                        {% if stat.movement_type == 'entry' %}bg-green-100 text-green-800
+                        {% elif stat.movement_type == 'exit' %}bg-red-100 text-red-800
+                        {% elif stat.movement_type == 'loan' %}bg-purple-100 text-purple-800
+                        {% elif stat.movement_type == 'return' %}bg-blue-100 text-blue-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {{ stat.movement_type|capfirst }}
+                    </span>
+                    <span class="text-sm text-gray-600">{{ stat.count }} movimientos</span>
+                </div>
+                <span class="font-bold text-gray-800">{{ stat.total_quantity }} unidades</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-center py-8">No hay movimientos en el último mes</p>
+        {% endif %}
+    </div>
+    
+    <!-- Préstamos por Estado -->
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">
+            <i class="fas fa-handshake text-blue-600 mr-2"></i>Préstamos por Estado
+        </h2>
+        
+        {% if loan_stats %}
+        <div class="space-y-3">
+            {% for stat in loan_stats %}
+            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <span class="px-3 py-1 rounded-full text-xs font-semibold
+                    {% if stat.status == 'active' %}bg-green-100 text-green-800
+                    {% elif stat.status == 'returned' %}bg-blue-100 text-blue-800
+                    {% elif stat.status == 'overdue' %}bg-red-100 text-red-800
+                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {{ stat.status|capfirst }}
+                </span>
+                <span class="text-2xl font-bold text-gray-800">{{ stat.count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-center py-8">No hay préstamos registrados</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Artículos Más Prestados -->
+<div class="bg-white rounded-lg shadow-lg p-6">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">
+        <i class="fas fa-trophy text-yellow-600 mr-2"></i>Top 10 Artículos Más Prestados
+    </h2>
+    
+    {% if top_loaned %}
+    <div class="overflow-x-auto">
+        <table class="w-full">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">#</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Artículo</th>
+                    <th class="px-6 py-3 text-left text-sm font-semibold text-gray-700">Categoría</th>
+                    <th class="px-6 py-3 text-center text-sm font-semibold text-gray-700">Veces Prestado</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for article in top_loaned %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 font-bold text-gray-500">{{ forloop.counter }}</td>
+                    <td class="px-6 py-4">
+                        <a href="{% url 'article_detail' article.pk %}" class="text-blue-600 hover:underline font-semibold">
+                            {{ article.name }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold" style="background-color: {{ article.category.color }}20; color: {{ article.category.color }};">
+                            {{ article.category.name }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full font-bold">
+                            {{ article.loan_count }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-gray-500 text-center py-8">No hay artículos prestados</p>
+    {% endif %}
+</div>
+
+<!-- Exportar Reportes -->
+<div class="bg-blue-50 border-l-4 border-blue-500 p-6 mt-8 rounded">
+    <h3 class="font-bold text-blue-800 mb-3">
+        <i class="fas fa-download mr-2"></i>Exportar Reportes
+    </h3>
+    <div class="flex flex-wrap gap-3">
+        <a href="{% url 'export_articles' %}" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+            <i class="fas fa-box mr-2"></i>Exportar Artículos
+        </a>
+        <a href="{% url 'export_movements' %}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+            <i class="fas fa-exchange-alt mr-2"></i>Exportar Movimientos
+        </a>
+        <a href="{% url 'export_loans' %}" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition">
+            <i class="fas fa-handshake mr-2"></i>Exportar Préstamos
+        </a>
+    </div>
+</div>
+{% endblock %}

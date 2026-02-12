@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - Inventario Escolar{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-lg shadow-lg p-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">{{ title }}</h1>
+        
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Artículo a Prestar *</label>
+                {{ form.article }}
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del Solicitante *</label>
+                    {{ form.borrower_name }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">ID/Matrícula</label>
+                    {{ form.borrower_id }}
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Contacto</label>
+                {{ form.borrower_contact }}
+                <p class="text-xs text-gray-500 mt-1">Teléfono o email del solicitante</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Cantidad *</label>
+                    {{ form.quantity }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Fecha de Devolución *</label>
+                    {{ form.due_date }}
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Notas</label>
+                {{ form.notes }}
+                <p class="text-xs text-gray-500 mt-1">Observaciones o condiciones del préstamo</p>
+            </div>
+            
+            <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4">
+                <p class="text-sm text-yellow-700">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <strong>Importante:</strong> El préstamo reducirá automáticamente el stock del artículo. Se creará una alerta si no se devuelve a tiempo.
+                </p>
+            </div>
+            
+            <div class="flex justify-end space-x-3 pt-6 border-t">
+                <a href="{% url 'loan_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition">
+                    Cancelar
+                </a>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition">
+                    <i class="fas fa-handshake mr-2"></i> Registrar Préstamo
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
