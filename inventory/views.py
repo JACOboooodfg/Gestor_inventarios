@@ -1036,3 +1036,407 @@ def reports(request):
     }
     
     return render(request, 'inventory/reports.html', context)
+
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from openpyxl import load_workbook
+import json
+from .models import Category, Location, Article
+from .forms import ImportExcelForm
+
+
+@login_required
+def import_preview(request):
+    """Vista previa de importación con mapeo de columnas - VERSIÓN FLEXIBLE"""
+    
+    if request.method == 'POST':
+        if 'excel_file' in request.FILES:
+            # Paso 1: Cargar archivo y mostrar preview
+            excel_file = request.FILES['excel_file']
+            
+            try:
+                wb = load_workbook(excel_file, data_only=True)
+                ws = wb.active
+                
+                # Leer encabezados (primera fila) - MUY FLEXIBLE
+                headers = []
+                for cell in ws[1]:
+                    if cell.value:
+                        headers.append({
+                            'original': str(cell.value),
+                            'clean': str(cell.value).lower().strip().replace(' ', '_').replace('-', '_')
+                        })
+                
+                # Si NO hay encabezados, usar genéricos
+                if not headers:
+                    for i in range(1, 11):  # Hasta 10 columnas
+                        headers.append({
+                            'original': f'Columna_{i}',
+                            'clean': f'columna_{i}'
+                        })
+                
+                # Leer primeras 10 filas como preview
+                preview_data = []
+                for row_idx, row in enumerate(ws.iter_rows(min_row=2, max_row=11, values_only=True), start=2):
+                    if any(row):  # Solo si la fila tiene datos
+                        row_data = {}
+                        for idx, value in enumerate(row):
+                            if idx < len(headers):
+                                # Convertir None a string vacío
+                                row_data[headers[idx]['clean']] = str(value) if value is not None else ''
+                        preview_data.append({
+                            'row_number': row_idx,
+                            'data': row_data
+                        })
+                
+                # Guardar en sesión
+                request.session['excel_headers'] = headers
+                request.session['excel_preview'] = preview_data
+                request.session['excel_filename'] = excel_file.name
+                
+                # Guardar archivo temporalmente en sesión (base64)
+                import base64
+                excel_file.seek(0)
+                file_content = excel_file.read()
+                request.session['excel_file_content'] = base64.b64encode(file_content).decode('utf-8')
+                
+                # Sugerencias de mapeo automático
+                field_mappings = suggest_field_mappings(headers)
+                
+                # Obtener categorías y ubicaciones existentes
+                categories = list(Category.objects.values('id', 'name'))
+                locations = list(Location.objects.values('id', 'name'))
+                
+                context = {
+                    'headers': headers,
+                    'preview_data': preview_data,
+                    'field_mappings': field_mappings,
+                    'categories': categories,
+                    'locations': locations,
+                    'step': 'preview'
+                }
+                
+                return render(request, 'inventory/import_preview.html', context)
+                
+            except Exception as e:
+                messages.error(request, f'Error al leer el archivo: {str(e)}. Intenta con un archivo .xlsx válido.')
+                return redirect('import_preview')
+        
+        elif 'confirm_mapping' in request.POST:
+            # Paso 2: Confirmar mapeo e importar
+            try:
+                mapping = json.loads(request.POST.get('column_mapping', '{}'))
+                
+                # Recuperar archivo de sesión
+                import base64
+                import io
+                file_content_b64 = request.session.get('excel_file_content')
+                if not file_content_b64:
+                    messages.error(request, 'Sesión expirada. Por favor, sube el archivo nuevamente.')
+                    return redirect('import_preview')
+                
+                file_content = base64.b64decode(file_content_b64)
+                file_obj = io.BytesIO(file_content)
+                
+                # Importar con el mapeo
+                result = import_execute_flexible(file_obj, mapping, request.user)
+                
+                # Mostrar resultados
+                if result['success_count'] > 0:
+                    messages.success(request, f'✓ {result["success_count"]} artículos importados exitosamente')
+                
+                if result['warning_count'] > 0:
+                    messages.warning(request, f'⚠ {result["warning_count"]} advertencias')
+                
+                if result['error_count'] > 0:
+                    messages.error(request, f'✗ {result["error_count"]} errores')
+                    # Mostrar solo los primeros 5 errores
+                    for error in result['errors'][:5]:
+                        messages.error(request, error)
+                    if len(result['errors']) > 5:
+                        messages.info(request, f'... y {len(result["errors"]) - 5} errores más')
+                
+                # Limpiar sesión
+                for key in ['excel_headers', 'excel_preview', 'excel_filename', 'excel_file_content']:
+                    request.session.pop(key, None)
+                
+                return redirect('article_list')
+                
+            except Exception as e:
+                messages.error(request, f'Error en la importación: {str(e)}')
+                return redirect('import_preview')
+    
+    else:
+        form = ImportExcelForm()
+    
+    return render(request, 'inventory/import_preview.html', {
+        'form': form,
+        'step': 'upload'
+    })
+
+
+def suggest_field_mappings(headers):
+    """Sugerir mapeo automático de columnas - MUY FLEXIBLE"""
+    
+    # Mapeo AMPLIO de posibles nombres de columnas
+    field_suggestions = {
+        'nombre': [
+            'nombre', 'name', 'articulo', 'item', 'producto', 'descripcion',
+            'desc', 'product', 'artículo', 'material', 'bien', 'recurso',
+            'title', 'titulo', 'nombre_articulo', 'nombre_producto'
+        ],
+        'codigo': [
+            'codigo', 'code', 'cod', 'sku', 'id', 'código', 'clave',
+            'referencia', 'ref', 'numero', 'number', 'no', 'item_code'
+        ],
+        'categoria': [
+            'categoria', 'category', 'cat', 'tipo', 'type', 'categoría',
+            'class', 'clase', 'grupo', 'group', 'familia', 'linea'
+        ],
+        'ubicacion': [
+            'ubicacion', 'location', 'lugar', 'almacen', 'bodega', 'ubicación',
+            'warehouse', 'almacén', 'deposito', 'depósito', 'sitio', 'area'
+        ],
+        'cantidad': [
+            'cantidad', 'quantity', 'stock', 'qty', 'existencia', 'cant',
+            'inventario', 'disponible', 'unidades', 'piezas', 'units'
+        ],
+        'unidad': [
+            'unidad', 'unit', 'medida', 'um', 'uom', 'u', 'measurement'
+        ],
+        'cantidad_minima': [
+            'cantidad_minima', 'min_quantity', 'minimo', 'min', 'stock_minimo',
+            'cantidad_mínima', 'mínimo', 'minimum', 'min_stock'
+        ],
+        'precio': [
+            'precio', 'price', 'costo', 'valor', 'cost', 'importe',
+            'monto', 'amount', 'precio_unitario', 'unit_price'
+        ],
+        'estado': [
+            'estado', 'status', 'condicion', 'condition', 'situacion',
+            'state', 'estatus'
+        ],
+        'codigo_barras': [
+            'codigo_barras', 'barcode', 'ean', 'upc', 'código_barras',
+            'bar_code', 'ean13', 'gtin'
+        ],
+        'descripcion': [
+            'descripcion', 'description', 'desc', 'detalle', 'detalles',
+            'details', 'nota', 'notes', 'info', 'información'
+        ],
+        'notas': [
+            'notas', 'notes', 'observaciones', 'comentarios', 'remarks',
+            'obs', 'comment', 'observación', 'anotaciones'
+        ],
+    }
+    
+    mappings = {}
+    
+    for header in headers:
+        clean_name = header['clean']
+        best_match = None
+        
+        # Buscar coincidencia FLEXIBLE (cualquier parte coincide)
+        for field_name, possible_names in field_suggestions.items():
+            for possible in possible_names:
+                if possible in clean_name or clean_name in possible:
+                    best_match = field_name
+                    break
+            if best_match:
+                break
+        
+        mappings[header['original']] = {
+            'suggested': best_match,
+            'original': header['original'],
+            'clean': clean_name
+        }
+    
+    return mappings
+
+
+def import_execute_flexible(file_obj, column_mapping, user):
+    """
+    Ejecutar importación ULTRA FLEXIBLE - acepta casi cualquier cosa
+    """
+    
+    wb = load_workbook(file_obj, data_only=True)
+    ws = wb.active
+    
+    results = {
+        'success_count': 0,
+        'error_count': 0,
+        'warning_count': 0,
+        'errors': [],
+        'warnings': []
+    }
+    
+    # Leer encabezados
+    headers = [str(cell.value) if cell.value else f'Col_{i}' for i, cell in enumerate(ws[1], 1)]
+    
+    # Procesar cada fila - MUY TOLERANTE
+    for row_num, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
+        try:
+            # Si la fila está completamente vacía, saltar
+            if not any(row):
+                continue
+            
+            # Construir diccionario con los datos mapeados
+            mapped_data = {}
+            for idx, header in enumerate(headers):
+                if header in column_mapping and idx < len(row):
+                    field_name = column_mapping[header]
+                    if field_name and field_name != 'ignore':
+                        value = row[idx]
+                        # Convertir None a string vacío
+                        mapped_data[field_name] = str(value).strip() if value is not None else ''
+            
+            # VALIDACIÓN MUY FLEXIBLE - solo requiere nombre
+            nombre = mapped_data.get('nombre', '').strip()
+            if not nombre or nombre.lower() in ['none', 'null', '']:
+                results['warnings'].append(f"Fila {row_num}: Sin nombre válido, se omite")
+                results['warning_count'] += 1
+                continue
+            
+            # Procesar categoría - CREAR SI NO EXISTE
+            category = None
+            categoria_nombre = mapped_data.get('categoria', '').strip()
+            if categoria_nombre and categoria_nombre.lower() not in ['none', 'null', '', 'n/a']:
+                category, created = Category.objects.get_or_create(
+                    name__iexact=categoria_nombre,
+                    defaults={'name': categoria_nombre}
+                )
+                if created:
+                    results['warnings'].append(f"Fila {row_num}: Categoría '{categoria_nombre}' creada automáticamente")
+                    results['warning_count'] += 1
+            
+            # Procesar ubicación - FLEXIBLE
+            location = None
+            ubicacion_nombre = mapped_data.get('ubicacion', '').strip()
+            if ubicacion_nombre and ubicacion_nombre.lower() not in ['none', 'null', '', 'n/a']:
+                try:
+                    location = Location.objects.get(name__iexact=ubicacion_nombre)
+                except Location.DoesNotExist:
+                    # Crear ubicación automáticamente
+                    location, created = Location.objects.get_or_create(
+                        name__iexact=ubicacion_nombre,
+                        defaults={'name': ubicacion_nombre}
+                    )
+                    if created:
+                        results['warnings'].append(f"Fila {row_num}: Ubicación '{ubicacion_nombre}' creada automáticamente")
+                        results['warning_count'] += 1
+            
+            # Procesar cantidad - MUY TOLERANTE
+            cantidad = 0
+            cantidad_str = mapped_data.get('cantidad', '0').strip()
+            try:
+                # Limpiar la cadena de cantidad
+                cantidad_str = cantidad_str.replace(',', '').replace(' ', '')
+                cantidad = int(float(cantidad_str)) if cantidad_str else 0
+            except (ValueError, TypeError):
+                cantidad = 0
+                results['warnings'].append(f"Fila {row_num}: Cantidad inválida '{cantidad_str}', se usa 0")
+                results['warning_count'] += 1
+            
+            # Preparar datos del artículo
+            article_data = {
+                'name': nombre,
+                'category': category,
+                'location': location,
+                'quantity': max(0, cantidad),  # No negativo
+                'unit': mapped_data.get('unidad', 'unidad').strip() or 'unidad',
+                'status': 'available',  # Por defecto
+                'created_by': user,
+            }
+            
+            # Cantidad mínima - TOLERANTE
+            try:
+                min_qty_str = mapped_data.get('cantidad_minima', '5').strip()
+                min_qty_str = min_qty_str.replace(',', '').replace(' ', '')
+                article_data['min_quantity'] = int(float(min_qty_str)) if min_qty_str else 5
+            except (ValueError, TypeError):
+                article_data['min_quantity'] = 5
+            
+            # Código - OPCIONAL
+            codigo = mapped_data.get('codigo', '').strip()
+            if codigo and codigo.lower() not in ['none', 'null', '', 'n/a']:
+                article_data['code'] = codigo
+            
+            # Precio - TOLERANTE
+            precio_str = mapped_data.get('precio', '').strip()
+            if precio_str and precio_str.lower() not in ['none', 'null', '', 'n/a']:
+                try:
+                    precio_str = precio_str.replace(',', '').replace('$', '').replace(' ', '')
+                    article_data['price'] = float(precio_str)
+                except (ValueError, TypeError):
+                    pass  # Ignorar si no es válido
+            
+            # Código de barras - OPCIONAL
+            barcode = mapped_data.get('codigo_barras', '').strip()
+            if barcode and barcode.lower() not in ['none', 'null', '', 'n/a']:
+                article_data['barcode'] = barcode
+            
+            # Descripción y notas - OPCIONAL
+            desc = mapped_data.get('descripcion', '').strip()
+            if desc and desc.lower() not in ['none', 'null', '', 'n/a']:
+                article_data['description'] = desc
+            
+            notas = mapped_data.get('notas', '').strip()
+            if notas and notas.lower() not in ['none', 'null', '', 'n/a']:
+                article_data['notes'] = notas
+            
+            # Estado - FLEXIBLE
+            estado = mapped_data.get('estado', '').strip().lower()
+            if estado in ['available', 'disponible', 'activo', 'active']:
+                article_data['status'] = 'available'
+            elif estado in ['in_use', 'en_uso', 'uso']:
+                article_data['status'] = 'in_use'
+            elif estado in ['maintenance', 'mantenimiento']:
+                article_data['status'] = 'maintenance'
+            elif estado in ['damaged', 'dañado', 'averiado']:
+                article_data['status'] = 'damaged'
+            elif estado in ['retired', 'retirado', 'dado_de_baja']:
+                article_data['status'] = 'retired'
+            
+            # CREAR ARTÍCULO
+            article = Article.objects.create(**article_data)
+            results['success_count'] += 1
+            
+        except Exception as e:
+            results['errors'].append(f"Fila {row_num}: {str(e)}")
+            results['error_count'] += 1
+    
+    return results
+
+
+@login_required
+def article_toggle_status(request, pk):
+    """Habilitar/Deshabilitar artículo (AJAX)"""
+    if request.method == 'POST':
+        try:
+            article = Article.objects.get(pk=pk)
+            
+            # Toggle entre available y retired
+            if article.status == 'available':
+                article.status = 'retired'
+                message = f'{article.name} deshabilitado'
+            else:
+                article.status = 'available'
+                message = f'{article.name} habilitado'
+            
+            article.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': message,
+                'new_status': article.status,
+                'status_display': article.get_status_display()
+            })
+        except Article.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Artículo no encontrado'
+            }, status=404)
+    
+    return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
