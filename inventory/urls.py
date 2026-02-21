@@ -1,6 +1,6 @@
 from django.urls import path, include
 from . import views
-from .import_views import import_preview, import_execute, article_toggle_status
+from .import_views import import_preview, article_toggle_status
 
 urlpatterns = [
     # Autenticación
@@ -43,9 +43,10 @@ urlpatterns = [
     path('loans/create/', views.loan_create, name='loan_create'),
     path('loans/<int:pk>/return/', views.loan_return, name='loan_return'),
     
-    # Importar/Exportar (Mejorado)
+    # Importar/Exportar (Especializado para Colegio)
     path('import/', import_preview, name='import_preview'),
-    path('import/execute/', import_execute, name='import_execute'),
+    path('import/preview/', import_preview, name='import_preview'),
+    # NOTA: import_execute ya no existe - todo se maneja en import_preview
     path('import/legacy/', views.import_articles, name='import_articles'),  # Mantener versión antigua
     path('export/articles/', views.export_articles, name='export_articles'),
     path('export/movements/', views.export_movements, name='export_movements'),
@@ -55,7 +56,10 @@ urlpatterns = [
     path('alerts/', views.alert_list, name='alert_list'),
     path('alerts/<int:pk>/read/', views.alert_mark_read, name='alert_mark_read'),
     path('alerts/read-all/', views.alert_mark_all_read, name='alert_mark_all_read'),
+    
+    # Social Auth
     path('', include('social_django.urls', namespace='social')),
+    
     # Reportes
     path('reports/', views.reports, name='reports'),
 ]
