@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Iniciar Sesión - Sistema de Inventarios{% endblock %}
+{% block title %}Iniciar Sesión - Gestor Escolar{% endblock %}
 
 {% block content %}
 <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -14,7 +14,7 @@
                 Bienvenido
             </h2>
             <p class="text-white text-opacity-80">
-                Sistema de Gestión de Inventarios
+                Gestor Escolar
             </p>
         </div>
         
@@ -26,7 +26,7 @@
                 <!-- Username -->
                 <div>
                     <label for="id_username" class="block text-sm font-medium mb-2" style="color: #3D2C2E;">
-                        <i class="fas fa-user mr-2" style="color: #886F68;"></i>Usuario
+                        <i class="fas fa-user mr-2" style="color: #424C55;"></i>Usuario
                     </label>
                     <div class="relative">
                         <input 
@@ -35,7 +35,6 @@
                             id="id_username"
                             required
                             class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-xl focus:ring-4 focus:ring-opacity-20 focus:border-opacity-50 transition-all"
-                            style="focus:ring-color: #886F68; focus:border-color: #886F68;"
                             placeholder="Ingresa tu usuario"
                         >
                         <i class="fas fa-user absolute left-4 top-4 text-gray-400"></i>
@@ -45,7 +44,7 @@
                 <!-- Password -->
                 <div>
                     <label for="id_password" class="block text-sm font-medium mb-2" style="color: #3D2C2E;">
-                        <i class="fas fa-lock mr-2" style="color: #886F68;"></i>Contraseña
+                        <i class="fas fa-lock mr-2" style="color: #424C55;"></i>Contraseña
                     </label>
                     <div class="relative">
                         <input 
@@ -68,7 +67,6 @@
                             name="remember_me" 
                             type="checkbox" 
                             class="h-4 w-4 border-gray-300 rounded"
-                            style="color: #886F68;"
                         >
                         <label for="remember_me" class="ml-2 block text-sm text-gray-700">
                             Recordarme
@@ -90,7 +88,7 @@
             <div class="mt-6 text-center">
                 <p class="text-sm text-gray-600">
                     ¿No tienes una cuenta? 
-                    <a href="{% url 'register' %}" class="font-medium hover:underline transition-colors" style="color: #886F68;">
+                    <a href="{% url 'register' %}" class="font-medium hover:underline transition-colors" style="color: #424C55;">
                         Regístrate aquí
                     </a>
                 </p>
@@ -120,29 +118,4 @@
         </div>
     </div>
 </div>
-
-<style>
-    /* Animación de partículas en el fondo */
-    body::before {
-        content: '';
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: 
-            radial-gradient(circle at 20% 50%, rgba(209, 204, 220, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(136, 111, 104, 0.15) 0%, transparent 50%),
-            radial-gradient(circle at 40% 20%, rgba(245, 237, 240, 0.1) 0%, transparent 50%);
-        pointer-events: none;
-        z-index: 0;
-    }
-    
-    /* Input focus effects */
-    input:focus {
-        transform: translateY(-2px);
-        border-color: #886F68 !important;
-        ring-color: #886F68 !important;
-    }
-</style>
 {% endblock %}

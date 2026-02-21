@@ -84,158 +84,128 @@ LOCATION_CODES = {
 
 
 def infer_category_from_description(description, location_name=''):
-    """Inferir categoría basándose en palabras clave - VERSIÓN MEJORADA MÁS ESPECÍFICA"""
+    """Inferir categoría basándose en palabras clave"""
     
-    desc_lower = description.lower() if description else ''
-    loc_lower = location_name.lower() if location_name else ''
+    if not description:
+        return 'General'
     
-    # PRIORIDAD 1: Papelería y oficina (muy común en colegios)
-    if 'papeler' in loc_lower or 'pap' in loc_lower or 'utiles' in loc_lower or 'útiles' in loc_lower:
+    desc_lower = str(description).lower()
+    loc_lower = str(location_name).lower() if location_name else ''
+    
+    # Papelería (PRIORIDAD 1)
+    if 'papeler' in loc_lower or 'pap' in loc_lower or 'utiles' in loc_lower:
         return 'Papelería'
     
-    if any(word in desc_lower for word in ['papel', 'hoja', 'cuaderno', 'lapiz', 'lápiz', 'esfero',
-                                            'marcador', 'resaltador', 'borrador', 'tijera', 'tijeras',
-                                            'grapadora', 'perforadora', 'carpeta', 'folder', 'cinta',
-                                            'pegante', 'silicona', 'cartulina', 'cartón', 'pintura',
-                                            'colores', 'tempera', 'acuarela', 'pincel', 'mina',
-                                            'sacapunta', 'regla', 'compás', 'escuadra', 'clips',
-                                            'gancho', 'corrector', 'block', 'acetato', 'papel',
-                                            'tinta', 'tajalapiz', 'engrapador']):
+    papeleria_words = ['papel', 'hoja', 'cuaderno', 'lapiz', 'lápiz', 'esfero', 'marcador', 
+                       'resaltador', 'borrador', 'tijera', 'grapadora', 'perforadora', 'carpeta',
+                       'folder', 'cinta', 'pegante', 'silicona', 'cartulina', 'pintura', 'colores',
+                       'tempera', 'pincel', 'mina', 'sacapunta', 'regla', 'compás', 'clips',
+                       'corrector', 'block', 'acetato', 'tinta']
+    
+    if any(word in desc_lower for word in papeleria_words):
         return 'Papelería'
     
-    # PRIORIDAD 2: Libros y medios
+    # Biblioteca
     if 'bibliot' in loc_lower or 'lectura' in loc_lower:
         return 'Biblioteca'
     
-    if any(word in desc_lower for word in ['libro', 'revista', 'enciclopedia', 'memoria', 'actas',
-                                            'diccionario', 'atlas', 'texto', 'manual', 'guia']):
+    if any(word in desc_lower for word in ['libro', 'revista', 'enciclopedia', 'memoria', 'actas', 'diccionario', 'atlas', 'texto', 'manual']):
         return 'Biblioteca'
     
-    # PRIORIDAD 3: Tecnología e informática
+    # Tecnología
     if any(word in loc_lower for word in ['sistemas', 'robot', 'tdi', 'audiovisual', 'informatica']):
         return 'Tecnología'
     
-    if any(word in desc_lower for word in ['computador', 'laptop', 'pc', 'monitor', 'teclado', 'mouse', 
-                                            'impresora', 'proyector', 'tablet', 'disco', 'router',
-                                            'switch', 'cable', 'wifi', 'amplificador', 'parlante', 'micrófono',
-                                            'camara', 'cámara', 'transformador', 'dvr', 'voltimetro',
-                                            'pantalla', 'cpu', 'scanner', 'usb', 'memoria', 'video',
-                                            'audio', 'bocina', 'altavoz', 'auricular', 'bateria',
-                                            'cargador', 'adaptador', 'hdmi', 'vga', 'electronico']):
+    tech_words = ['computador', 'laptop', 'pc', 'monitor', 'teclado', 'mouse', 'impresora',
+                  'proyector', 'tablet', 'disco', 'router', 'switch', 'cable', 'amplificador',
+                  'parlante', 'micrófono', 'camara', 'cámara', 'transformador', 'dvr',
+                  'pantalla', 'cpu', 'scanner', 'usb', 'video', 'audio', 'bocina', 'bateria']
+    
+    if any(word in desc_lower for word in tech_words):
         return 'Tecnología'
     
-    # PRIORIDAD 4: Deportes y recreación
-    if 'deport' in loc_lower or any(code in loc_lower for code in ['dp', 'recreacion', 'gimnasio']):
+    # Deportes
+    if 'deport' in loc_lower or 'dp' in loc_lower:
         return 'Deportes'
     
-    if any(word in desc_lower for word in ['balón', 'balon', 'pelota', 'red', 'cancha', 'aro',
-                                            'inflador', 'bomba', 'conos', 'lazo', 'colchoneta', 'cajon',
-                                            'baston', 'raqueta', 'guantes', 'casco', 'rodillera',
-                                            'futbol', 'basquet', 'voleibol', 'tenis', 'ping', 'pong',
-                                            'ajedrez', 'dama', 'juego', 'deporte']):
+    deportes_words = ['balón', 'balon', 'pelota', 'red', 'cancha', 'aro', 'inflador', 'bomba',
+                      'conos', 'lazo', 'colchoneta', 'cajon', 'baston', 'raqueta', 'guantes',
+                      'casco', 'futbol', 'basquet', 'voleibol', 'tenis', 'ping', 'pong', 'ajedrez']
+    
+    if any(word in desc_lower for word in deportes_words):
         return 'Deportes'
     
-    # PRIORIDAD 5: Laboratorios y ciencias
-    if any(word in loc_lower for word in ['laboratorio', 'lab', 'biolog', 'quimic', 'fisica', 'ciencia']):
+    # Ciencias
+    if any(word in loc_lower for word in ['laboratorio', 'lab', 'biolog', 'quimic', 'fisica']):
         return 'Ciencias'
     
-    if any(word in desc_lower for word in ['microscopio', 'probeta', 'beaker', 'tubo', 'pipeta', 'reactivo',
-                                            'matraz', 'bureta', 'erlenmeyer', 'embudo', 'pinza',
-                                            'mechero', 'balanza', 'termómetro', 'gradilla', 'cristal',
-                                            'vidrio', 'laboratorio', 'experimento', 'químico']):
+    if any(word in desc_lower for word in ['microscopio', 'probeta', 'beaker', 'tubo', 'pipeta', 'reactivo', 'matraz', 'bureta', 'mechero', 'balanza']):
         return 'Ciencias'
     
-    # PRIORIDAD 6: Muebles y enseres
-    if any(word in desc_lower for word in ['silla', 'mesa', 'escritorio', 'estante', 'anaquel',
-                                            'archivo', 'archivador', 'armario', 'locker', 'gabinete', 'pupitre',
-                                            'banco', 'sofá', 'butaco', 'mueble', 'tapete', 'alfombra',
-                                            'cajonera', 'biblioteca', 'repisa', 'perchero', 'vitrina']):
+    # Muebles y Enseres
+    muebles_words = ['silla', 'mesa', 'escritorio', 'estante', 'anaquel', 'archivo', 'armario',
+                     'locker', 'gabinete', 'pupitre', 'banco', 'sofá', 'butaco', 'mueble',
+                     'tapete', 'alfombra', 'cajonera', 'repisa', 'perchero', 'vitrina']
+    
+    if any(word in desc_lower for word in muebles_words):
         return 'Muebles y Enseres'
     
-    # PRIORIDAD 7: Cocina y cafetería
-    if 'cafeter' in loc_lower or 'cocina' in loc_lower or 'restaurante' in loc_lower or 'comedor' in loc_lower:
+    # Cocina y Cafetería
+    if any(word in loc_lower for word in ['cafeter', 'cocina', 'restaurante', 'comedor']):
         return 'Cocina y Cafetería'
     
-    if any(word in desc_lower for word in ['cafetera', 'dispensador', 'nevera', 'estufa', 'horno',
-                                            'olla', 'sartén', 'plato', 'vaso', 'taza', 'cuchara',
-                                            'tenedor', 'cuchillo', 'bandeja', 'purificador', 'licuadora',
-                                            'microondas', 'tetera', 'jarra', 'recipiente']):
+    if any(word in desc_lower for word in ['cafetera', 'dispensador', 'nevera', 'estufa', 'horno', 'olla', 'plato', 'vaso', 'taza', 'cuchara', 'bandeja', 'purificador']):
         return 'Cocina y Cafetería'
     
-    # PRIORIDAD 8: Música e instrumentos
+    # Música
     if 'music' in loc_lower or 'banda' in loc_lower:
         return 'Música'
     
-    if any(word in desc_lower for word in ['instrumento', 'guitarra', 'piano', 'batería', 'flauta',
-                                            'tambor', 'bombo', 'platillo', 'baqueta', 'trompeta',
-                                            'clarinete', 'saxofon', 'violin', 'arpa', 'organo']):
+    if any(word in desc_lower for word in ['instrumento', 'guitarra', 'piano', 'batería', 'flauta', 'tambor', 'bombo', 'platillo', 'baqueta', 'trompeta']):
         return 'Música'
     
-    # PRIORIDAD 9: Elementos de culto y religiosos
-    if 'orator' in loc_lower or 'sacr' in loc_lower or 'capilla' in loc_lower or 'iglesia' in loc_lower:
+    # Elementos de Culto
+    if any(word in loc_lower for word in ['orator', 'sacr', 'capilla', 'iglesia']):
         return 'Elementos de Culto'
     
-    if any(word in desc_lower for word in ['imagen', 'virgen', 'santo', 'cruz', 'cuadro', 'crucifijo',
-                                            'sagrado', 'sagrario', 'corazón', 'jesús', 'maría',
-                                            'religioso', 'altar', 'vela', 'candelabro']):
+    if any(word in desc_lower for word in ['imagen', 'virgen', 'santo', 'cruz', 'cuadro', 'crucifijo', 'sagrado', 'sagrario', 'altar', 'vela']):
         return 'Elementos de Culto'
     
-    # PRIORIDAD 10: Aseo y limpieza
-    if 'aseo' in loc_lower or 'limpieza' in loc_lower or 'servicio' in loc_lower:
+    # Aseo y Limpieza
+    if any(word in loc_lower for word in ['aseo', 'limpieza', 'servicio']):
         return 'Aseo y Limpieza'
     
-    if any(word in desc_lower for word in ['escoba', 'trapero', 'recogedor', 'balde', 'caneca',
-                                            'detergente', 'jabón', 'trapeador', 'cepillo', 'guantes',
-                                            'limpiador', 'desinfectante', 'cloro', 'toalla', 'paño']):
+    if any(word in desc_lower for word in ['escoba', 'trapero', 'recogedor', 'balde', 'caneca', 'detergente', 'jabón', 'trapeador', 'cepillo', 'guantes', 'limpiador']):
         return 'Aseo y Limpieza'
     
-    # PRIORIDAD 11: Teatro, danzas y arte
-    if 'teatro' in loc_lower or 'danza' in loc_lower or 'arte' in loc_lower:
+    # Teatro y Danzas
+    if any(word in loc_lower for word in ['teatro', 'danza', 'arte']):
         return 'Teatro y Danzas'
     
-    if any(word in desc_lower for word in ['telón', 'cortina', 'escenario', 'tramoya', 'pendon',
-                                            'vestuario', 'disfraz', 'maquillaje', 'utileria']):
+    if any(word in desc_lower for word in ['telón', 'cortina', 'escenario', 'tramoya', 'pendon', 'vestuario', 'disfraz']):
         return 'Teatro y Danzas'
     
-    # PRIORIDAD 12: Oficina y administración
-    if any(word in loc_lower for word in ['secretar', 'recep', 'rector', 'admin', 'oficina', 'coord']):
+    # Oficina
+    if any(word in loc_lower for word in ['secretar', 'recep', 'rector', 'admin', 'oficina']):
         return 'Oficina'
     
-    if any(word in desc_lower for word in ['sello', 'tampón', 'numerador', 'fechador', 'facturador',
-                                            'cosedora', 'calculadora', 'telefono', 'fax']):
+    if any(word in desc_lower for word in ['sello', 'tampón', 'numerador', 'calculadora', 'telefono', 'fax']):
         return 'Oficina'
     
-    # SI TIENE CÓDIGO DE UBICACIÓN, usar eso como pista
-    if 'PAP' in location_name.upper():
+    # Por código de ubicación
+    loc_upper = location_name.upper() if location_name else ''
+    if 'PAP' in loc_upper:
         return 'Papelería'
-    elif 'LAB' in location_name.upper():
+    elif 'LAB' in loc_upper:
         return 'Ciencias'
-    elif 'DEP' in location_name.upper() or 'DP' in location_name.upper():
+    elif 'DP' in loc_upper:
         return 'Deportes'
-    elif 'MUS' in location_name.upper() or 'BAN' in location_name.upper():
+    elif 'MUS' in loc_upper or 'BAN' in loc_upper:
         return 'Música'
-    elif 'BIB' in location_name.upper() or 'BT' in location_name.upper():
+    elif 'BIB' in loc_upper or 'BT' in loc_upper:
         return 'Biblioteca'
     
-    # ÚLTIMO RECURSO: Buscar cualquier palabra común
-    palabras_comunes = {
-        'plástico': 'Papelería',
-        'metalico': 'Muebles y Enseres',
-        'madera': 'Muebles y Enseres',
-        'cuero': 'Muebles y Enseres',
-        'tela': 'Muebles y Enseres',
-        'electric': 'Tecnología',
-        'manual': 'Biblioteca',
-        'didactico': 'Papelería',
-        'educativo': 'Papelería',
-        'escolar': 'Papelería',
-    }
-    
-    for palabra, categoria in palabras_comunes.items():
-        if palabra in desc_lower:
-            return categoria
-    
-    # Default solo si NO hay ninguna coincidencia
+    # Default
     return 'General'
 
 
@@ -532,8 +502,4 @@ def article_toggle_status(request, pk):
                 'message': 'Artículo no encontrado'
             }, status=404)
     
-    return render(request, 'inventory/import_preview_colegio.html', {
-    'step': 'upload',
-    'sheets_info': [],
-    'total_sheets': 0
-})
+    return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
