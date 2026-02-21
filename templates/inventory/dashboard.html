@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard - Inventario Escolar{% endblock %}
+{% block title %}Dashboard - Inventario de Inventarios{% endblock %}
 
 {% block content %}
 <div class="mb-8">
@@ -79,7 +79,7 @@
             <i class="fas fa-handshake text-2xl mb-2"></i>
             <p>Nuevo Préstamo</p>
         </a>
-        <a href="{% url 'import_articles' %}" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 px-6 rounded-lg text-center transition transform hover:scale-105 shadow-md">
+        <a href="{% url 'import_preview' %}" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 px-6 rounded-lg text-center transition transform hover:scale-105 shadow-md">
             <i class="fas fa-file-import text-2xl mb-2"></i>
             <p>Importar Excel</p>
         </a>

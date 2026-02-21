@@ -532,4 +532,8 @@ def article_toggle_status(request, pk):
                 'message': 'Artículo no encontrado'
             }, status=404)
     
-    return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
+    return render(request, 'inventory/import_preview_colegio.html', {
+    'step': 'upload',
+    'sheets_info': [],
+    'total_sheets': 0
+})
