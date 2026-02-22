@@ -84,7 +84,7 @@ LOCATION_CODES = {
 
 
 def infer_category_from_description(description, location_name=''):
-    """Inferir categoría basándose en palabras clave"""
+    """Inferir categoría con subcategorías para Biblioteca"""
     
     if not description:
         return 'General'
@@ -92,7 +92,52 @@ def infer_category_from_description(description, location_name=''):
     desc_lower = str(description).lower()
     loc_lower = str(location_name).lower() if location_name else ''
     
-    # Papelería (PRIORIDAD 1)
+    # ==================== PRIORIDAD 1: DETECTAR SI ES UN LIBRO ====================
+    # Palabras que indican que es un libro
+    libro_indicators = ['libro', 'texto', 'manual', 'guía', 'guia', 'enciclopedia', 
+                        'diccionario', 'atlas', 'revista', 'tomo', 'volumen', 
+                        'lectura', 'editorial', 'autor', 'isbn']
+    
+    es_libro = any(word in desc_lower for word in libro_indicators) or 'bibliot' in loc_lower
+    
+    if es_libro:
+        # Es un LIBRO - asignar subcategoría de Biblioteca
+        
+        # Detectar tema del libro
+        if any(word in desc_lower for word in ['deport', 'fútbol', 'futbol', 'baloncesto', 'atletismo', 'gimnasia', 'educación física', 'educacion fisica']):
+            return 'Biblioteca - Deportes'
+        
+        elif any(word in desc_lower for word in ['biolog', 'quím', 'quim', 'físic', 'fisic', 'ciencia', 'laboratorio', 'experimento', 'naturaleza', 'ecosistema']):
+            return 'Biblioteca - Ciencias'
+        
+        elif any(word in desc_lower for word in ['matemática', 'matematica', 'álgebra', 'algebra', 'geometría', 'geometria', 'cálculo', 'calculo', 'aritmética', 'aritmetica']):
+            return 'Biblioteca - Matemáticas'
+        
+        elif any(word in desc_lower for word in ['histori', 'geograf', 'social', 'cívica', 'civica', 'constitución', 'constitucion', 'colombia', 'mundial']):
+            return 'Biblioteca - Historia y Geografía'
+        
+        elif any(word in desc_lower for word in ['lengu', 'español', 'gramática', 'gramatica', 'lectura', 'escritura', 'literatura', 'poesía', 'poesia', 'novela', 'cuento']):
+            return 'Biblioteca - Lenguaje y Literatura'
+        
+        elif any(word in desc_lower for word in ['inglés', 'ingles', 'english', 'francés', 'frances', 'idioma']):
+            return 'Biblioteca - Idiomas'
+        
+        elif any(word in desc_lower for word in ['religión', 'religion', 'ética', 'etica', 'valores', 'moral', 'biblia', 'catequesis']):
+            return 'Biblioteca - Religión y Ética'
+        
+        elif any(word in desc_lower for word in ['arte', 'música', 'musica', 'pintura', 'dibujo', 'danza']):
+            return 'Biblioteca - Arte y Música'
+        
+        elif any(word in desc_lower for word in ['informática', 'informatica', 'computación', 'computacion', 'programación', 'programacion', 'tecnología', 'tecnologia']):
+            return 'Biblioteca - Tecnología e Informática'
+        
+        else:
+            # Libro sin tema específico
+            return 'Biblioteca - General'
+    
+    # ==================== PRIORIDAD 2: NO ES LIBRO - CATEGORÍAS NORMALES ====================
+    
+    # Papelería (PRIORIDAD ALTA - muy común)
     if 'papeler' in loc_lower or 'pap' in loc_lower or 'utiles' in loc_lower:
         return 'Papelería'
     
@@ -100,17 +145,22 @@ def infer_category_from_description(description, location_name=''):
                        'resaltador', 'borrador', 'tijera', 'grapadora', 'perforadora', 'carpeta',
                        'folder', 'cinta', 'pegante', 'silicona', 'cartulina', 'pintura', 'colores',
                        'tempera', 'pincel', 'mina', 'sacapunta', 'regla', 'compás', 'clips',
-                       'corrector', 'block', 'acetato', 'tinta']
+                       'corrector', 'block', 'acetato', 'tinta', 'goma']
     
     if any(word in desc_lower for word in papeleria_words):
         return 'Papelería'
     
-    # Biblioteca
-    if 'bibliot' in loc_lower or 'lectura' in loc_lower:
-        return 'Biblioteca'
+    # Deportes (objetos físicos, NO libros)
+    if 'deport' in loc_lower or 'dp' in loc_lower or 'gimnasio' in loc_lower:
+        return 'Deportes'
     
-    if any(word in desc_lower for word in ['libro', 'revista', 'enciclopedia', 'memoria', 'actas', 'diccionario', 'atlas', 'texto', 'manual']):
-        return 'Biblioteca'
+    deportes_words = ['balón', 'balon', 'pelota', 'red', 'cancha', 'aro', 'inflador', 'bomba',
+                      'conos', 'lazo', 'colchoneta', 'cajon', 'baston', 'raqueta', 'guantes',
+                      'casco', 'futbol', 'basquet', 'voleibol', 'tenis', 'ping', 'pong', 'ajedrez',
+                      'uniforme deportivo', 'malla', 'silbato']
+    
+    if any(word in desc_lower for word in deportes_words):
+        return 'Deportes'
     
     # Tecnología
     if any(word in loc_lower for word in ['sistemas', 'robot', 'tdi', 'audiovisual', 'informatica']):
@@ -118,33 +168,23 @@ def infer_category_from_description(description, location_name=''):
     
     tech_words = ['computador', 'laptop', 'pc', 'monitor', 'teclado', 'mouse', 'impresora',
                   'proyector', 'tablet', 'disco', 'router', 'switch', 'cable', 'amplificador',
-                  'parlante', 'micrófono', 'camara', 'cámara', 'transformador', 'dvr',
-                  'pantalla', 'cpu', 'scanner', 'usb', 'video', 'audio', 'bocina', 'bateria']
+                  'parlante', 'micrófono', 'microfono', 'camara', 'cámara', 'transformador', 'dvr',
+                  'pantalla', 'cpu', 'scanner', 'usb', 'video', 'audio', 'bocina', 'bateria',
+                  'cargador', 'hdmi', 'vga']
     
     if any(word in desc_lower for word in tech_words):
         return 'Tecnología'
     
-    # Deportes
-    if 'deport' in loc_lower or 'dp' in loc_lower:
-        return 'Deportes'
-    
-    deportes_words = ['balón', 'balon', 'pelota', 'red', 'cancha', 'aro', 'inflador', 'bomba',
-                      'conos', 'lazo', 'colchoneta', 'cajon', 'baston', 'raqueta', 'guantes',
-                      'casco', 'futbol', 'basquet', 'voleibol', 'tenis', 'ping', 'pong', 'ajedrez']
-    
-    if any(word in desc_lower for word in deportes_words):
-        return 'Deportes'
-    
-    # Ciencias
+    # Ciencias (equipos de laboratorio, NO libros)
     if any(word in loc_lower for word in ['laboratorio', 'lab', 'biolog', 'quimic', 'fisica']):
         return 'Ciencias'
     
-    if any(word in desc_lower for word in ['microscopio', 'probeta', 'beaker', 'tubo', 'pipeta', 'reactivo', 'matraz', 'bureta', 'mechero', 'balanza']):
+    if any(word in desc_lower for word in ['microscopio', 'probeta', 'beaker', 'tubo ensayo', 'pipeta', 'reactivo', 'matraz', 'bureta', 'mechero', 'balanza', 'erlenmeyer']):
         return 'Ciencias'
     
     # Muebles y Enseres
     muebles_words = ['silla', 'mesa', 'escritorio', 'estante', 'anaquel', 'archivo', 'armario',
-                     'locker', 'gabinete', 'pupitre', 'banco', 'sofá', 'butaco', 'mueble',
+                     'locker', 'gabinete', 'pupitre', 'banco', 'sofá', 'sofa', 'butaco', 'mueble',
                      'tapete', 'alfombra', 'cajonera', 'repisa', 'perchero', 'vitrina']
     
     if any(word in desc_lower for word in muebles_words):
@@ -154,42 +194,42 @@ def infer_category_from_description(description, location_name=''):
     if any(word in loc_lower for word in ['cafeter', 'cocina', 'restaurante', 'comedor']):
         return 'Cocina y Cafetería'
     
-    if any(word in desc_lower for word in ['cafetera', 'dispensador', 'nevera', 'estufa', 'horno', 'olla', 'plato', 'vaso', 'taza', 'cuchara', 'bandeja', 'purificador']):
+    if any(word in desc_lower for word in ['cafetera', 'dispensador', 'nevera', 'estufa', 'horno', 'olla', 'plato', 'vaso', 'taza', 'cuchara', 'bandeja', 'purificador', 'licuadora']):
         return 'Cocina y Cafetería'
     
-    # Música
+    # Música (instrumentos, NO libros)
     if 'music' in loc_lower or 'banda' in loc_lower:
         return 'Música'
     
-    if any(word in desc_lower for word in ['instrumento', 'guitarra', 'piano', 'batería', 'flauta', 'tambor', 'bombo', 'platillo', 'baqueta', 'trompeta']):
+    if any(word in desc_lower for word in ['instrumento', 'guitarra', 'piano', 'batería', 'bateria', 'flauta', 'tambor', 'bombo', 'platillo', 'baqueta', 'trompeta', 'clarinete', 'saxofon']):
         return 'Música'
     
     # Elementos de Culto
     if any(word in loc_lower for word in ['orator', 'sacr', 'capilla', 'iglesia']):
         return 'Elementos de Culto'
     
-    if any(word in desc_lower for word in ['imagen', 'virgen', 'santo', 'cruz', 'cuadro', 'crucifijo', 'sagrado', 'sagrario', 'altar', 'vela']):
+    if any(word in desc_lower for word in ['imagen', 'virgen', 'santo', 'santa', 'cruz', 'cuadro religioso', 'crucifijo', 'sagrado', 'sagrario', 'altar', 'vela', 'rosario']):
         return 'Elementos de Culto'
     
     # Aseo y Limpieza
     if any(word in loc_lower for word in ['aseo', 'limpieza', 'servicio']):
         return 'Aseo y Limpieza'
     
-    if any(word in desc_lower for word in ['escoba', 'trapero', 'recogedor', 'balde', 'caneca', 'detergente', 'jabón', 'trapeador', 'cepillo', 'guantes', 'limpiador']):
+    if any(word in desc_lower for word in ['escoba', 'trapero', 'recogedor', 'balde', 'caneca', 'detergente', 'jabón', 'jabon', 'trapeador', 'cepillo', 'guantes', 'limpiador', 'desinfectante']):
         return 'Aseo y Limpieza'
     
     # Teatro y Danzas
     if any(word in loc_lower for word in ['teatro', 'danza', 'arte']):
-        return 'Teatro y Danzas'
+        return 'Arte y Teatro'
     
-    if any(word in desc_lower for word in ['telón', 'cortina', 'escenario', 'tramoya', 'pendon', 'vestuario', 'disfraz']):
-        return 'Teatro y Danzas'
+    if any(word in desc_lower for word in ['telón', 'telon', 'cortina escenario', 'escenario', 'tramoya', 'pendon', 'vestuario', 'disfraz', 'maquillaje']):
+        return 'Arte y Teatro'
     
     # Oficina
     if any(word in loc_lower for word in ['secretar', 'recep', 'rector', 'admin', 'oficina']):
         return 'Oficina'
     
-    if any(word in desc_lower for word in ['sello', 'tampón', 'numerador', 'calculadora', 'telefono', 'fax']):
+    if any(word in desc_lower for word in ['sello', 'tampón', 'tampon', 'numerador', 'calculadora', 'telefono', 'teléfono', 'fax', 'archivador oficina']):
         return 'Oficina'
     
     # Por código de ubicación
@@ -203,9 +243,9 @@ def infer_category_from_description(description, location_name=''):
     elif 'MUS' in loc_upper or 'BAN' in loc_upper:
         return 'Música'
     elif 'BIB' in loc_upper or 'BT' in loc_upper:
-        return 'Biblioteca'
+        return 'Biblioteca - General'
     
-    # Default
+    # Default (solo si no hay NINGUNA coincidencia)
     return 'General'
 
 

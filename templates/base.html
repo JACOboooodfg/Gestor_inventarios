@@ -38,9 +38,10 @@
         
         /* Glassmorphism */
         .glass {
-            background: rgba(209, 204, 220, 0.2);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(66, 76, 85, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
         }
         
         .glass-strong {
@@ -354,28 +355,7 @@
     </main>
     
     <!-- Footer -->
-    {% if user.is_authenticated %}
-    <footer class="glass mt-16">
-        <div class="container mx-auto px-4 py-6">
-            <div class="flex flex-col md:flex-row items-center justify-between">
-                <p class="text-white text-sm mb-4 md:mb-0">
-                    © 2024 Gestor Escolar. Todos los derechos reservados.
-                </p>
-                <div class="flex space-x-6">
-                    <a href="#" class="text-white text-opacity-70 hover:text-opacity-100 transition-all text-sm">
-                        <i class="fas fa-question-circle mr-2"></i>Ayuda
-                    </a>
-                    <a href="#" class="text-white text-opacity-70 hover:text-opacity-100 transition-all text-sm">
-                        <i class="fas fa-book mr-2"></i>Documentación
-                    </a>
-                    <a href="#" class="text-white text-opacity-70 hover:text-opacity-100 transition-all text-sm">
-                        <i class="fas fa-envelope mr-2"></i>Soporte
-                    </a>
-                </div>
-            </div>
-        </div>
-    </footer>
-    {% endif %}
+    
     
     {% block extra_js %}{% endblock %}
 </body>
