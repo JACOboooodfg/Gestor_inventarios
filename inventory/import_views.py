@@ -84,168 +84,223 @@ LOCATION_CODES = {
 
 
 def infer_category_from_description(description, location_name=''):
-    """Inferir categoría con subcategorías para Biblioteca"""
+    """Inferir categoría - PRIORIDAD A CÓDIGOS DE UBICACIÓN"""
     
     if not description:
         return 'General'
     
     desc_lower = str(description).lower()
     loc_lower = str(location_name).lower() if location_name else ''
+    loc_upper = str(location_name).upper() if location_name else ''
     
-    # ==================== PRIORIDAD 1: DETECTAR SI ES UN LIBRO ====================
-    # Palabras que indican que es un libro
-    libro_indicators = ['libro', 'texto', 'manual', 'guía', 'guia', 'enciclopedia', 
-                        'diccionario', 'atlas', 'revista', 'tomo', 'volumen', 
-                        'lectura', 'editorial', 'autor', 'isbn']
+    # ==================== PRIORIDAD 1: CÓDIGOS DE UBICACIÓN ====================
+    # Esto es LO MÁS IMPORTANTE - detectar por código primero
     
-    es_libro = any(word in desc_lower for word in libro_indicators) or 'bibliot' in loc_lower
+    # BIBLIOTECA - Todos los códigos BT*
+    if 'BT' in loc_upper:
+        return 'Biblioteca'
     
-    if es_libro:
-        # Es un LIBRO - asignar subcategoría de Biblioteca
-        
-        # Detectar tema del libro
-        if any(word in desc_lower for word in ['deport', 'fútbol', 'futbol', 'baloncesto', 'atletismo', 'gimnasia', 'educación física', 'educacion fisica']):
-            return 'Biblioteca - Deportes'
-        
-        elif any(word in desc_lower for word in ['biolog', 'quím', 'quim', 'físic', 'fisic', 'ciencia', 'laboratorio', 'experimento', 'naturaleza', 'ecosistema']):
-            return 'Biblioteca - Ciencias'
-        
-        elif any(word in desc_lower for word in ['matemática', 'matematica', 'álgebra', 'algebra', 'geometría', 'geometria', 'cálculo', 'calculo', 'aritmética', 'aritmetica']):
-            return 'Biblioteca - Matemáticas'
-        
-        elif any(word in desc_lower for word in ['histori', 'geograf', 'social', 'cívica', 'civica', 'constitución', 'constitucion', 'colombia', 'mundial']):
-            return 'Biblioteca - Historia y Geografía'
-        
-        elif any(word in desc_lower for word in ['lengu', 'español', 'gramática', 'gramatica', 'lectura', 'escritura', 'literatura', 'poesía', 'poesia', 'novela', 'cuento']):
-            return 'Biblioteca - Lenguaje y Literatura'
-        
-        elif any(word in desc_lower for word in ['inglés', 'ingles', 'english', 'francés', 'frances', 'idioma']):
-            return 'Biblioteca - Idiomas'
-        
-        elif any(word in desc_lower for word in ['religión', 'religion', 'ética', 'etica', 'valores', 'moral', 'biblia', 'catequesis']):
-            return 'Biblioteca - Religión y Ética'
-        
-        elif any(word in desc_lower for word in ['arte', 'música', 'musica', 'pintura', 'dibujo', 'danza']):
-            return 'Biblioteca - Arte y Música'
-        
-        elif any(word in desc_lower for word in ['informática', 'informatica', 'computación', 'computacion', 'programación', 'programacion', 'tecnología', 'tecnologia']):
-            return 'Biblioteca - Tecnología e Informática'
-        
-        else:
-            # Libro sin tema específico
-            return 'Biblioteca - General'
-    
-    # ==================== PRIORIDAD 2: NO ES LIBRO - CATEGORÍAS NORMALES ====================
-    
-    # Papelería (PRIORIDAD ALTA - muy común)
-    if 'papeler' in loc_lower or 'pap' in loc_lower or 'utiles' in loc_lower:
+    # PAPELERÍA - Códigos PAP*
+    if 'PAP' in loc_upper:
         return 'Papelería'
     
-    papeleria_words = ['papel', 'hoja', 'cuaderno', 'lapiz', 'lápiz', 'esfero', 'marcador', 
-                       'resaltador', 'borrador', 'tijera', 'grapadora', 'perforadora', 'carpeta',
-                       'folder', 'cinta', 'pegante', 'silicona', 'cartulina', 'pintura', 'colores',
-                       'tempera', 'pincel', 'mina', 'sacapunta', 'regla', 'compás', 'clips',
-                       'corrector', 'block', 'acetato', 'tinta', 'goma']
+    # DEPORTES - Códigos DP* o DEP*
+    if 'DP' in loc_upper or 'DEP' in loc_upper:
+        return 'Deportes'
+    
+    # CIENCIAS - Códigos LAB*
+    if 'LAB' in loc_upper:
+        return 'Ciencias'
+    
+    # MÚSICA - Códigos MUS* o BAN*
+    if 'MUS' in loc_upper or 'BAN' in loc_upper:
+        return 'Música'
+    
+    # TECNOLOGÍA - Códigos TDI*, SIST*, AV*
+    if any(code in loc_upper for code in ['TDI', 'SIST', 'ROBOT', 'AV']):
+        return 'Tecnología'
+    
+    # COCINA - Códigos CAF*, COC*, REST*
+    if any(code in loc_upper for code in ['CAF', 'COC', 'REST', 'COMED']):
+        return 'Cocina y Cafetería'
+    
+    # ==================== PRIORIDAD 2: UBICACIÓN EN TEXTO ====================
+    
+    # Biblioteca por ubicación
+    if any(word in loc_lower for word in ['biblioteca', 'bibliot', 'lectura']):
+        return 'Biblioteca'
+    
+    # Deportes por ubicación
+    if any(word in loc_lower for word in ['deport', 'gimnasio', 'cancha']):
+        return 'Deportes'
+    
+    # Papelería por ubicación
+    if any(word in loc_lower for word in ['papeler', 'utiles', 'útiles']):
+        return 'Papelería'
+    
+    # Ciencias por ubicación
+    if any(word in loc_lower for word in ['laboratorio', 'lab', 'biolog', 'quimic', 'fisica']):
+        return 'Ciencias'
+    
+    # Tecnología por ubicación
+    if any(word in loc_lower for word in ['sistemas', 'informatica', 'audiovisual']):
+        return 'Tecnología'
+    
+    # Música por ubicación
+    if any(word in loc_lower for word in ['music', 'banda']):
+        return 'Música'
+    
+    # Cocina por ubicación
+    if any(word in loc_lower for word in ['cafeter', 'cocina', 'restaurante', 'comedor']):
+        return 'Cocina y Cafetería'
+    
+    # Oficina por ubicación
+    if any(word in loc_lower for word in ['secretar', 'recep', 'rector', 'admin', 'oficina']):
+        return 'Oficina'
+    
+    # Aseo por ubicación
+    if any(word in loc_lower for word in ['aseo', 'limpieza', 'servicio']):
+        return 'Aseo y Limpieza'
+    
+    # Teatro por ubicación
+    if any(word in loc_lower for word in ['teatro', 'danza', 'arte']):
+        return 'Arte y Teatro'
+    
+    # Culto por ubicación
+    if any(word in loc_lower for word in ['orator', 'sacr', 'capilla', 'iglesia']):
+        return 'Elementos de Culto'
+    
+    # ==================== PRIORIDAD 3: DESCRIPCIÓN ====================
+    
+    # CONSTRUCCIÓN Y MANTENIMIENTO (NUEVA CATEGORÍA)
+    construccion_words = [
+        # Eléctricos
+        'roseta', 'interruptor', 'bombillo', 'bombilla', 'toma', 'enchufe', 
+        'cable', 'alambre', 'switch electrico', 'breaker', 'fusible',
+        # Construcción
+        'vidrio', 'ventana', 'puerta', 'cerradura', 'chapa', 'bisagra',
+        'tornillo', 'tuerca', 'clavo', 'puntilla', 'cemento', 'arena',
+        'pintura pared', 'brocha', 'rodillo pintar', 'lija',
+        # Plomería
+        'tuberia', 'tubería', 'llave agua', 'grifo', 'sifón', 'sifon',
+        'codo', 'unión', 'pegante pvc', 'cinta teflón', 'cinta teflon'
+    ]
+    
+    if any(word in desc_lower for word in construccion_words):
+        return 'Construcción y Mantenimiento'
+    
+    # Papelería
+    papeleria_words = [
+        'papel', 'hoja', 'cuaderno', 'lapiz', 'lápiz', 'esfero', 'marcador', 
+        'resaltador', 'borrador', 'tijera', 'grapadora', 'perforadora', 'carpeta',
+        'folder', 'cinta', 'pegante', 'silicona', 'cartulina', 'pintura tempera',
+        'colores', 'tempera', 'pincel', 'mina', 'sacapunta', 'regla', 'compás',
+        'clips', 'corrector', 'block', 'acetato', 'tinta'
+    ]
     
     if any(word in desc_lower for word in papeleria_words):
         return 'Papelería'
     
-    # Deportes (objetos físicos, NO libros)
-    if 'deport' in loc_lower or 'dp' in loc_lower or 'gimnasio' in loc_lower:
-        return 'Deportes'
-    
-    deportes_words = ['balón', 'balon', 'pelota', 'red', 'cancha', 'aro', 'inflador', 'bomba',
-                      'conos', 'lazo', 'colchoneta', 'cajon', 'baston', 'raqueta', 'guantes',
-                      'casco', 'futbol', 'basquet', 'voleibol', 'tenis', 'ping', 'pong', 'ajedrez',
-                      'uniforme deportivo', 'malla', 'silbato']
+    # Deportes
+    deportes_words = [
+        'balón', 'balon', 'pelota', 'red', 'cancha', 'aro', 'inflador', 'bomba aire',
+        'conos', 'lazo', 'colchoneta', 'cajon', 'baston', 'raqueta', 'guantes deporte',
+        'casco', 'futbol', 'fútbol', 'basquet', 'voleibol', 'tenis', 'ping pong',
+        'ajedrez', 'uniforme deportivo', 'silbato'
+    ]
     
     if any(word in desc_lower for word in deportes_words):
         return 'Deportes'
     
     # Tecnología
-    if any(word in loc_lower for word in ['sistemas', 'robot', 'tdi', 'audiovisual', 'informatica']):
-        return 'Tecnología'
-    
-    tech_words = ['computador', 'laptop', 'pc', 'monitor', 'teclado', 'mouse', 'impresora',
-                  'proyector', 'tablet', 'disco', 'router', 'switch', 'cable', 'amplificador',
-                  'parlante', 'micrófono', 'microfono', 'camara', 'cámara', 'transformador', 'dvr',
-                  'pantalla', 'cpu', 'scanner', 'usb', 'video', 'audio', 'bocina', 'bateria',
-                  'cargador', 'hdmi', 'vga']
+    tech_words = [
+        'computador', 'laptop', 'pc', 'monitor', 'teclado', 'mouse', 'impresora',
+        'proyector', 'tablet', 'disco duro', 'router', 'switch', 'amplificador',
+        'parlante', 'micrófono', 'microfono', 'camara', 'cámara', 'transformador',
+        'dvr', 'pantalla', 'cpu', 'scanner', 'usb', 'video beam', 'bateria',
+        'cargador', 'hdmi', 'vga'
+    ]
     
     if any(word in desc_lower for word in tech_words):
         return 'Tecnología'
     
-    # Ciencias (equipos de laboratorio, NO libros)
-    if any(word in loc_lower for word in ['laboratorio', 'lab', 'biolog', 'quimic', 'fisica']):
-        return 'Ciencias'
+    # Ciencias (equipos de laboratorio)
+    ciencias_words = [
+        'microscopio', 'probeta', 'beaker', 'tubo ensayo', 'pipeta', 'reactivo',
+        'matraz', 'bureta', 'mechero', 'balanza', 'erlenmeyer', 'gradilla',
+        'pinza laboratorio'
+    ]
     
-    if any(word in desc_lower for word in ['microscopio', 'probeta', 'beaker', 'tubo ensayo', 'pipeta', 'reactivo', 'matraz', 'bureta', 'mechero', 'balanza', 'erlenmeyer']):
+    if any(word in desc_lower for word in ciencias_words):
         return 'Ciencias'
     
     # Muebles y Enseres
-    muebles_words = ['silla', 'mesa', 'escritorio', 'estante', 'anaquel', 'archivo', 'armario',
-                     'locker', 'gabinete', 'pupitre', 'banco', 'sofá', 'sofa', 'butaco', 'mueble',
-                     'tapete', 'alfombra', 'cajonera', 'repisa', 'perchero', 'vitrina']
+    muebles_words = [
+        'silla', 'mesa', 'escritorio', 'estante', 'anaquel', 'archivo', 'armario',
+        'locker', 'gabinete', 'pupitre', 'banco', 'sofá', 'sofa', 'butaco', 'mueble',
+        'tapete', 'alfombra', 'cajonera', 'repisa', 'perchero', 'vitrina'
+    ]
     
     if any(word in desc_lower for word in muebles_words):
         return 'Muebles y Enseres'
     
     # Cocina y Cafetería
-    if any(word in loc_lower for word in ['cafeter', 'cocina', 'restaurante', 'comedor']):
+    cocina_words = [
+        'cafetera', 'dispensador', 'nevera', 'estufa', 'horno', 'olla', 'plato',
+        'vaso', 'taza', 'cuchara', 'tenedor', 'cuchillo', 'bandeja', 'purificador',
+        'licuadora', 'microondas'
+    ]
+    
+    if any(word in desc_lower for word in cocina_words):
         return 'Cocina y Cafetería'
     
-    if any(word in desc_lower for word in ['cafetera', 'dispensador', 'nevera', 'estufa', 'horno', 'olla', 'plato', 'vaso', 'taza', 'cuchara', 'bandeja', 'purificador', 'licuadora']):
-        return 'Cocina y Cafetería'
+    # Música (instrumentos)
+    musica_words = [
+        'instrumento', 'guitarra', 'piano', 'batería', 'bateria', 'flauta', 'tambor',
+        'bombo', 'platillo', 'baqueta', 'trompeta', 'clarinete', 'saxofon', 'violin'
+    ]
     
-    # Música (instrumentos, NO libros)
-    if 'music' in loc_lower or 'banda' in loc_lower:
-        return 'Música'
-    
-    if any(word in desc_lower for word in ['instrumento', 'guitarra', 'piano', 'batería', 'bateria', 'flauta', 'tambor', 'bombo', 'platillo', 'baqueta', 'trompeta', 'clarinete', 'saxofon']):
+    if any(word in desc_lower for word in musica_words):
         return 'Música'
     
     # Elementos de Culto
-    if any(word in loc_lower for word in ['orator', 'sacr', 'capilla', 'iglesia']):
-        return 'Elementos de Culto'
+    culto_words = [
+        'imagen religiosa', 'virgen', 'santo', 'santa', 'cruz', 'crucifijo',
+        'sagrado', 'sagrario', 'altar', 'vela', 'rosario'
+    ]
     
-    if any(word in desc_lower for word in ['imagen', 'virgen', 'santo', 'santa', 'cruz', 'cuadro religioso', 'crucifijo', 'sagrado', 'sagrario', 'altar', 'vela', 'rosario']):
+    if any(word in desc_lower for word in culto_words):
         return 'Elementos de Culto'
     
     # Aseo y Limpieza
-    if any(word in loc_lower for word in ['aseo', 'limpieza', 'servicio']):
+    aseo_words = [
+        'escoba', 'trapero', 'recogedor', 'balde', 'caneca', 'detergente', 'jabón',
+        'jabon', 'trapeador', 'cepillo limpieza', 'guantes aseo', 'limpiador',
+        'desinfectante', 'cloro'
+    ]
+    
+    if any(word in desc_lower for word in aseo_words):
         return 'Aseo y Limpieza'
     
-    if any(word in desc_lower for word in ['escoba', 'trapero', 'recogedor', 'balde', 'caneca', 'detergente', 'jabón', 'jabon', 'trapeador', 'cepillo', 'guantes', 'limpiador', 'desinfectante']):
-        return 'Aseo y Limpieza'
+    # Arte y Teatro
+    teatro_words = [
+        'telón', 'telon', 'cortina escenario', 'escenario', 'tramoya', 'pendon',
+        'vestuario', 'disfraz', 'maquillaje teatro'
+    ]
     
-    # Teatro y Danzas
-    if any(word in loc_lower for word in ['teatro', 'danza', 'arte']):
-        return 'Arte y Teatro'
-    
-    if any(word in desc_lower for word in ['telón', 'telon', 'cortina escenario', 'escenario', 'tramoya', 'pendon', 'vestuario', 'disfraz', 'maquillaje']):
+    if any(word in desc_lower for word in teatro_words):
         return 'Arte y Teatro'
     
     # Oficina
-    if any(word in loc_lower for word in ['secretar', 'recep', 'rector', 'admin', 'oficina']):
+    oficina_words = [
+        'sello', 'tampón', 'tampon', 'numerador', 'calculadora', 'telefono',
+        'teléfono', 'fax', 'archivador oficina'
+    ]
+    
+    if any(word in desc_lower for word in oficina_words):
         return 'Oficina'
     
-    if any(word in desc_lower for word in ['sello', 'tampón', 'tampon', 'numerador', 'calculadora', 'telefono', 'teléfono', 'fax', 'archivador oficina']):
-        return 'Oficina'
-    
-    # Por código de ubicación
-    loc_upper = location_name.upper() if location_name else ''
-    if 'PAP' in loc_upper:
-        return 'Papelería'
-    elif 'LAB' in loc_upper:
-        return 'Ciencias'
-    elif 'DP' in loc_upper:
-        return 'Deportes'
-    elif 'MUS' in loc_upper or 'BAN' in loc_upper:
-        return 'Música'
-    elif 'BIB' in loc_upper or 'BT' in loc_upper:
-        return 'Biblioteca - General'
-    
-    # Default (solo si no hay NINGUNA coincidencia)
+    # Default (solo si NO hay coincidencia)
     return 'General'
 
 
@@ -283,6 +338,82 @@ def detect_status_from_columns(row_data, headers):
             return 'damaged'
     
     return 'available'  # Default
+
+
+def infer_category_from_sheet_name(sheet_name):
+    """
+    Inferir categoría desde el NOMBRE DE LA HOJA del Excel
+    Esto es MÁS CONFIABLE que detectar por descripción
+    """
+    
+    sheet_lower = str(sheet_name).lower()
+    
+    # Hojas a ignorar
+    if any(word in sheet_lower for word in ['comunidad', 'listado', 'codificacion', 'codificación', 'rosario', 'funza']):
+        return None  # Ignorar esta hoja
+    
+    # AGRUPACIÓN 1: Papelería
+    if 'papeler' in sheet_lower or 'útiles' in sheet_lower or 'utiles' in sheet_lower:
+        return 'Papelería'
+    
+    # AGRUPACIÓN 2: Tecnología (equipos y máquinas)
+    if 'equipo' in sheet_lower or 'máquina' in sheet_lower or 'maquina' in sheet_lower:
+        return 'Tecnología'
+    
+    # AGRUPACIÓN 3: Deportes
+    if 'deport' in sheet_lower or 'recre' in sheet_lower:
+        return 'Deportes'
+    
+    # AGRUPACIÓN 4: Ciencias (laboratorio)
+    if 'laboratorio' in sheet_lower:
+        return 'Ciencias'
+    
+    # AGRUPACIÓN 5: Tecnología (comunicación y radio)
+    if 'comun' in sheet_lower or 'radio' in sheet_lower:
+        return 'Tecnología'
+    
+    # AGRUPACIÓN 6: Cocina y Cafetería
+    if 'cocina' in sheet_lower or 'cafeter' in sheet_lower:
+        return 'Cocina y Cafetería'
+    
+    # AGRUPACIÓN 7: Elementos de Culto
+    if 'culto' in sheet_lower:
+        return 'Elementos de Culto'
+    
+    # AGRUPACIÓN 8: Música
+    if 'music' in sheet_lower or 'instrum' in sheet_lower:
+        return 'Música'
+    
+    # AGRUPACIÓN 9: Biblioteca
+    if 'bibliot' in sheet_lower or 'audiov' in sheet_lower or 'medios' in sheet_lower:
+        return 'Biblioteca'
+    
+    # AGRUPACIÓN 10: Muebles y Enseres
+    if 'mueble' in sheet_lower or 'ensere' in sheet_lower:
+        return 'Muebles y Enseres'
+    
+    # AGRUPACIÓN 11: Aseo y Limpieza
+    if 'aseo' in sheet_lower or 'limpieza' in sheet_lower:
+        return 'Aseo y Limpieza'
+    
+    # AGRUPACIÓN 12: Construcción y Mantenimiento (vehículos y herramientas)
+    if 'vehiculo' in sheet_lower or 'vehículo' in sheet_lower or 'herramient' in sheet_lower:
+        return 'Construcción y Mantenimiento'
+    
+    # AGRUPACIÓN 13: Enfermería (NUEVA)
+    if 'enfermer' in sheet_lower:
+        return 'Enfermería'
+    
+    # AGRUPACIÓN 14: Vestuario (NUEVA)
+    if 'uniforme' in sheet_lower or 'vestuario' in sheet_lower:
+        return 'Vestuario'
+    
+    # AGRUPACIÓN 15: Varios → General
+    if 'vario' in sheet_lower:
+        return 'General'
+    
+    # Default
+    return 'General'
 
 
 @login_required
@@ -407,8 +538,26 @@ def import_colegio_excel(file_obj, user):
         'warnings': []
     }
     
+    # Contador de hojas procesadas
+    sheet_number = 0
+    
+    # CONTADOR GLOBAL para códigos únicos (OPCIÓN 3)
+    # Diccionario: {codigo_original: contador}
+    codigo_counts = {}
+    
     for sheet_name in wb.sheetnames:
         ws = wb[sheet_name]
+        
+        # Inferir categoría desde el NOMBRE DE LA HOJA
+        category_name = infer_category_from_sheet_name(sheet_name)
+        
+        # Si devuelve None, ignorar esta hoja
+        if category_name is None:
+            results['warnings'].append(f"Hoja '{sheet_name}' ignorada (no es una agrupación de inventario)")
+            results['warning_count'] += 1
+            continue
+        
+        sheet_number += 1
         
         # Leer encabezados desde fila 8
         headers = []
@@ -426,6 +575,12 @@ def import_colegio_excel(file_obj, user):
         cantidad_idx = next((i for i, h in enumerate(headers) if 'cantidad' in h.lower()), None)
         valor_idx = next((i for i, h in enumerate(headers) if 'valor' in h.lower()), None)
         
+        # Obtener o crear la categoría UNA VEZ por hoja
+        category, _ = Category.objects.get_or_create(
+            name__iexact=category_name,
+            defaults={'name': category_name}
+        )
+        
         # Procesar filas desde fila 9
         for row_num, row in enumerate(ws.iter_rows(min_row=9, values_only=True), start=9):
             try:
@@ -433,12 +588,26 @@ def import_colegio_excel(file_obj, user):
                     continue
                 
                 # Extraer datos
-                codigo = str(row[codigo_idx]).strip() if codigo_idx is not None and len(row) > codigo_idx and row[codigo_idx] else ''
+                codigo_original = str(row[codigo_idx]).strip() if codigo_idx is not None and len(row) > codigo_idx and row[codigo_idx] else ''
                 descripcion = str(row[desc_idx]).strip() if desc_idx is not None and len(row) > desc_idx and row[desc_idx] else ''
                 
                 # Si no hay descripción válida, saltar
                 if not descripcion or descripcion.lower() in ['none', 'null', '']:
                     continue
+                
+                # GENERAR CÓDIGO ÚNICO (OPCIÓN 3)
+                # Ejemplo: PAP01-0001, PAP01-0002, U9-0001
+                if codigo_original:
+                    # Incrementar contador para este código
+                    if codigo_original not in codigo_counts:
+                        codigo_counts[codigo_original] = 0
+                    codigo_counts[codigo_original] += 1
+                    
+                    # Generar código único: {original}-{contador con 4 dígitos}
+                    codigo_unico = f"{codigo_original}-{codigo_counts[codigo_original]:04d}"
+                else:
+                    # Si no hay código, usar AUTO
+                    codigo_unico = f"AUTO-{sheet_number:02d}-{row_num:04d}"
                 
                 # Cantidad
                 cantidad = 1
@@ -459,30 +628,17 @@ def import_colegio_excel(file_obj, user):
                     except:
                         pass
                 
-                # Detectar ubicación desde el código o nombre de hoja
+                # Detectar ubicación desde el código
                 location_name = 'No Especificado'
-                location_code = codigo.split('.')[0] if '.' in codigo else ''
+                location_code = codigo_original.split('.')[0] if '.' in codigo_original else ''
                 
-                if location_code in LOCATION_CODES:
+                if location_code and location_code in LOCATION_CODES:
                     location_name = LOCATION_CODES[location_code]
-                else:
-                    # Intentar desde nombre de hoja
-                    for code, name in LOCATION_CODES.items():
-                        if code.lower() in sheet_name.lower() or name.lower() in sheet_name.lower():
-                            location_name = name
-                            break
                 
                 # Obtener o crear ubicación
                 location, _ = Location.objects.get_or_create(
                     name__iexact=location_name,
                     defaults={'name': location_name}
-                )
-                
-                # Inferir categoría
-                category_name = infer_category_from_description(descripcion, location_name)
-                category, _ = Category.objects.get_or_create(
-                    name__iexact=category_name,
-                    defaults={'name': category_name}
                 )
                 
                 # Detectar estado
@@ -491,8 +647,8 @@ def import_colegio_excel(file_obj, user):
                 # Crear artículo
                 article_data = {
                     'name': descripcion[:200],  # Limitar longitud
-                    'code': codigo[:50] if codigo else None,
-                    'category': category,
+                    'code': codigo_unico[:50],  # Código ÚNICO por contador
+                    'category': category,  # Categoría ya determinada por nombre de hoja
                     'location': location,
                     'quantity': max(0, cantidad),
                     'unit': 'unidad',
@@ -508,7 +664,8 @@ def import_colegio_excel(file_obj, user):
                 results['success_count'] += 1
                 
             except Exception as e:
-                results['errors'].append(f"Hoja '{sheet_name}' Fila {row_num}: {str(e)}")
+                error_msg = f"Hoja '{sheet_name}' Fila {row_num}: {str(e)}"
+                results['errors'].append(error_msg)
                 results['error_count'] += 1
     
     return results

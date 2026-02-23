@@ -1038,6 +1038,41 @@ def reports(request):
     return render(request, 'inventory/reports.html', context)
 
 
+@login_required
+def delete_all_articles_confirm(request):
+    """Confirmar antes de borrar todos los artículos"""
+    total_articles = Article.objects.count()
+    
+    context = {
+        'total_articles': total_articles,
+    }
+    
+    return render(request, 'inventory/delete_all_confirm.html', context)
+
+
+@login_required
+def delete_all_articles_execute(request):
+    """Ejecutar el borrado de todos los artículos"""
+    if request.method == 'POST':
+        # Doble verificación
+        confirm_text = request.POST.get('confirm_text', '')
+        
+        if confirm_text.upper() == 'BORRAR TODO':
+            try:
+                total = Article.objects.count()
+                Article.objects.all().delete()
+                messages.success(request, f'✓ {total} artículos eliminados exitosamente. Base de datos limpia.')
+                return redirect('dashboard')
+            except Exception as e:
+                messages.error(request, f'Error al eliminar: {str(e)}')
+                return redirect('delete_all_articles_confirm')
+        else:
+            messages.error(request, 'Texto de confirmación incorrecto. Debes escribir exactamente: BORRAR TODO')
+            return redirect('delete_all_articles_confirm')
+    
+    return redirect('delete_all_articles_confirm')
+
+
 # ==================== NOTA IMPORTANTE ====================
 # Las funciones de importación especializada para el colegio están en import_views.py:
 # - import_preview() - Importación con 15 hojas, lectura desde fila 8, detección de X

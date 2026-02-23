@@ -62,4 +62,8 @@ urlpatterns = [
     
     # Reportes
     path('reports/', views.reports, name='reports'),
+    
+    # Utilidades - Borrar todos los artículos
+    path('articles/delete-all/confirm/', views.delete_all_articles_confirm, name='delete_all_articles_confirm'),
+    path('articles/delete-all/execute/', views.delete_all_articles_execute, name='delete_all_articles_execute'),
 ]
