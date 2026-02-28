@@ -1,117 +1,248 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ article.name }} - Inventario Escolar{% endblock %}
+{% block title %}{{ article.name }} - Gestor Escolar{% endblock %}
 
 {% block content %}
-<div class="mb-6">
-    <a href="{% url 'article_list' %}" class="text-blue-600 hover:underline">
-        <i class="fas fa-arrow-left mr-2"></i> Volver a artículos
-    </a>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-    <div class="lg:col-span-2">
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <div class="flex justify-between items-start mb-6">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-800">{{ article.name }}</h1>
-                    <p class="text-gray-600 mt-2">Código: <span class="font-semibold">{{ article.code }}</span></p>
-                </div>
-                <div class="flex space-x-2">
-                    <a href="{% url 'article_update' article.pk %}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-                        <i class="fas fa-edit mr-1"></i> Editar
-                    </a>
-                    <a href="{% url 'article_delete' article.pk %}" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
-                        <i class="fas fa-trash mr-1"></i> Eliminar
-                    </a>
-                </div>
-            </div>
-
-            {% if article.image %}
-            <img src="{{ article.image.url }}" alt="{{ article.name }}" class="w-full max-h-96 object-cover rounded-lg mb-6">
-            {% endif %}
-
-            <div class="grid grid-cols-2 gap-4">
-                <div class="border-l-4 border-blue-500 pl-4">
-                    <p class="text-sm text-gray-600">Categoría</p>
-                    <p class="font-semibold">{{ article.category.name }}</p>
-                </div>
-                <div class="border-l-4 border-green-500 pl-4">
-                    <p class="text-sm text-gray-600">Cantidad</p>
-                    <p class="font-semibold text-2xl">{{ article.quantity }} {{ article.unit }}</p>
-                </div>
-                <div class="border-l-4 border-yellow-500 pl-4">
-                    <p class="text-sm text-gray-600">Cantidad Mínima</p>
-                    <p class="font-semibold">{{ article.min_quantity }} {{ article.unit }}</p>
-                </div>
-                <div class="border-l-4 border-purple-500 pl-4">
-                    <p class="text-sm text-gray-600">Estado</p>
-                    <p class="font-semibold">{{ article.get_status_display }}</p>
-                </div>
-            </div>
-
-            {% if article.description %}
-            <div class="mt-6">
-                <h3 class="font-semibold text-gray-800 mb-2">Descripción</h3>
-                <p class="text-gray-600">{{ article.description }}</p>
-            </div>
-            {% endif %}
+<div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold mb-2" style="color: #3D2C2E;">
+                {{ article.name }}
+            </h1>
+            <p class="text-gray-600">
+                <span class="font-medium">Código:</span> {{ article.code }}
+            </p>
         </div>
-
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h2 class="text-2xl font-bold text-gray-800 mb-4">
-                <i class="fas fa-history mr-2"></i> Historial de Movimientos
-            </h2>
-            {% if movements %}
-            <div class="space-y-3">
-                {% for movement in movements %}
-                <div class="border-l-4 {% if movement.movement_type == 'entry' %}border-green-500{% elif movement.movement_type == 'exit' %}border-red-500{% else %}border-blue-500{% endif %} pl-4 py-2">
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <span class="font-semibold">{{ movement.get_movement_type_display }}</span>
-                            <span class="text-sm text-gray-600">- {{ movement.quantity }} {{ article.unit }}</span>
-                            <p class="text-sm text-gray-600 mt-1">{{ movement.reason }}</p>
-                        </div>
-                        <span class="text-xs text-gray-500">{{ movement.created_at|date:"d/m/Y H:i" }}</span>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <p class="text-gray-500 text-center py-4">No hay movimientos registrados</p>
-            {% endif %}
+        <div class="flex gap-3">
+            <a href="{% url 'article_update' article.pk %}" class="btn-modern bg-gradient-primary text-white">
+                <i class="fas fa-edit mr-2"></i>
+                Editar
+            </a>
+            <a href="{% url 'article_list' %}" class="btn-modern bg-gray-200 text-gray-700">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Volver
+            </a>
         </div>
     </div>
 
-    <div class="lg:col-span-1">
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">Información Adicional</h3>
-            <dl class="space-y-3">
-                <div>
-                    <dt class="text-sm text-gray-600">Ubicación</dt>
-                    <dd class="font-semibold">{{ article.location|default:"Sin asignar" }}</dd>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Columna izquierda - Información principal -->
+        <div class="lg:col-span-2 space-y-6">
+            
+            <!-- Información básica -->
+            <div class="glass-strong rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4" style="color: #3D2C2E;">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Información General
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Categoría</label>
+                        <p class="mt-1 text-gray-900">
+                            <span class="px-3 py-1 bg-gradient-primary text-white rounded-lg inline-block">
+                                {{ article.category.name }}
+                            </span>
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Ubicación</label>
+                        <p class="mt-1 text-gray-900">
+                            <span class="px-3 py-1 bg-gradient-secondary text-white rounded-lg inline-block">
+                                <i class="fas fa-map-marker-alt mr-1"></i>
+                                {{ article.location.name|default:"Sin ubicación" }}
+                            </span>
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Estado</label>
+                        <p class="mt-1">
+                            {% if article.status == 'available' %}
+                                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-lg inline-block">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Disponible
+                                </span>
+                            {% elif article.status == 'maintenance' %}
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-lg inline-block">
+                                    <i class="fas fa-wrench mr-1"></i>
+                                    Mantenimiento
+                                </span>
+                            {% elif article.status == 'damaged' %}
+                                <span class="px-3 py-1 bg-red-100 text-red-800 rounded-lg inline-block">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    Dañado
+                                </span>
+                            {% else %}
+                                <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-lg inline-block">
+                                    {{ article.get_status_display }}
+                                </span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Unidad</label>
+                        <p class="mt-1 text-gray-900">{{ article.unit }}</p>
+                    </div>
                 </div>
-                <div>
-                    <dt class="text-sm text-gray-600">Código de Barras</dt>
-                    <dd class="font-semibold">{{ article.barcode|default:"N/A" }}</dd>
+                
+                {% if article.description %}
+                <div class="mt-4">
+                    <label class="text-sm font-medium text-gray-600">Descripción</label>
+                    <p class="mt-1 text-gray-900">{{ article.description }}</p>
                 </div>
-                <div>
-                    <dt class="text-sm text-gray-600">Precio Unitario</dt>
-                    <dd class="font-semibold">{% if article.price %}${{ article.price }}{% else %}N/A{% endif %}</dd>
+                {% endif %}
+            </div>
+            
+            <!-- Información de compra -->
+            <div class="glass-strong rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4" style="color: #3D2C2E;">
+                    <i class="fas fa-shopping-cart mr-2"></i>
+                    Información de Compra
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- 📅 FECHA DE COMPRA -->
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">
+                            <i class="fas fa-calendar mr-1"></i>
+                            Fecha de Compra
+                        </label>
+                        <p class="mt-1 text-gray-900">
+                            {% if article.purchase_date %}
+                                {{ article.purchase_date|date:"d/m/Y" }}
+                            {% else %}
+                                <span class="text-gray-400 italic">No especificado</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <!-- 🏪 PROVEEDOR -->
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">
+                            <i class="fas fa-store mr-1"></i>
+                            Proveedor / Lugar de Compra
+                        </label>
+                        <p class="mt-1 text-gray-900">
+                            {% if article.supplier %}
+                                {{ article.supplier }}
+                            {% else %}
+                                <span class="text-gray-400 italic">No especificado</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">
+                            <i class="fas fa-dollar-sign mr-1"></i>
+                            Precio Unitario
+                        </label>
+                        <p class="mt-1 text-gray-900 text-xl font-bold" style="color: #3D2C2E;">
+                            {% if article.price %}
+                                ${{ article.price|floatformat:0 }}
+                            {% else %}
+                                <span class="text-gray-400 italic text-base font-normal">No especificado</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">
+                            <i class="fas fa-calculator mr-1"></i>
+                            Valor Total
+                        </label>
+                        <p class="mt-1 text-gray-900 text-xl font-bold" style="color: #3D2C2E;">
+                            {% if article.total_value %}
+                                ${{ article.total_value|floatformat:0 }}
+                            {% else %}
+                                <span class="text-gray-400 italic text-base font-normal">-</span>
+                            {% endif %}
+                        </p>
+                    </div>
                 </div>
-                <div>
-                    <dt class="text-sm text-gray-600">Valor Total</dt>
-                    <dd class="font-semibold text-green-600">${{ article.total_value }}</dd>
+            </div>
+            
+            {% if article.notes %}
+            <!-- Notas -->
+            <div class="glass-strong rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4" style="color: #3D2C2E;">
+                    <i class="fas fa-sticky-note mr-2"></i>
+                    Notas
+                </h2>
+                <p class="text-gray-700">{{ article.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Columna derecha - Stock e imagen -->
+        <div class="space-y-6">
+            
+            <!-- Imagen -->
+            {% if article.image %}
+            <div class="glass-strong rounded-xl p-6">
+                <img src="{{ article.image.url }}" alt="{{ article.name }}" class="w-full rounded-lg">
+            </div>
+            {% endif %}
+            
+            <!-- Stock -->
+            <div class="glass-strong rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4" style="color: #3D2C2E;">
+                    <i class="fas fa-boxes mr-2"></i>
+                    Stock
+                </h2>
+                
+                <div class="text-center mb-4">
+                    <p class="text-5xl font-bold mb-2" style="color: #3D2C2E;">
+                        {{ article.quantity }}
+                    </p>
+                    <p class="text-gray-600">{{ article.unit }}(es) disponibles</p>
                 </div>
-                <div>
-                    <dt class="text-sm text-gray-600">Creado por</dt>
-                    <dd class="font-semibold">{{ article.created_by.username|default:"Sistema" }}</dd>
+                
+                <div class="space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-gray-600">Mínimo requerido:</span>
+                        <span class="font-medium">{{ article.min_quantity }}</span>
+                    </div>
+                    
+                    {% if article.is_low_stock %}
+                    <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                        <i class="fas fa-exclamation-triangle text-red-600 mr-1"></i>
+                        <span class="text-red-800 font-medium">Stock Bajo</span>
+                    </div>
+                    {% else %}
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
+                        <i class="fas fa-check-circle text-green-600 mr-1"></i>
+                        <span class="text-green-800 font-medium">Stock Normal</span>
+                    </div>
+                    {% endif %}
                 </div>
-                <div>
-                    <dt class="text-sm text-gray-600">Fecha de Creación</dt>
-                    <dd class="font-semibold">{{ article.created_at|date:"d/m/Y H:i" }}</dd>
+            </div>
+            
+            <!-- Metadatos -->
+            <div class="glass-strong rounded-xl p-6">
+                <h2 class="text-xl font-bold mb-4" style="color: #3D2C2E;">
+                    <i class="fas fa-info mr-2"></i>
+                    Información del Sistema
+                </h2>
+                
+                <div class="space-y-3 text-sm">
+                    <div>
+                        <span class="text-gray-600">Creado por:</span>
+                        <p class="font-medium">{{ article.created_by.username|default:"Sistema" }}</p>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Fecha de creación:</span>
+                        <p class="font-medium">{{ article.created_at|date:"d/m/Y H:i" }}</p>
+                    </div>
+                    <div>
+                        <span class="text-gray-600">Última actualización:</span>
+                        <p class="font-medium">{{ article.updated_at|date:"d/m/Y H:i" }}</p>
+                    </div>
                 </div>
-            </dl>
+            </div>
         </div>
     </div>
 </div>

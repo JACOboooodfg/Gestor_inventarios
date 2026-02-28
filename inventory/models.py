@@ -84,6 +84,24 @@ class Article(models.Model):
     image = models.ImageField(upload_to='articles/', blank=True, null=True, verbose_name="Imagen")
     barcode = models.CharField(max_length=100, blank=True, verbose_name="Código de barras")
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Precio unitario")
+    
+    # 📅 FECHA DE COMPRA (CORREGIDO - EN LUGAR CORRECTO)
+    purchase_date = models.DateField(
+        null=True, 
+        blank=True,
+        verbose_name='Fecha de Compra',
+        help_text='Fecha en que se adquirió el artículo'
+    )
+    
+    # 🏪 PROVEEDOR/LUGAR DE COMPRA (NUEVO)
+    supplier = models.CharField(
+        max_length=200,
+        blank=True,
+        null=True,
+        verbose_name='Proveedor',
+        help_text='Lugar o proveedor donde se compró el artículo'
+    )
+    
     notes = models.TextField(blank=True, verbose_name="Notas")
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='articles_created', verbose_name="Creado por")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de creación")

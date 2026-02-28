@@ -201,15 +201,6 @@ class LoanForm(forms.ModelForm):
         }
 
 
-class ImportExcelForm(forms.Form):
-    excel_file = forms.FileField(
-        label='Archivo Excel',
-        help_text='Sube un archivo .xlsx con las columnas: codigo, nombre, categoria, cantidad, ubicacion, descripcion',
-        widget=forms.FileInput(attrs={
-            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500',
-            'accept': '.xlsx,.xls'
-        })
-    )
 
 
 class SearchForm(forms.Form):
@@ -241,5 +232,85 @@ class SearchForm(forms.Form):
         empty_label='Todas las ubicaciones',
         widget=forms.Select(attrs={
             'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500'
+        })
+    )
+
+
+
+class ArticleSearchForm(forms.Form):
+    """Formulario de búsqueda y filtros para artículos"""
+    
+    query = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            'placeholder': 'Buscar por código o nombre...'
+        })
+    )
+    
+    category = forms.ModelChoiceField(
+        queryset=Category.objects.all(),
+        required=False,
+        empty_label='Todas las categorías',
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+        })
+    )
+    
+    location = forms.ModelChoiceField(
+        queryset=Location.objects.all(),
+        required=False,
+        empty_label='Todas las ubicaciones',
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+        })
+    )
+    
+    status = forms.ChoiceField(
+        choices=[('', 'Todos los estados')] + Article.STATUS_CHOICES,
+        required=False,
+        widget=forms.Select(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+        })
+    )
+    
+    # 📅 FILTROS DE FECHA (NUEVO)
+    fecha_desde = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            'placeholder': 'Desde'
+        }),
+        label='Fecha desde'
+    )
+    
+    fecha_hasta = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'type': 'date',
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            'placeholder': 'Hasta'
+        }),
+        label='Fecha hasta'
+    )
+    
+    # Filtro por proveedor
+    proveedor = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500',
+            'placeholder': 'Buscar por proveedor...'
+        })
+    )
+
+
+class ImportExcelForm(forms.Form):
+    """Formulario para importar archivos Excel"""
+    excel_file = forms.FileField(
+        label='Archivo Excel',
+        widget=forms.FileInput(attrs={
+            'class': 'block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100',
+            'accept': '.xlsx,.xls'
         })
     )

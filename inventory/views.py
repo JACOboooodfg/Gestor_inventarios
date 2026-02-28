@@ -9,7 +9,7 @@ from datetime import timedelta
 from django.contrib.auth.models import User
 from .models import Category, Location, Article, Movement, Loan, Alert
 from .forms import (LoginForm, CategoryForm, LocationForm, ArticleForm, 
-                   MovementForm, LoanForm, ImportExcelForm, SearchForm)
+                   MovementForm, LoanForm, ImportExcelForm, ArticleSearchForm)
 from .utils import (export_articles_to_excel, import_articles_from_excel,
                    export_movements_to_excel, export_loans_to_excel)
 
@@ -502,14 +502,17 @@ def article_list(request):
         'category', 'location', 'created_by'
     ).all()
     
-    # Búsqueda
-    search_form = SearchForm(request.GET)
+    # Búsqueda con nuevo formulario
+    search_form = ArticleSearchForm(request.GET)
     
     if search_form.is_valid():
         query = search_form.cleaned_data.get('query')
         category = search_form.cleaned_data.get('category')
         status = search_form.cleaned_data.get('status')
         location = search_form.cleaned_data.get('location')
+        fecha_desde = search_form.cleaned_data.get('fecha_desde')
+        fecha_hasta = search_form.cleaned_data.get('fecha_hasta')
+        proveedor = search_form.cleaned_data.get('proveedor')
         
         if query:
             articles = articles.filter(
@@ -527,6 +530,18 @@ def article_list(request):
         
         if location:
             articles = articles.filter(location=location)
+        
+        # 📅 FILTRO DE FECHA DESDE (NUEVO)
+        if fecha_desde:
+            articles = articles.filter(purchase_date__gte=fecha_desde)
+        
+        # 📅 FILTRO DE FECHA HASTA (NUEVO)
+        if fecha_hasta:
+            articles = articles.filter(purchase_date__lte=fecha_hasta)
+        
+        # 🏪 FILTRO DE PROVEEDOR (NUEVO)
+        if proveedor:
+            articles = articles.filter(supplier__icontains=proveedor)
     
     # Ordenamiento
     sort_by = request.GET.get('sort', '-created_at')

@@ -571,9 +571,14 @@ def import_colegio_excel(file_obj, user):
         # Detectar índices de columnas importantes
         codigo_idx = next((i for i, h in enumerate(headers) if 'codigo' in h.lower()), None)
         desc_idx = next((i for i, h in enumerate(headers) if 'descripcion' in h.lower()), None)
-        fecha_idx = next((i for i, h in enumerate(headers) if 'fecha' in h.lower()), None)
+        fecha_idx = next((i for i, h in enumerate(headers) if 'fecha' in h.lower() and 'compra' in h.lower()), None)
         cantidad_idx = next((i for i, h in enumerate(headers) if 'cantidad' in h.lower()), None)
         valor_idx = next((i for i, h in enumerate(headers) if 'valor' in h.lower()), None)
+        # Columna I - Proveedor (puede tener diferentes nombres)
+        proveedor_idx = 8  # Columna I es el índice 8 (A=0, B=1, ..., I=8)
+        # O intentar detectar por nombre si existe
+        if any('proveedor' in str(h).lower() or 'comprado' in str(h).lower() or 'lugar' in str(h).lower() for h in headers):
+            proveedor_idx = next((i for i, h in enumerate(headers) if h and ('proveedor' in str(h).lower() or 'comprado' in str(h).lower() or 'lugar' in str(h).lower())), 8)
         
         # Obtener o crear la categoría UNA VEZ por hoja
         category, _ = Category.objects.get_or_create(
@@ -628,6 +633,37 @@ def import_colegio_excel(file_obj, user):
                     except:
                         pass
                 
+                # Fecha de compra
+                fecha_compra = None
+                if fecha_idx is not None and len(row) > fecha_idx and row[fecha_idx]:
+                    from datetime import datetime
+                    try:
+                        fecha_val = row[fecha_idx]
+                        # Si es un string, intentar parsearlo
+                        if isinstance(fecha_val, str):
+                            # Formatos comunes: DD-MM-YYYY, DD/MM/YYYY, YYYY-MM-DD
+                            for formato in ['%d-%m-%Y', '%d/%m/%Y', '%Y-%m-%d', '%d.%m.%Y']:
+                                try:
+                                    fecha_compra = datetime.strptime(fecha_val.strip(), formato).date()
+                                    break
+                                except:
+                                    continue
+                        # Si es un objeto datetime de Excel
+                        elif isinstance(fecha_val, datetime):
+                            fecha_compra = fecha_val.date()
+                        # Si es un objeto date
+                        elif hasattr(fecha_val, 'date'):
+                            fecha_compra = fecha_val.date() if callable(fecha_val.date) else fecha_val
+                    except:
+                        pass  # Si falla, dejamos fecha_compra en None
+                
+                # Proveedor/Lugar de compra (Columna I)
+                proveedor = None
+                if proveedor_idx is not None and len(row) > proveedor_idx and row[proveedor_idx]:
+                    proveedor_val = str(row[proveedor_idx]).strip()
+                    if proveedor_val and proveedor_val.lower() not in ['none', 'null', '', 'n/a', '-']:
+                        proveedor = proveedor_val[:200]  # Limitar longitud
+                
                 # Detectar ubicación desde el código
                 location_name = 'No Especificado'
                 location_code = codigo_original.split('.')[0] if '.' in codigo_original else ''
@@ -659,6 +695,12 @@ def import_colegio_excel(file_obj, user):
                 
                 if precio:
                     article_data['price'] = precio
+                
+                if fecha_compra:
+                    article_data['purchase_date'] = fecha_compra
+                
+                if proveedor:
+                    article_data['supplier'] = proveedor
                 
                 Article.objects.create(**article_data)
                 results['success_count'] += 1

@@ -41,17 +41,43 @@
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    <i class="fas fa-info-circle mr-1"></i> Estado
-                </label>
-                {{ search_form.status }}
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
                     <i class="fas fa-map-marker-alt mr-1"></i> Ubicación
                 </label>
                 {{ search_form.location }}
             </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-info-circle mr-1"></i> Estado
+                </label>
+                {{ search_form.status }}
+            </div>
         </div>
+        
+        <!-- 📅 FILTROS DE FECHA Y PROVEEDOR (NUEVA FILA) -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-calendar mr-1"></i> Fecha Desde
+                </label>
+                {{ search_form.fecha_desde }}
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-calendar mr-1"></i> Fecha Hasta
+                </label>
+                {{ search_form.fecha_hasta }}
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <i class="fas fa-store mr-1"></i> Proveedor
+                </label>
+                {{ search_form.proveedor }}
+            </div>
+            <div class="flex items-end">
+                <!-- Espacio vacío para alinear botones -->
+            </div>
+        </div>
+        
         <div class="flex space-x-3">
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg transition">
                 <i class="fas fa-filter mr-2"></i> Filtrar
@@ -75,6 +101,8 @@
                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Categoría</th>
                     <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Cantidad</th>
                     <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Ubicación</th>
+                    <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">📅 Fecha Compra</th>
+                    <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">🏪 Proveedor</th>
                     <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Estado</th>
                     <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Acciones</th>
                 </tr>
@@ -122,6 +150,22 @@
                         <i class="fas fa-map-marker-alt mr-1"></i>{{ article.location.name }}
                         {% else %}
                         <span class="text-gray-400">Sin ubicación</span>
+                        {% endif %}
+                    </td>
+                    <!-- 📅 FECHA DE COMPRA -->
+                    <td class="px-6 py-4 text-center text-sm text-gray-600">
+                        {% if article.purchase_date %}
+                            {{ article.purchase_date|date:"d/m/Y" }}
+                        {% else %}
+                            <span class="text-gray-400">-</span>
+                        {% endif %}
+                    </td>
+                    <!-- 🏪 PROVEEDOR -->
+                    <td class="px-6 py-4 text-center text-sm text-gray-600">
+                        {% if article.supplier %}
+                            <span class="text-xs" title="{{ article.supplier }}">{{ article.supplier|truncatechars:20 }}</span>
+                        {% else %}
+                            <span class="text-gray-400">-</span>
                         {% endif %}
                     </td>
                     <td class="px-6 py-4 text-center">
@@ -187,7 +231,7 @@ function toggleArticleStatus(articleId, button) {
         if (data.success) {
             // Actualizar ícono y color del botón
             const icon = button.querySelector('i');
-            const statusCell = button.closest('tr').querySelector('td:nth-child(6) span');
+            const statusCell = button.closest('tr').querySelector('td:nth-child(8) span');  // Ahora es columna 8
             
             if (data.new_status === 'available') {
                 button.className = 'text-yellow-600 hover:text-yellow-800';
