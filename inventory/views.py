@@ -146,11 +146,10 @@ def dashboard(request):
     # Estadísticas por categoría
     category_stats = Category.objects.all().order_by('-created_at')[:5]
     
-    # Valor total del inventario
-    total_value = sum(
-        article.total_value for article in Article.objects.all() 
-        if article.total_value
-    )
+    from django.db.models import Sum, F, FloatField, ExpressionWrapper
+    total_value = Article.objects.aggregate(
+        total=Sum(ExpressionWrapper(F('quantity') * F('price'), output_field=FloatField()))
+    )['total'] or 0
     
     context = {
         'total_articles': total_articles,
@@ -273,10 +272,16 @@ def category_inventory(request, pk):
     articles = articles.order_by(sort_by)
     
     # Estadísticas de la categoría
+    from django.db.models import Sum, F, FloatField, ExpressionWrapper
+    stats = articles.aggregate(
+        total_value=Sum(ExpressionWrapper(F('quantity') * F('price'), output_field=FloatField())),
+        total_quantity=Sum('quantity')
+    )
+    total_value = stats['total_value'] or 0
+    total_quantity = stats['total_quantity'] or 0
     total_items = articles.count()
-    total_quantity = sum(article.quantity for article in articles)
     low_stock_count = articles.filter(quantity__lte=F('min_quantity')).count()
-    total_value = sum(article.total_value for article in articles if article.total_value)
+
     
     context = {
         'category': category,

@@ -337,7 +337,7 @@ def import_preview(request):
                     })
                 wb.close()
 
-                request.session['sheets_info'] = sheets_info
+                
 
                 return render(request, 'inventory/import_preview_colegio.html', {
                     'sheets_info': sheets_info,
@@ -392,7 +392,7 @@ def import_preview(request):
 #  IMPORTACIÓN CON BATCH  ← OPTIMIZADO
 # ─────────────────────────────────────────────
 
-BATCH_SIZE = 300  # Registros por bulk_create (ajustable)
+BATCH_SIZE = 200  # Registros por bulk_create (ajustable)
 
 
 def import_colegio_excel(file_path, user):
