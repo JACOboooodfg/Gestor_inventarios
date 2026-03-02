@@ -73,7 +73,7 @@ def register_view(request):
 def login_view(request):
     """Vista de login"""
     if request.user.is_authenticated:
-        return redirect('dashboard')
+        return redirect('select_inventory')  # Redirigir a pantalla de selección
     
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
@@ -84,7 +84,7 @@ def login_view(request):
             if user is not None:
                 login(request, user)
                 messages.success(request, f'Bienvenido, {user.username}!')
-                return redirect('dashboard')
+                return redirect('select_inventory')  # Redirigir a pantalla de selección
         else:
             messages.error(request, 'Usuario o contraseña incorrectos')
     else:
@@ -1087,7 +1087,154 @@ def delete_all_articles_execute(request):
     
     return redirect('delete_all_articles_confirm')
 
+# ==================== NUEVAS VISTAS - AGREGAR AL FINAL DE views.py ====================
 
+@login_required
+def select_inventory(request):
+    """Pantalla de selección entre Inventario General e Inventario de Aseo"""
+    return render(request, 'inventory/select_inventory.html')
+
+
+@login_required
+def category_list_with_locations(request):
+    """Lista de categorías con sus ubicaciones anidadas"""
+    from django.db.models import Count, Q
+    
+    categories = Category.objects.annotate(
+        total_items=Count('articles'),
+        total_quantity=Sum('articles__quantity')
+    ).prefetch_related('articles__location').all()
+    
+    # Para cada categoría, obtener sus ubicaciones con conteo
+    for category in categories:
+        # Obtener ubicaciones únicas que tienen artículos de esta categoría
+        locations_with_count = Location.objects.filter(
+            articles__category=category
+        ).annotate(
+            article_count=Count('articles', filter=Q(articles__category=category))
+        ).distinct()
+        
+        category.locations = locations_with_count
+    
+    context = {
+        'categories': categories,
+        'total_categories': categories.count(),
+    }
+    
+    return render(request, 'inventory/category_list_with_locations.html', context)
+
+
+@login_required
+def category_location_articles(request, category_pk, location_pk):
+    """Artículos de una categoría en una ubicación específica"""
+    category = get_object_or_404(Category, pk=category_pk)
+    location = get_object_or_404(Location, pk=location_pk)
+    
+    articles = Article.objects.filter(
+        category=category,
+        location=location
+    ).select_related('category', 'location', 'created_by')
+    
+    context = {
+        'articles': articles,
+        'category': category,
+        'location': location,
+        'total_count': articles.count(),
+    }
+    
+    return render(request, 'inventory/article_list.html', context)
+
+
+@login_required
+def aseo_dashboard(request):
+    """Dashboard simplificado solo para artículos de aseo"""
+    # Obtener categoría de Aseo y Limpieza
+    try:
+        aseo_category = Category.objects.get(name__icontains='aseo')
+    except Category.DoesNotExist:
+        aseo_category = None
+    
+    # Filtrar solo artículos de aseo
+    productos = Article.objects.filter(
+        category=aseo_category
+    ).select_related('category', 'location') if aseo_category else Article.objects.none()
+    
+    # Búsqueda simple
+    query = request.GET.get('q', '')
+    if query:
+        productos = productos.filter(
+            Q(name__icontains=query) |
+            Q(code__icontains=query) |
+            Q(description__icontains=query)
+        )
+    
+    # Estadísticas
+    total_productos = productos.count()
+    disponibles = productos.filter(status='available').count()
+    stock_bajo = productos.filter(quantity__lte=F('min_quantity')).count()
+    ubicaciones = Location.objects.filter(
+        articles__category=aseo_category
+    ).distinct().count() if aseo_category else 0
+    
+    context = {
+        'productos': productos,
+        'query': query,
+        'total_productos': total_productos,
+        'disponibles': disponibles,
+        'stock_bajo': stock_bajo,
+        'ubicaciones': ubicaciones,
+    }
+    
+    return render(request, 'inventory/aseo_dashboard.html', context)
+
+# ==================== NUEVA VISTA PARA AJUSTAR CANTIDAD ====================
+# Agregar a inventory/views.py
+
+@login_required
+def aseo_ajustar_cantidad(request, pk):
+    """Ajustar cantidad de producto de aseo con botones +/-"""
+    if request.method == 'POST':
+        try:
+            import json
+            data = json.loads(request.body)
+            cambio = data.get('cambio', 0)  # +1 o -1
+            
+            article = get_object_or_404(Article, pk=pk)
+            
+            # Calcular nueva cantidad
+            nueva_cantidad = article.quantity + cambio
+            
+            # Validar que no sea negativa
+            if nueva_cantidad < 0:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'La cantidad no puede ser negativa'
+                })
+            
+            # Actualizar cantidad
+            article.quantity = nueva_cantidad
+            article.save()
+            
+            # Determinar mensaje
+            if cambio > 0:
+                mensaje = f'+{cambio} {article.unit} agregado'
+            else:
+                mensaje = f'{abs(cambio)} {article.unit} removido'
+            
+            return JsonResponse({
+                'success': True,
+                'message': mensaje,
+                'nueva_cantidad': nueva_cantidad,
+                'is_low_stock': article.is_low_stock
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error: {str(e)}'
+            })
+    
+    return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
 # ==================== NOTA IMPORTANTE ====================
 # Las funciones de importación especializada para el colegio están en import_views.py:
 # - import_preview() - Importación con 15 hojas, lectura desde fila 8, detección de X

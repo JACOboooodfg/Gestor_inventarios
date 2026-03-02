@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Categorías y Ubicaciones - Gestor Escolar{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-4xl font-bold mb-2" style="color: #3D2C2E;">
+        <i class="fas fa-tags mr-3"></i>Categorías y Ubicaciones
+    </h1>
+    <p class="text-gray-600">
+        {{ total_categories }} categorías con artículos distribuidos en múltiples ubicaciones
+    </p>
+</div>
+
+<!-- Lista de Categorías -->
+<div class="grid grid-cols-1 gap-6">
+    {% for category in categories %}
+    <div class="glass-strong rounded-xl overflow-hidden">
+        <!-- Header de Categoría -->
+        <div class="px-6 py-4 cursor-pointer hover:bg-gray-50 transition" onclick="toggleCategory('{{ category.id }}')">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-lg flex items-center justify-center" style="background-color: {{ category.color }}20;">
+                        <i class="fas fa-tag text-2xl" style="color: {{ category.color }};"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold" style="color: #3D2C2E;">
+                            {{ category.name }}
+                        </h2>
+                        <p class="text-gray-600 text-sm">
+                            {{ category.total_items }} artículos en {{ category.locations.count }} ubicaciones
+                        </p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">Total</p>
+                        <p class="text-2xl font-bold" style="color: {{ category.color }};">
+                            {{ category.total_quantity }} unidades
+                        </p>
+                    </div>
+                    <i class="fas fa-chevron-down text-gray-400 transition-transform" id="icon-{{ category.id }}"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ubicaciones dentro de esta categoría (colapsable) -->
+        <div id="locations-{{ category.id }}" class="hidden border-t border-gray-200">
+            <div class="p-6 bg-gray-50">
+                <h3 class="text-lg font-semibold mb-4" style="color: #3D2C2E;">
+                    <i class="fas fa-map-marker-alt mr-2"></i>
+                    Ubicaciones con {{ category.name }}
+                </h3>
+                
+                {% if category.locations.all %}
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {% for location in category.locations.all %}
+                    <a href="{% url 'category_location_articles' category.pk location.pk %}" 
+                       class="glass-strong rounded-lg p-4 hover:shadow-lg transition group">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center group-hover:scale-110 transition">
+                                    <i class="fas fa-map-marker-alt text-white"></i>
+                                </div>
+                                <div>
+                                    <p class="font-semibold text-gray-900">
+                                        {{ location.name }}
+                                    </p>
+                                    <p class="text-sm text-gray-500">
+                                        {{ location.article_count }} artículos
+                                    </p>
+                                </div>
+                            </div>
+                            <i class="fas fa-arrow-right text-gray-400 group-hover:text-blue-600 transition"></i>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-gray-500 text-center py-8">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    No hay ubicaciones para esta categoría
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-16 glass-strong rounded-xl">
+        <i class="fas fa-tags text-gray-300 text-6xl mb-4"></i>
+        <p class="text-gray-500 text-lg">No hay categorías disponibles</p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+function toggleCategory(categoryId) {
+    const locationsDiv = document.getElementById('locations-' + categoryId);
+    const icon = document.getElementById('icon-' + categoryId);
+    
+    if (locationsDiv.classList.contains('hidden')) {
+        locationsDiv.classList.remove('hidden');
+        icon.classList.add('rotate-180');
+    } else {
+        locationsDiv.classList.add('hidden');
+        icon.classList.remove('rotate-180');
+    }
+}
+</script>
+{% endblock %}

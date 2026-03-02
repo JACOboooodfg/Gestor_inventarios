@@ -1,0 +1,110 @@
+{% extends 'base_minimal.html' %}
+
+{% block title %}Seleccionar Inventario - Gestor Escolar{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl w-full">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold mb-3" style="color: #3D2C2E;">
+                Bienvenido, {{ user.first_name|default:user.username }}
+            </h1>
+            <p class="text-xl text-gray-600">
+                ¿A qué inventario deseas acceder?
+            </p>
+        </div>
+
+        <!-- Opciones -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Inventario General -->
+            <a href="{% url 'dashboard' %}" class="group">
+                <div class="glass-strong rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer border-2 border-transparent hover:border-blue-500">
+                    <div class="text-center">
+                        <div class="w-24 h-24 mx-auto mb-6 bg-gradient-primary rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-boxes text-white text-4xl"></i>
+                        </div>
+                        
+                        <h2 class="text-2xl font-bold mb-3" style="color: #3D2C2E;">
+                            Inventario General
+                        </h2>
+                        
+                        <p class="text-gray-600 mb-6">
+                            Sistema completo con todas las funciones: categorías, ubicaciones, préstamos, movimientos y reportes.
+                        </p>
+                        
+                        <div class="space-y-2 text-sm text-gray-500">
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Gestión completa
+                            </div>
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Todas las categorías
+                            </div>
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Reportes avanzados
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 px-6 py-3 bg-gradient-primary text-white rounded-lg font-semibold group-hover:shadow-lg transition-shadow">
+                            Acceder
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Inventario de Aseo -->
+            <a href="{% url 'aseo_dashboard' %}" class="group">
+                <div class="glass-strong rounded-2xl p-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer border-2 border-transparent hover:border-green-500">
+                    <div class="text-center">
+                        <div class="w-24 h-24 mx-auto mb-6 bg-gradient-secondary rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i class="fas fa-broom text-white text-4xl"></i>
+                        </div>
+                        
+                        <h2 class="text-2xl font-bold mb-3" style="color: #3D2C2E;">
+                            Inventario de Aseo
+                        </h2>
+                        
+                        <p class="text-gray-600 mb-6">
+                            Vista simplificada solo para productos de aseo y limpieza. Interfaz fácil de usar.
+                        </p>
+                        
+                        <div class="space-y-2 text-sm text-gray-500">
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Solo aseo y limpieza
+                            </div>
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Interfaz simplificada
+                            </div>
+                            <div class="flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                                Fácil de usar
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 px-6 py-3 bg-gradient-secondary text-white rounded-lg font-semibold group-hover:shadow-lg transition-shadow">
+                            Acceder
+                            <i class="fas fa-arrow-right ml-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Logout -->
+        <div class="text-center mt-8">
+            <a href="{% url 'logout' %}" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-sign-out-alt mr-2"></i>
+                Cerrar sesión
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
