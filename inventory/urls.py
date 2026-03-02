@@ -67,13 +67,13 @@ urlpatterns = [
     path('articles/delete-all/confirm/', views.delete_all_articles_confirm, name='delete_all_articles_confirm'),
     path('articles/delete-all/execute/', views.delete_all_articles_execute, name='delete_all_articles_execute'),
     # Selector de inventario
-    path('select/', views.select_inventory, name='select_inventory'),
+    #path('select/', views.select_inventory, name='select_inventory'),
 
     # Categorías con ubicaciones
-    path('categories-locations/', views.category_list_with_locations, name='category_list_with_locations'),
-    path('categories/<int:category_pk>/location/<int:location_pk>/', views.category_location_articles, name='category_location_articles'),
+    #path('categories-locations/', views.category_list_with_locations, name='category_list_with_locations'),
+    #path('categories/<int:category_pk>/location/<int:location_pk>/', views.category_location_articles, name='category_location_articles'),
 
     # Dashboard de Aseo
-    path('aseo/', views.aseo_dashboard, name='aseo_dashboard'),
-    path('aseo/ajustar/<int:pk>/', views.aseo_ajustar_cantidad, name='aseo_ajustar_cantidad'),
+    #path('aseo/', views.aseo_dashboard, name='aseo_dashboard'),
+    #path('aseo/ajustar/<int:pk>/', views.aseo_ajustar_cantidad, name='aseo_ajustar_cantidad'),
 ]
