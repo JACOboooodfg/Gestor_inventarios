@@ -1,7 +1,7 @@
 """
 Django settings for school_inventory project.
 """
-
+#
 from pathlib import Path
 from decouple import config
 
