@@ -159,7 +159,6 @@ def dashboard(request):
         'recent_movements': recent_movements,
         'unread_alerts': unread_alerts,
         'category_stats': category_stats,
-        'total_value': total_value,
     }
     
     return render(request, 'inventory/dashboard.html', context)
