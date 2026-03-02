@@ -146,7 +146,7 @@ def dashboard(request):
     # Estadísticas por categoría
     category_stats = Category.objects.all().order_by('-created_at')[:5]
     
-    from django.db.models import Sum, F, FloatField, ExpressionWrapper
+    
     total_value = Article.objects.aggregate(
         total=Sum(ExpressionWrapper(F('quantity') * F('price'), output_field=FloatField()))
     )['total'] or 0
@@ -273,7 +273,6 @@ def category_inventory(request, pk):
     articles = articles.order_by(sort_by)
     
     # Estadísticas de la categoría
-    from django.db.models import Sum, F, FloatField, ExpressionWrapper
     stats = articles.aggregate(
         total_value=Sum(ExpressionWrapper(F('quantity') * F('price'), output_field=FloatField())),
         total_quantity=Sum('quantity')
