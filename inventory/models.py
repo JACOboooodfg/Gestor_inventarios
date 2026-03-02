@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.utils import timezone
-
+from decimal import Decimal
 
 class Category(models.Model):
     """Categorías de artículos (Ciencias, Deportes, Tecnología, etc.)"""
@@ -83,7 +83,7 @@ class Article(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available', verbose_name="Estado")
     image = models.ImageField(upload_to='articles/', blank=True, null=True, verbose_name="Imagen")
     barcode = models.CharField(max_length=100, blank=True, verbose_name="Código de barras")
-    price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, verbose_name="Precio unitario")
+    price = models.DecimalField(max_digits=100, decimal_places=2, null=True, blank=True, verbose_name="Precio unitario")
     
     # 📅 FECHA DE COMPRA (CORREGIDO - EN LUGAR CORRECTO)
     purchase_date = models.DateField(
@@ -122,10 +122,9 @@ class Article(models.Model):
     
     @property
     def total_value(self):
-        """Valor total del inventario de este artículo"""
-        if self.price:
-            return self.quantity * self.price
-        return 0
+         if self.price is not None:
+             return self.quantity * self.price
+         return Decimal('0.00')
     
     def save(self, *args, **kwargs):
         if not self.code:
