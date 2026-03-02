@@ -9,10 +9,10 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-gray-600 mb-1">Total Productos</p>
-                <p class="text-4xl font-bold text-cyan-600">{{ total_productos }}</p>
+                <p class="text-4xl font-bold" style="color: #424C55;">{{ total_productos }}</p>
             </div>
-            <div class="w-16 h-16 rounded-lg bg-cyan-100 flex items-center justify-center">
-                <i class="fas fa-box text-cyan-600 text-3xl"></i>
+            <div class="w-16 h-16 rounded-lg flex items-center justify-center" style="background: rgba(66,76,85,0.1);">
+                <i class="fas fa-box text-3xl" style="color: #424C55;"></i>
             </div>
         </div>
     </div>
@@ -33,35 +33,47 @@
         <div class="flex items-center justify-between">
             <div>
                 <p class="text-gray-600 mb-1">Ubicaciones</p>
-                <p class="text-4xl font-bold text-cyan-600">{{ ubicaciones }}</p>
+                <p class="text-4xl font-bold" style="color: #424C55;">{{ ubicaciones }}</p>
             </div>
-            <div class="w-16 h-16 rounded-lg bg-cyan-100 flex items-center justify-center">
-                <i class="fas fa-map-marker-alt text-cyan-600 text-3xl"></i>
+            <div class="w-16 h-16 rounded-lg flex items-center justify-center" style="background: rgba(66,76,85,0.1);">
+                <i class="fas fa-map-marker-alt text-3xl" style="color: #424C55;"></i>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Búsqueda Simple -->
+<!-- Búsqueda + Botón Nuevo Producto -->
 <div class="glass-strong rounded-xl p-6 mb-8">
-    <form method="get" class="flex gap-4">
-        <input type="text" name="q" value="{{ query }}" 
-               placeholder="🔍 Buscar producto..."
-               class="flex-1 px-6 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 text-lg">
-        <button type="submit" class="px-8 py-4 bg-gradient-primary text-white rounded-xl hover:shadow-xl transition font-bold text-lg">
-            Buscar
+    <div class="flex flex-col md:flex-row gap-4">
+        <form method="get" class="flex gap-4 flex-1">
+            <input type="text" name="q" value="{{ query }}" 
+                   placeholder="🔍 Buscar producto..."
+                   class="flex-1 px-6 py-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:border-transparent text-lg"
+                   style="focus-ring-color: #424C55;">
+            <button type="submit" class="px-8 py-4 text-white rounded-xl hover:opacity-90 transition font-bold text-lg"
+                    style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
+                Buscar
+            </button>
+            {% if query %}
+            <a href="{% url 'aseo_dashboard' %}" class="px-6 py-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-semibold">
+                Limpiar
+            </a>
+            {% endif %}
+        </form>
+
+        <!-- Botón abrir modal -->
+        <button onclick="document.getElementById('modalNuevoProducto').classList.remove('hidden')"
+                class="px-6 py-4 text-white rounded-xl font-bold transition hover:opacity-90 flex items-center gap-2"
+                style="background: linear-gradient(135deg, #886F68 0%, #3D2C2E 100%);">
+            <i class="fas fa-plus text-xl"></i>
+            Nuevo Producto
         </button>
-        {% if query %}
-        <a href="{% url 'aseo_dashboard' %}" class="px-6 py-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-semibold">
-            Limpiar
-        </a>
-        {% endif %}
-    </form>
+    </div>
 </div>
 
-<!-- Lista de Productos SIMPLIFICADA -->
+<!-- Lista de Productos -->
 <div class="glass-strong rounded-xl overflow-hidden">
-    <div class="px-6 py-5 bg-gradient-primary">
+    <div class="px-6 py-5" style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
         <h2 class="text-2xl font-bold text-white">
             <i class="fas fa-spray-can mr-3"></i>
             Productos de Aseo
@@ -74,35 +86,30 @@
             {% for producto in productos %}
             <div class="bg-white border-2 {% if producto.is_low_stock %}border-yellow-300 bg-yellow-50{% else %}border-gray-200{% endif %} rounded-xl p-6 hover:shadow-lg transition">
                 <div class="flex items-center justify-between">
-                    <!-- Nombre y Ubicación -->
                     <div class="flex items-center space-x-4 flex-1">
-                        <div class="w-14 h-14 rounded-xl bg-gradient-primary flex items-center justify-center">
+                        <div class="w-14 h-14 rounded-xl flex items-center justify-center"
+                             style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
                             <i class="fas fa-spray-can text-white text-2xl"></i>
                         </div>
                         <div class="flex-1">
-                            <h3 class="text-xl font-bold text-gray-900 mb-1">
-                                {{ producto.name }}
-                            </h3>
+                            <h3 class="text-xl font-bold text-gray-900 mb-1">{{ producto.name }}</h3>
                             {% if producto.location %}
                             <p class="text-sm text-gray-500">
-                                <i class="fas fa-map-marker-alt mr-1"></i>
-                                {{ producto.location.name }}
+                                <i class="fas fa-map-marker-alt mr-1"></i>{{ producto.location.name }}
                             </p>
                             {% endif %}
                         </div>
                     </div>
 
-                    <!-- Cantidad con Botones +/- -->
                     <div class="flex items-center space-x-6">
-                        <!-- Botón Disminuir -->
                         <button onclick="ajustarCantidad({{ producto.pk }}, -1)" 
                                 class="w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold text-2xl transition">
                             <i class="fas fa-minus"></i>
                         </button>
 
-                        <!-- Cantidad Actual -->
                         <div class="text-center min-w-[120px]">
-                            <p class="text-4xl font-bold {% if producto.is_low_stock %}text-red-600{% else %}text-cyan-600{% endif %}" id="cantidad-{{ producto.pk }}">
+                            <p class="text-4xl font-bold {% if producto.is_low_stock %}text-red-600{% else %}text-gray-800{% endif %}"
+                               id="cantidad-{{ producto.pk }}">
                                 {{ producto.quantity }}
                             </p>
                             <p class="text-sm text-gray-500 mt-1">{{ producto.unit }}</p>
@@ -113,7 +120,6 @@
                             {% endif %}
                         </div>
 
-                        <!-- Botón Aumentar -->
                         <button onclick="ajustarCantidad({{ producto.pk }}, 1)" 
                                 class="w-12 h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold text-2xl transition">
                             <i class="fas fa-plus"></i>
@@ -128,15 +134,105 @@
     <div class="text-center py-20">
         <i class="fas fa-broom text-gray-300 text-8xl mb-6"></i>
         <p class="text-gray-500 text-xl font-semibold">
-            {% if query %}
-            No se encontró "{{ query }}"
-            {% else %}
-            No hay productos de aseo
-            {% endif %}
+            {% if query %}No se encontró "{{ query }}"{% else %}No hay productos de aseo{% endif %}
         </p>
     </div>
     {% endif %}
 </div>
+
+
+<!-- MODAL: Nuevo Producto -->
+<div id="modalNuevoProducto" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+     style="background: rgba(61,44,46,0.6); backdrop-filter: blur(4px);">
+    <div class="glass-strong rounded-2xl shadow-2xl w-full max-w-lg">
+        
+        <!-- Header modal -->
+        <div class="px-8 py-6 rounded-t-2xl flex items-center justify-between"
+             style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
+            <h3 class="text-2xl font-bold text-white">
+                <i class="fas fa-plus-circle mr-3"></i>Nuevo Producto
+            </h3>
+            <button onclick="document.getElementById('modalNuevoProducto').classList.add('hidden')"
+                    class="text-white hover:opacity-70 transition text-2xl">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Formulario -->
+        <form method="post" action="{% url 'article_create' %}" class="p-8 space-y-5">
+            {% csrf_token %}
+            <!-- Campo oculto para volver al dashboard de aseo -->
+            <input type="hidden" name="from_aseo" value="1">
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-tag mr-1"></i> Nombre del producto *
+                </label>
+                <input type="text" name="name" required
+                       placeholder="Ej: Jabón líquido, Desinfectante..."
+                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-gray-500 text-gray-800">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-hashtag mr-1"></i> Cantidad inicial
+                    </label>
+                    <input type="number" name="quantity" value="0" min="0"
+                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-gray-500 text-gray-800">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-ruler mr-1"></i> Unidad
+                    </label>
+                    <select name="unit" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-gray-500 text-gray-800">
+                        <option value="unidad">Unidad</option>
+                        <option value="litro">Litro</option>
+                        <option value="kg">Kilogramo</option>
+                        <option value="galón">Galón</option>
+                        <option value="rollo">Rollo</option>
+                        <option value="paquete">Paquete</option>
+                        <option value="bolsa">Bolsa</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-map-marker-alt mr-1"></i> Ubicación
+                </label>
+                <select name="location" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-gray-500 text-gray-800">
+                    <option value="">Sin ubicación</option>
+                    {% for loc in locations %}
+                    <option value="{{ loc.pk }}">{{ loc.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-exclamation-circle mr-1"></i> Cantidad mínima (alerta stock bajo)
+                </label>
+                <input type="number" name="min_quantity" value="5" min="0"
+                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-gray-500 text-gray-800">
+            </div>
+
+            <div class="flex gap-4 pt-2">
+                <button type="button"
+                        onclick="document.getElementById('modalNuevoProducto').classList.add('hidden')"
+                        class="flex-1 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition">
+                    Cancelar
+                </button>
+                <button type="submit"
+                        class="flex-1 py-3 text-white rounded-xl font-bold hover:opacity-90 transition"
+                        style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
+                    <i class="fas fa-save mr-2"></i>Guardar Producto
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -153,19 +249,20 @@ function ajustarCantidad(productoId, cambio) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Actualizar cantidad en pantalla
             document.getElementById('cantidad-' + productoId).textContent = data.nueva_cantidad;
-            
-            // Mostrar notificación
             showNotification(data.message, 'success');
         } else {
             showNotification(data.message, 'error');
         }
     })
     .catch(error => {
-        console.error('Error:', error);
         showNotification('Error al actualizar cantidad', 'error');
     });
 }
+
+// Cerrar modal al hacer click fuera
+document.getElementById('modalNuevoProducto').addEventListener('click', function(e) {
+    if (e.target === this) this.classList.add('hidden');
+});
 </script>
 {% endblock %}

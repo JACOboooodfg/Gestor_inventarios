@@ -1154,48 +1154,53 @@ def category_location_articles(request, category_pk, location_pk):
     
     return render(request, 'inventory/article_list.html', context)
 
-
 @login_required
-def aseo_dashboard(request):
-    """Dashboard simplificado solo para artículos de aseo"""
-    # Obtener categoría de Aseo y Limpieza
-    try:
-        aseo_category = Category.objects.get(name__icontains='aseo')
-    except Category.DoesNotExist:
-        aseo_category = None
+def article_create(request):
+    """Crear nuevo artículo"""
+    if request.method == 'POST':
+        form = ArticleForm(request.POST, request.FILES)
+        if form.is_valid():
+            article = form.save(commit=False)
+            article.created_by = request.user
+            article.save()
+            
+            # Registrar movimiento inicial
+            if article.quantity > 0:
+                Movement.objects.create(
+                    article=article,
+                    movement_type='entry',
+                    quantity=article.quantity,
+                    previous_quantity=0,
+                    new_quantity=article.quantity,
+                    reason='Registro inicial de inventario',
+                    user=request.user
+                )
+            
+            messages.success(request, f'Artículo "{article.name}" creado exitosamente')
+            
+            # Redirigir al dashboard de aseo si vino desde ahí
+            if request.POST.get('from_aseo'):
+                return redirect('aseo_dashboard')
+            
+            # Redirigir al inventario de la categoría si vino desde ahí
+            from_category = request.POST.get('from_category')
+            if from_category:
+                return redirect('category_inventory', pk=from_category)
+            
+            return redirect('article_detail', pk=article.pk)
+    else:
+        form = ArticleForm()
+        
+        # Pre-seleccionar categoría si viene del parámetro
+        category_id = request.GET.get('category')
+        if category_id:
+            form.initial['category'] = category_id
     
-    # Filtrar solo artículos de aseo
-    productos = Article.objects.filter(
-        category=aseo_category
-    ).select_related('category', 'location') if aseo_category else Article.objects.none()
-    
-    # Búsqueda simple
-    query = request.GET.get('q', '')
-    if query:
-        productos = productos.filter(
-            Q(name__icontains=query) |
-            Q(code__icontains=query) |
-            Q(description__icontains=query)
-        )
-    
-    # Estadísticas
-    total_productos = productos.count()
-    disponibles = productos.filter(status='available').count()
-    stock_bajo = productos.filter(quantity__lte=F('min_quantity')).count()
-    ubicaciones = Location.objects.filter(
-        articles__category=aseo_category
-    ).distinct().count() if aseo_category else 0
-    
-    context = {
-        'productos': productos,
-        'query': query,
-        'total_productos': total_productos,
-        'disponibles': disponibles,
-        'stock_bajo': stock_bajo,
-        'ubicaciones': ubicaciones,
-    }
-    
-    return render(request, 'inventory/aseo_dashboard.html', context)
+    return render(request, 'inventory/article_form.html', {
+        'form': form,
+        'title': 'Nuevo Artículo',
+        'from_category': request.GET.get('category', '')
+    })
 
 # ==================== NUEVA VISTA PARA AJUSTAR CANTIDAD ====================
 # Agregar a inventory/views.py
