@@ -150,7 +150,8 @@ def dashboard(request):
     total_value = Article.objects.aggregate(
         total=Sum(ExpressionWrapper(F('quantity') * F('price'), output_field=FloatField()))
     )['total'] or 0
-    
+    total_value = round(float(total_value), 2)
+
     context = {
         'total_articles': total_articles,
         'total_categories': total_categories,
@@ -277,8 +278,8 @@ def category_inventory(request, pk):
         total_value=Sum(ExpressionWrapper(F('quantity') * F('price'), output_field=FloatField())),
         total_quantity=Sum('quantity')
     )
-    total_value = stats['total_value'] or 0
-    total_quantity = stats['total_quantity'] or 0
+    total_value = round(float(stats['total_value'] or 0), 2)
+    total_quantity = int(stats['total_quantity'] or 0)
     total_items = articles.count()
     low_stock_count = articles.filter(quantity__lte=F('min_quantity')).count()
 
