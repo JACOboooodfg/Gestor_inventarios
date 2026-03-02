@@ -528,7 +528,7 @@ def import_preview(request):
 def import_colegio_excel(file_obj, user):
     """Importar Excel específico del colegio con 15 hojas"""
     
-    wb = load_workbook(file_obj, data_only=True)
+    wb = load_workbook(file_obj, data_only=True, read_only=True)
     
     results = {
         'success_count': 0,
