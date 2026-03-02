@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.db.models import Q, Sum, Count, F, FloatField, ExpressionWrapper
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -145,12 +146,7 @@ def dashboard(request):
     
     # Estadísticas por categoría
     category_stats = Category.objects.all().order_by('-created_at')[:5]
-    
-    
-    total_value = Article.objects.aggregate(
-        total=Sum(ExpressionWrapper(F('quantity') * F('price'), output_field=FloatField()))
-    )['total'] or 0
-    total_value = round(float(total_value), 2)
+
 
     context = {
         'total_articles': total_articles,
