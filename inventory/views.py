@@ -63,7 +63,7 @@ def register_view(request):
             # Login con backend especificado
             login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             messages.success(request, f'¡Bienvenido {username}! Tu cuenta ha sido creada exitosamente.')
-            return redirect('dashboard')
+            return redirect('select_inventory')
         except Exception as e:
             messages.error(request, f'Error al crear la cuenta: {str(e)}')
             return render(request, 'inventory/register.html')
