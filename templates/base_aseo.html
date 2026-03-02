@@ -5,74 +5,119 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Inventario de Aseo{% endblock %}</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        * {
-            font-family: 'Inter', sans-serif;
-        }
-        
+        * { font-family: 'Inter', sans-serif; }
+
         body {
-            background: linear-gradient(135deg, #e0f7fa 0%, #80deea 100%);
+            background: linear-gradient(135deg, #424C55 0%, #F5EDF0 100%);
             min-height: 100vh;
         }
-        
+
         .glass-strong {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
-        
+
         .bg-gradient-primary {
-            background: linear-gradient(135deg, #26c6da 0%, #00acc1 100%);
+            background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);
         }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+
+        .animate-slide-in { animation: slideIn 0.4s ease-out; }
+        .animate-fade-in  { animation: fadeIn 0.3s ease-out; }
+
+        ::-webkit-scrollbar { width: 10px; }
+        ::-webkit-scrollbar-track { background: rgba(245, 237, 240, 0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(209, 204, 220, 0.5); border-radius: 5px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(209, 204, 220, 0.7); }
     </style>
 </head>
 <body class="antialiased">
     
-    <!-- Navbar Simplificado de Aseo -->
-    <nav class="bg-gradient-primary shadow-lg mb-6">
+    <nav class="bg-gradient-primary shadow-lg mb-6 animate-slide-in sticky top-0 z-50">
         <div class="container mx-auto px-6 py-4">
             <div class="flex justify-between items-center">
-                <!-- Logo -->
                 <div class="flex items-center space-x-3">
-                    <div class="w-12 h-12 bg-white rounded-lg flex items-center justify-center">
-                        <i class="fas fa-broom text-cyan-600 text-2xl"></i>
+                    <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(245,237,240,0.2);">
+                        <i class="fas fa-broom text-2xl" style="color: #F5EDF0;"></i>
                     </div>
                     <div>
                         <h1 class="text-white text-2xl font-bold">Inventario de Aseo</h1>
-                        <p class="text-cyan-100 text-sm">Sistema simplificado</p>
+                        <p class="text-xs" style="color: #D1CCDC;">Sistema simplificado</p>
                     </div>
                 </div>
 
-                <!-- Botones de acción -->
                 <div class="flex items-center space-x-4">
-                    <a href="{% url 'select_inventory' %}" class="px-4 py-2 bg-white text-cyan-700 rounded-lg hover:bg-cyan-50 transition font-semibold">
-                        <i class="fas fa-exchange-alt mr-2"></i>
-                        Cambiar a General
+                    <a href="{% url 'select_inventory' %}" 
+                       class="px-4 py-2 rounded-lg font-semibold transition hover:opacity-90"
+                       style="background: #F5EDF0; color: #3D2C2E;">
+                        <i class="fas fa-exchange-alt mr-2"></i>Cambiar a General
                     </a>
-                    <a href="{% url 'logout' %}" class="px-4 py-2 bg-white bg-opacity-20 text-white rounded-lg hover:bg-opacity-30 transition">
-                        <i class="fas fa-sign-out-alt mr-2"></i>
-                        Salir
+                    <a href="{% url 'logout' %}" 
+                       class="px-4 py-2 rounded-lg transition"
+                       style="background: rgba(245,237,240,0.15); color: #F5EDF0;">
+                        <i class="fas fa-sign-out-alt mr-2"></i>Salir
                     </a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- Contenido -->
-    <div class="container mx-auto px-6 pb-12">
-        {% block content %}{% endblock %}
+    {% if messages %}
+    <div class="container mx-auto px-6 animate-slide-in">
+        {% for message in messages %}
+        <div class="glass-strong rounded-xl p-4 mb-3 flex items-center justify-between shadow-lg
+                    {% if message.tags == 'error' %}border-l-4 border-red-500
+                    {% elif message.tags == 'warning' %}border-l-4 border-yellow-500
+                    {% elif message.tags == 'success' %}border-l-4 border-green-500
+                    {% else %}border-l-4 border-blue-500{% endif %}">
+            <div class="flex items-center">
+                <div class="mr-4">
+                    {% if message.tags == 'error' %}
+                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
+                        <i class="fas fa-times-circle text-red-500 text-xl"></i>
+                    </div>
+                    {% elif message.tags == 'warning' %}
+                    <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
+                        <i class="fas fa-exclamation-triangle text-yellow-500 text-xl"></i>
+                    </div>
+                    {% elif message.tags == 'success' %}
+                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                    </div>
+                    {% else %}
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <i class="fas fa-info-circle text-blue-500 text-xl"></i>
+                    </div>
+                    {% endif %}
+                </div>
+                <p class="font-medium text-gray-800">{{ message }}</p>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600 transition-all">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        {% endfor %}
     </div>
+    {% endif %}
 
-    <!-- JavaScript -->
+    <main class="container mx-auto px-6 pb-12 animate-fade-in">
+        {% block content %}{% endblock %}
+    </main>
+
     <script>
         function getCookie(name) {
             let cookieValue = null;
@@ -91,9 +136,8 @@
 
         function showNotification(message, type = 'success') {
             const notification = document.createElement('div');
-            notification.className = `fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 ${
-                type === 'success' ? 'bg-green-500' : 'bg-red-500'
-            } text-white font-semibold`;
+            notification.className = 'fixed top-4 right-4 px-6 py-4 rounded-lg shadow-lg z-50 text-white font-semibold';
+            notification.style.background = type === 'success' ? '#424C55' : '#886F68';
             notification.innerHTML = `
                 <div class="flex items-center">
                     <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-times-circle'} mr-3"></i>
