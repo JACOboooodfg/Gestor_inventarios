@@ -498,9 +498,17 @@ def location_delete(request, pk):
 @login_required
 def article_list(request):
     """Lista de artículos con búsqueda y filtros"""
+    from django.core.paginator import Paginator
+    
     articles = Article.objects.select_related(
         'category', 'location', 'created_by'
-    ).all()
+    ).only(
+        'id', 'code', 'name', 'description', 'quantity', 'min_quantity',
+        'unit', 'status', 'image', 'purchase_date', 'supplier',
+        'category__id', 'category__name', 'category__color',
+        'location__id', 'location__name',
+        'created_by__id','barcode'
+    )
     
     # Búsqueda con nuevo formulario
     search_form = ArticleSearchForm(request.GET)
@@ -531,15 +539,12 @@ def article_list(request):
         if location:
             articles = articles.filter(location=location)
         
-        # 📅 FILTRO DE FECHA DESDE (NUEVO)
         if fecha_desde:
             articles = articles.filter(purchase_date__gte=fecha_desde)
         
-        # 📅 FILTRO DE FECHA HASTA (NUEVO)
         if fecha_hasta:
             articles = articles.filter(purchase_date__lte=fecha_hasta)
         
-        # 🏪 FILTRO DE PROVEEDOR (NUEVO)
         if proveedor:
             articles = articles.filter(supplier__icontains=proveedor)
     
@@ -547,14 +552,19 @@ def article_list(request):
     sort_by = request.GET.get('sort', '-created_at')
     articles = articles.order_by(sort_by)
     
+    # Paginación
+    paginator = Paginator(articles, 50)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+    
     context = {
-        'articles': articles,
+        'articles': page_obj,
+        'page_obj': page_obj,
         'search_form': search_form,
-        'total_count': articles.count(),
+        'total_count': paginator.count,
     }
     
     return render(request, 'inventory/article_list.html', context)
-
 
 @login_required
 def article_detail(request, pk):
