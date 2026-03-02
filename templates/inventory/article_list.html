@@ -244,6 +244,7 @@
 </div>
 
 <script>
+{% verbatim %}
 function toggleArticleStatus(articleId, button) {
     if (!confirm('¿Estás seguro de cambiar el estado de este artículo?')) {
         return;
@@ -317,5 +318,6 @@ function showNotification(message, type) {
     container.insertBefore(notification, container.firstChild);
     setTimeout(() => notification.remove(), 5000);
 }
+{% endverbatim %}
 </script>
 {% endblock %}
