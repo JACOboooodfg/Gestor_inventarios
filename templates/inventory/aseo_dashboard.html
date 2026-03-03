@@ -107,8 +107,8 @@
                             <i class="fas fa-minus"></i>
                         </button>
 
-                        <!-- Cantidad Actual -->
-                        <div class="text-center min-w-[100px]">
+                        <!-- Cantidad -->
+                        <div class="text-center min-w-[120px]">
                             <p class="text-4xl font-bold {% if producto.is_low_stock %}text-red-600{% else %}text-gray-800{% endif %}"
                                id="cantidad-{{ producto.pk }}">
                                 {{ producto.quantity }}
@@ -131,14 +131,13 @@
                         <div class="w-px h-12 bg-gray-200 mx-2"></div>
 
                         <!-- Botón Eliminar -->
-                        <form method="post" action="{% url 'article_delete' producto.pk %}"
+                        <form method="post" action="{% url 'aseo_eliminar_producto' producto.pk %}"
                               onsubmit="return confirm('¿Eliminar {{ producto.name }} permanentemente? Esta acción no se puede deshacer.')">
                             {% csrf_token %}
-                            <input type="hidden" name="next" value="aseo_dashboard">
                             <button type="submit"
-                                    class="w-12 h-12 bg-red-700 hover:bg-red-800 text-white rounded-lg transition flex items-center justify-center"
+                                    class="w-12 h-12 hover:bg-red-100 text-red-500 hover:text-red-700 rounded-lg transition"
                                     title="Eliminar producto">
-                                <i class="fas fa-trash"></i>
+                                <i class="fas fa-trash text-lg"></i>
                             </button>
                         </form>
                     </div>
