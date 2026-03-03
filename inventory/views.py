@@ -1300,6 +1300,22 @@ def aseo_crear_producto(request):
     
     return redirect('aseo_dashboard')
 
+@login_required
+def article_delete(request, pk):
+    """Eliminar artículo"""
+    article = get_object_or_404(Article, pk=pk)
+
+    if request.method == 'POST':
+        name = article.name
+        article.delete()
+        messages.success(request, f'Artículo "{name}" eliminado')
+        next_url = request.POST.get('next', 'article_list')
+        return redirect(next_url)
+
+    return render(request, 'inventory/article_confirm_delete.html', {
+        'article': article
+    })
+
 # ==================== NOTA IMPORTANTE ====================
 # Las funciones de importación especializada para el colegio están en import_views.py:
 # - import_preview() - Importación con 15 hojas, lectura desde fila 8, detección de X

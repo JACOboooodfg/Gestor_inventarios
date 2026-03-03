@@ -83,7 +83,7 @@
     <div class="p-6">
         <div class="space-y-4">
             {% for producto in productos %}
-            <div class="bg-white border-2 {% if producto.is_low_stock %}border-yellow-300 bg-yellow-50{% else %}border-gray-200{% endif %} rounded-xl p-6 hover:shadow-lg transition">
+            <div id="producto-{{ producto.pk }}" class="bg-white border-2 {% if producto.is_low_stock %}border-yellow-300 bg-yellow-50{% else %}border-gray-200{% endif %} rounded-xl p-6 hover:shadow-lg transition">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-4 flex-1">
                         <div class="w-14 h-14 rounded-xl flex items-center justify-center"
@@ -100,13 +100,15 @@
                         </div>
                     </div>
 
-                    <div class="flex items-center space-x-6">
+                    <div class="flex items-center space-x-4">
+                        <!-- Botón Disminuir -->
                         <button onclick="ajustarCantidad({{ producto.pk }}, -1)"
                                 class="w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold text-2xl transition">
                             <i class="fas fa-minus"></i>
                         </button>
 
-                        <div class="text-center min-w-[120px]">
+                        <!-- Cantidad Actual -->
+                        <div class="text-center min-w-[100px]">
                             <p class="text-4xl font-bold {% if producto.is_low_stock %}text-red-600{% else %}text-gray-800{% endif %}"
                                id="cantidad-{{ producto.pk }}">
                                 {{ producto.quantity }}
@@ -119,10 +121,26 @@
                             {% endif %}
                         </div>
 
+                        <!-- Botón Aumentar -->
                         <button onclick="ajustarCantidad({{ producto.pk }}, 1)"
                                 class="w-12 h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold text-2xl transition">
                             <i class="fas fa-plus"></i>
                         </button>
+
+                        <!-- Separador visual -->
+                        <div class="w-px h-12 bg-gray-200 mx-2"></div>
+
+                        <!-- Botón Eliminar -->
+                        <form method="post" action="{% url 'article_delete' producto.pk %}"
+                              onsubmit="return confirm('¿Eliminar {{ producto.name }} permanentemente? Esta acción no se puede deshacer.')">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="aseo_dashboard">
+                            <button type="submit"
+                                    class="w-12 h-12 bg-red-700 hover:bg-red-800 text-white rounded-lg transition flex items-center justify-center"
+                                    title="Eliminar producto">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -249,9 +267,7 @@ function ajustarCantidad(productoId, cambio) {
             showNotification(data.message, 'error');
         }
     })
-    .catch(error => {
-        showNotification('Error al actualizar cantidad', 'error');
-    });
+    .catch(() => showNotification('Error al actualizar cantidad', 'error'));
 }
 
 document.getElementById('modalNuevoProducto').addEventListener('click', function(e) {
