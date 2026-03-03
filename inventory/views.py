@@ -1193,8 +1193,7 @@ def aseo_dashboard(request):
         'disponibles': disponibles,
         'stock_bajo': stock_bajo,
         'ubicaciones': ubicaciones,
-        'locations': Location.objects.all(),
-        
+        'locations': Location.objects.all(),        
         
     }
     
@@ -1248,6 +1247,59 @@ def aseo_ajustar_cantidad(request, pk):
             })
     
     return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
+
+@login_required
+def aseo_crear_producto(request):
+    """Crear producto directamente desde el dashboard de aseo"""
+    if request.method == 'POST':
+        try:
+            # Obtener o buscar categoría de aseo
+            aseo_category = Category.objects.filter(name__icontains='aseo').first()
+            
+            name = request.POST.get('name', '').strip()
+            if not name:
+                messages.error(request, 'El nombre es requerido')
+                return redirect('aseo_dashboard')
+            
+            quantity = int(request.POST.get('quantity', 0))
+            unit = request.POST.get('unit', 'unidad')
+            min_quantity = int(request.POST.get('min_quantity', 5))
+            location_id = request.POST.get('location')
+            
+            location = None
+            if location_id:
+                location = Location.objects.filter(pk=location_id).first()
+            
+            article = Article.objects.create(
+                name=name,
+                category=aseo_category,
+                quantity=quantity,
+                unit=unit,
+                min_quantity=min_quantity,
+                location=location,
+                created_by=request.user,
+                status='available'
+            )
+            
+            # Movimiento inicial
+            if quantity > 0:
+                Movement.objects.create(
+                    article=article,
+                    movement_type='entry',
+                    quantity=quantity,
+                    previous_quantity=0,
+                    new_quantity=quantity,
+                    reason='Registro inicial desde inventario de aseo',
+                    user=request.user
+                )
+            
+            messages.success(request, f'Producto "{name}" creado exitosamente')
+        
+        except Exception as e:
+            messages.error(request, f'Error al crear producto: {str(e)}')
+    
+    return redirect('aseo_dashboard')
+
 # ==================== NOTA IMPORTANTE ====================
 # Las funciones de importación especializada para el colegio están en import_views.py:
 # - import_preview() - Importación con 15 hojas, lectura desde fila 8, detección de X

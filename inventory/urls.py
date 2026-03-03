@@ -76,4 +76,5 @@ urlpatterns = [
     # Dashboard de Aseo
     path('aseo/', views.aseo_dashboard, name='aseo_dashboard'),
     path('aseo/ajustar/<int:pk>/', views.aseo_ajustar_cantidad, name='aseo_ajustar_cantidad'),
+    path('aseo/crear/', views.aseo_crear_producto, name='aseo_crear_producto'),
 ]
