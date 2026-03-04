@@ -60,11 +60,17 @@
             </a>
             {% endif %}
         </form>
-        <button onclick="document.getElementById('modalNuevoProducto').classList.remove('hidden')"
-                class="px-6 py-3 text-white rounded-xl font-medium transition hover:opacity-90 flex items-center gap-2 text-sm"
-                style="background: #916C80;">
-            <i class="fas fa-plus"></i> Nuevo Producto
-        </button>
+        <div class="flex gap-3">
+            <button onclick="document.getElementById('modalNuevoProducto').classList.remove('hidden')"
+                    class="px-6 py-3 text-white rounded-xl font-medium transition hover:opacity-90 flex items-center gap-2 text-sm"
+                    style="background: #916C80;">
+                <i class="fas fa-plus"></i>Nuevo Producto
+            </button>
+            <button onclick="document.getElementById('modalBorrarTodo').classList.remove('hidden')"
+                    class="px-4 py-3 text-white rounded-xl font-medium transition hover:opacity-90 flex items-center gap-2 text-sm bg-red-500 hover:bg-red-600">
+                <i class="fas fa-trash"></i>Borrar Todo
+            </button>
+        </div>
     </div>
 </div>
 
@@ -284,7 +290,66 @@
         </form>
     </div>
 </div>
+<!-- MODAL: Borrar Todo Aseo -->
+<div id="modalBorrarTodo" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
+     style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
+    <div class="card-bg rounded-2xl shadow-2xl w-full max-w-md border card-border">
+        <div class="px-8 py-6 rounded-t-2xl flex items-center justify-between bg-red-500">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fas fa-trash"></i>Borrar Todo el Inventario de Aseo
+            </h3>
+            <button onclick="document.getElementById('modalBorrarTodo').classList.add('hidden')"
+                    class="text-white hover:opacity-70 transition">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
 
+        <div class="p-8 space-y-5">
+            <!-- Qué se borra -->
+            <div class="rounded-xl p-4 border-l-4 border-red-400"
+                 style="background: rgba(248,113,113,0.06);">
+                <p class="text-sm font-semibold text-red-500 mb-2">Se eliminarán permanentemente:</p>
+                <ul class="text-sm text-sub space-y-1">
+                    <li class="flex items-center gap-2">
+                        <i class="fas fa-circle text-[6px] text-red-400"></i>
+                        <strong class="text-main">{{ total_productos }}</strong>&nbsp;productos de aseo
+                    </li>
+                    <li class="flex items-center gap-2">
+                        <i class="fas fa-circle text-[6px] text-red-400"></i>
+                        Todo el historial de movimientos de aseo
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Confirmación -->
+            <form method="post" action="{% url 'aseo_borrar_todo' %}">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                        Para confirmar escribe: <span class="text-red-500">BORRAR TODO</span>
+                    </label>
+                    <input type="text" name="confirm_text" required autocomplete="off"
+                           placeholder="BORRAR TODO"
+                           class="input-bg w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-red-400 text-sm">
+                    <p class="text-xs text-muted mt-1">Debe ser exactamente en MAYÚSCULAS</p>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="submit"
+                            class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 rounded-xl transition text-sm">
+                        <i class="fas fa-trash mr-2"></i>Borrar {{ total_productos }} Productos
+                    </button>
+                    <button type="button"
+                            onclick="document.getElementById('modalBorrarTodo').classList.add('hidden')"
+                            class="flex-1 font-semibold py-3 rounded-xl transition text-sm"
+                            style="background: rgba(128,128,128,0.12); color: #9ca3af;">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_js %}

@@ -4,78 +4,66 @@
 
 {% block content %}
 <div class="max-w-7xl mx-auto">
-    <!-- Header -->
     <div class="mb-8">
-        <h1 class="text-3xl font-bold text-white mb-2">
-            <i class="fas fa-file-excel mr-3"></i>Importar Inventario del Colegio
+        <h1 class="text-3xl font-bold text-main mb-1 flex items-center gap-3">
+            <i class="fas fa-file-excel" style="color: #73956F;"></i>Importar Inventario
         </h1>
-        <p class="text-white text-opacity-80">
-            Sube tu archivo Excel con las 15 hojas del inventario general
-        </p>
+        <p class="text-sub text-sm">Sube tu archivo Excel con las hojas del inventario general</p>
     </div>
 
     {% if step == 'upload' or not step %}
     <!-- PASO 1: Subir Archivo -->
-    <div class="glass-strong rounded-2xl p-8 shadow-2xl animate-slide-in">
+    <div class="card-bg rounded-xl shadow-sm border card-border p-8 animate-slide-in">
         <div class="text-center mb-8">
-            <div class="inline-block gradient-primary p-4 rounded-full mb-4">
-                <i class="fas fa-cloud-upload-alt text-white text-4xl"></i>
+            <div class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4"
+                 style="background: rgba(115,149,111,0.15);">
+                <i class="fas fa-cloud-upload-alt text-3xl" style="color: #73956F;"></i>
             </div>
-            <h2 class="text-2xl font-bold mb-2" style="color: #3D2C2E;">Paso 1: Subir Archivo Excel</h2>
-            <p style="color: #424C55;">Selecciona tu archivo de inventario (.xlsx)</p>
+            <h2 class="text-xl font-bold text-main mb-1">Paso 1: Subir Archivo Excel</h2>
+            <p class="text-sub text-sm">Selecciona tu archivo de inventario (.xlsx)</p>
         </div>
 
         <form method="post" enctype="multipart/form-data" class="space-y-6">
             {% csrf_token %}
-            
-            <!-- Drag & Drop Zone -->
-            <div id="drop-zone" class="border-4 border-dashed rounded-xl p-12 text-center hover:border-opacity-75 hover:bg-opacity-50 transition-all cursor-pointer" style="border-color: #424C55; background-color: rgba(209, 204, 220, 0.2);">
-                <i class="fas fa-file-excel text-6xl mb-4" style="color: #424C55;"></i>
-                <p class="text-xl font-medium mb-2" style="color: #3D2C2E;">
-                    Arrastra tu archivo aquí
-                </p>
-                <p class="text-gray-500 mb-4">o</p>
-                <label for="id_excel_file" class="btn-modern gradient-primary text-white px-8 py-3 rounded-xl cursor-pointer inline-block">
-                    <i class="fas fa-folder-open mr-2"></i>
-                    Seleccionar Archivo
+
+            <!-- Drop Zone -->
+            <div id="drop-zone"
+                 class="border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all"
+                 style="border-color: #73956F; background: rgba(115,149,111,0.05);">
+                <i class="fas fa-file-excel text-5xl mb-4 block" style="color: #73956F;"></i>
+                <p class="text-lg font-medium text-main mb-1" id="drop-label">Arrastra tu archivo aquí</p>
+                <p class="text-muted text-sm mb-4">o</p>
+                <label for="id_excel_file"
+                       class="text-white px-6 py-2.5 rounded-xl cursor-pointer inline-block text-sm font-semibold hover:opacity-90 transition"
+                       style="background: #73956F;">
+                    <i class="fas fa-folder-open mr-2"></i>Seleccionar Archivo
                 </label>
-                <input 
-                    type="file" 
-                    name="excel_file" 
-                    id="id_excel_file"
-                    accept=".xlsx,.xls"
-                    class="hidden"
-                    required
-                >
-                <p class="text-sm text-gray-500 mt-4">
-                    Formatos soportados: .xlsx, .xls
-                </p>
+                <input type="file" name="excel_file" id="id_excel_file"
+                       accept=".xlsx,.xls" class="hidden" required>
+                <p class="text-xs text-muted mt-4">Formatos soportados: .xlsx, .xls</p>
             </div>
 
             <!-- Info Box -->
-            <div class="rounded-lg p-6" style="background-color: rgba(209, 204, 220, 0.3); border-left: 4px solid #424C55;">
-                <div class="flex">
-                    <i class="fas fa-info-circle text-2xl mr-4" style="color: #424C55;"></i>
+            <div class="rounded-xl p-5 border-l-4" style="border-color: #73956F; background: rgba(115,149,111,0.06);">
+                <div class="flex gap-4">
+                    <i class="fas fa-info-circle text-xl flex-shrink-0 mt-0.5" style="color: #73956F;"></i>
                     <div>
-                        <h3 class="font-bold mb-2" style="color: #3D2C2E;">Información Importante:</h3>
-                        <ul class="text-sm space-y-1" style="color: #424C55;">
-                            <li>✓ El sistema procesará 15 hojas automáticamente</li>
-                            <li>✓ Los datos deben comenzar en la <strong>fila 8</strong></li>
-                            <li>✓ El estado se detecta por la <strong>X</strong> en BUENO, REGULAR o MALO</li>
-                            <li>✓ Las categorías se infieren automáticamente</li>
-                            <li>✓ Las ubicaciones se crean según los códigos</li>
+                        <h3 class="font-semibold text-main mb-2 text-sm">Información Importante</h3>
+                        <ul class="text-sm text-sub space-y-1">
+                            <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color: #73956F;"></i>El sistema procesará 15 hojas automáticamente</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color: #73956F;"></i>Los datos deben comenzar en la <strong>fila 8</strong></li>
+                            <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color: #73956F;"></i>El estado se detecta por la <strong>X</strong> en BUENO, REGULAR o MALO</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color: #73956F;"></i>Las categorías se infieren automáticamente</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color: #73956F;"></i>Las ubicaciones se crean según los códigos</li>
                         </ul>
                     </div>
                 </div>
             </div>
 
-            <!-- Submit Button -->
-            <button 
-                type="submit" 
-                class="w-full btn-modern gradient-primary text-white font-bold py-4 px-6 rounded-xl shadow-lg"
-            >
-                <i class="fas fa-arrow-right mr-2"></i>
-                Continuar con la Vista Previa
+            <button type="submit"
+                    class="w-full text-white font-bold py-3.5 px-6 rounded-xl shadow transition hover:opacity-90 text-sm"
+                    style="background: #73956F;">
+                <i class="fas fa-arrow-right mr-2"></i>Continuar con la Vista Previa
             </button>
         </form>
     </div>
@@ -83,64 +71,64 @@
     {% elif step == 'preview' %}
     <!-- PASO 2: Vista Previa -->
     <div class="space-y-6 animate-slide-in">
+
         <!-- Resumen -->
-        <div class="glass-strong rounded-2xl p-6 shadow-xl">
+        <div class="card-bg rounded-xl shadow-sm border card-border p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <h2 class="text-2xl font-bold mb-2" style="color: #3D2C2E;">
-                        <i class="fas fa-eye mr-3" style="color: #424C55;"></i>Vista Previa
+                    <h2 class="text-xl font-bold text-main mb-1 flex items-center gap-2">
+                        <i class="fas fa-eye" style="color: #73956F;"></i>Vista Previa
                     </h2>
-                    <p style="color: #424C55;">Revisa las hojas detectadas antes de importar</p>
+                    <p class="text-sub text-sm">Revisa las hojas detectadas antes de importar</p>
                 </div>
                 <div class="text-right">
-                    <div class="text-4xl font-bold" style="color: #424C55;">{{ total_sheets }}</div>
-                    <div class="text-sm text-gray-600">Hojas detectadas</div>
+                    <div class="text-4xl font-bold" style="color: #73956F;">{{ total_sheets }}</div>
+                    <div class="text-xs text-muted uppercase tracking-wider">Hojas detectadas</div>
                 </div>
             </div>
         </div>
 
         <!-- Lista de Hojas -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {% for sheet in sheets_info %}
-            <div class="glass-strong rounded-xl p-6 shadow-lg card-hover">
+            <div class="card-bg rounded-xl border card-border p-5 shadow-sm hover:shadow-md transition">
                 <div class="flex items-start justify-between mb-4">
                     <div>
-                        <h3 class="text-lg font-bold mb-1" style="color: #3D2C2E;">
-                            <i class="fas fa-table mr-2" style="color: #424C55;"></i>{{ sheet.name }}
+                        <h3 class="text-base font-bold text-main mb-1 flex items-center gap-2">
+                            <i class="fas fa-table text-sm" style="color: #73956F;"></i>{{ sheet.name }}
                         </h3>
-                        <p class="text-sm text-gray-600">
-                            <i class="fas fa-database mr-2"></i>~{{ sheet.row_count }} registros
+                        <p class="text-xs text-muted">
+                            <i class="fas fa-database mr-1"></i>~{{ sheet.row_count }} registros
                         </p>
                     </div>
-                    <span class="text-xs font-medium px-3 py-1 rounded-full" style="background-color: rgba(66, 76, 85, 0.2); color: #3D2C2E;">
+                    <span class="text-xs font-medium px-2.5 py-1 rounded-full"
+                          style="background: rgba(115,149,111,0.12); color: #73956F;">
                         <i class="fas fa-check mr-1"></i>Detectada
                     </span>
                 </div>
 
-                <!-- Headers Preview -->
-                <div class="rounded-lg p-3 mb-3" style="background-color: rgba(209, 204, 220, 0.3);">
-                    <p class="text-xs font-medium text-gray-600 mb-2">Columnas detectadas:</p>
-                    <div class="flex flex-wrap gap-2">
+                <!-- Headers -->
+                <div class="rounded-lg p-3 mb-3" style="background: rgba(115,149,111,0.06);">
+                    <p class="text-xs font-semibold text-muted mb-2 uppercase tracking-wider">Columnas detectadas</p>
+                    <div class="flex flex-wrap gap-1.5">
                         {% for header in sheet.headers|slice:":6" %}
-                        <span class="bg-white text-gray-700 text-xs px-2 py-1 rounded border border-gray-200">
+                        <span class="card-bg text-sub text-xs px-2 py-0.5 rounded border card-border">
                             {{ header }}
                         </span>
                         {% endfor %}
                         {% if sheet.headers|length > 6 %}
-                        <span class="text-gray-500 text-xs px-2 py-1">
-                            +{{ sheet.headers|length|add:"-6" }} más
-                        </span>
+                        <span class="text-muted text-xs px-2 py-0.5">+{{ sheet.headers|length|add:"-6" }} más</span>
                         {% endif %}
                     </div>
                 </div>
 
                 <!-- Data Preview -->
                 {% if sheet.preview %}
-                <div class="rounded-lg p-3" style="background-color: rgba(245, 237, 240, 0.3);">
-                    <p class="text-xs font-medium text-gray-600 mb-2">Vista previa de datos:</p>
+                <div class="rounded-lg p-3" style="background: rgba(145,108,128,0.06);">
+                    <p class="text-xs font-semibold text-muted mb-2 uppercase tracking-wider">Vista previa</p>
                     <div class="space-y-1">
                         {% for row in sheet.preview|slice:":3" %}
-                        <div class="text-xs text-gray-600 truncate">
+                        <div class="text-xs text-sub truncate">
                             Fila {{ row.row_number }}: {{ row.data|slice:":3"|join:", " }}...
                         </div>
                         {% endfor %}
@@ -152,17 +140,18 @@
         </div>
 
         <!-- Confirmación -->
-        <div class="glass-strong rounded-2xl p-8 shadow-xl">
-            <div class="rounded-lg p-6 mb-6" style="background-color: rgba(255, 193, 7, 0.1); border-left: 4px solid #FFC107;">
-                <div class="flex">
-                    <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl mr-4"></i>
+        <div class="card-bg rounded-xl shadow-sm border card-border p-8">
+            <div class="rounded-xl p-5 mb-6 border-l-4 border-yellow-400"
+                 style="background: rgba(250,204,21,0.06);">
+                <div class="flex gap-4">
+                    <i class="fas fa-exclamation-triangle text-yellow-500 text-xl flex-shrink-0 mt-0.5"></i>
                     <div>
-                        <h3 class="font-bold text-yellow-900 mb-2">Antes de Importar:</h3>
-                        <ul class="text-sm text-yellow-800 space-y-1">
-                            <li>• Este proceso puede tardar varios minutos </li>
-                            <li>• Las categorías se crearán automáticamente si no existen</li>
-                            <li>• Las ubicaciones se crearán según los códigos detectados</li>
-                            <li>• El estado se detectará por la posición de la "X"</li>
+                        <h3 class="font-semibold text-main mb-2 text-sm">Antes de Importar</h3>
+                        <ul class="text-sm text-sub space-y-1">
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[6px] text-muted"></i>Este proceso puede tardar varios minutos</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[6px] text-muted"></i>Las categorías se crearán automáticamente si no existen</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[6px] text-muted"></i>Las ubicaciones se crearán según los códigos detectados</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[6px] text-muted"></i>El estado se detectará por la posición de la "X"</li>
                         </ul>
                     </div>
                 </div>
@@ -170,20 +159,15 @@
 
             <form method="post" class="flex gap-4">
                 {% csrf_token %}
-                <button 
-                    type="submit"
-                    name="confirm_import"
-                    class="flex-1 btn-modern gradient-primary text-white font-bold py-4 px-6 rounded-xl shadow-lg"
-                >
-                    <i class="fas fa-check-circle mr-2"></i>
-                    Confirmar e Importar Todo
+                <button type="submit" name="confirm_import"
+                        class="flex-1 text-white font-bold py-3.5 px-6 rounded-xl shadow transition hover:opacity-90 text-sm"
+                        style="background: #73956F;">
+                    <i class="fas fa-check-circle mr-2"></i>Confirmar e Importar Todo
                 </button>
-                <a 
-                    href="{% url 'import_preview' %}"
-                    class="btn-modern bg-gray-200 hover:bg-gray-300 text-gray-700 font-bold py-4 px-6 rounded-xl"
-                >
-                    <i class="fas fa-times mr-2"></i>
-                    Cancelar
+                <a href="{% url 'import_preview' %}"
+                   class="font-bold py-3.5 px-6 rounded-xl transition text-sm flex items-center gap-2"
+                   style="background: rgba(128,128,128,0.12); color: #9ca3af;">
+                    <i class="fas fa-times"></i>Cancelar
                 </a>
             </form>
         </div>
@@ -192,55 +176,31 @@
 </div>
 
 <script>
-// Drag & Drop functionality
-const dropZone = document.getElementById('drop-zone');
+const dropZone  = document.getElementById('drop-zone');
 const fileInput = document.getElementById('id_excel_file');
+const dropLabel = document.getElementById('drop-label');
 
 if (dropZone && fileInput) {
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, preventDefaults, false);
+    ['dragenter','dragover','dragleave','drop'].forEach(e =>
+        dropZone.addEventListener(e, ev => { ev.preventDefault(); ev.stopPropagation(); })
+    );
+
+    ['dragenter','dragover'].forEach(e => dropZone.addEventListener(e, () => {
+        dropZone.style.background = 'rgba(115,149,111,0.12)';
+    }));
+    ['dragleave','drop'].forEach(e => dropZone.addEventListener(e, () => {
+        dropZone.style.background = 'rgba(115,149,111,0.05)';
+    }));
+
+    dropZone.addEventListener('drop', e => {
+        fileInput.files = e.dataTransfer.files;
+        if (e.dataTransfer.files.length > 0)
+            dropLabel.textContent = '✓ ' + e.dataTransfer.files[0].name;
     });
 
-    function preventDefaults (e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropZone.addEventListener(eventName, highlight, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, unhighlight, false);
-    });
-
-    function highlight(e) {
-        dropZone.style.borderColor = '#3D2C2E';
-        dropZone.style.backgroundColor = 'rgba(66, 76, 85, 0.1)';
-    }
-
-    function unhighlight(e) {
-        dropZone.style.borderColor = '#424C55';
-        dropZone.style.backgroundColor = 'rgba(209, 204, 220, 0.2)';
-    }
-
-    dropZone.addEventListener('drop', handleDrop, false);
-
-    function handleDrop(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        fileInput.files = files;
-        
-        if (files.length > 0) {
-            dropZone.querySelector('p.text-xl').textContent = '✓ ' + files[0].name;
-        }
-    }
-
-    // Show filename when selected
     fileInput.addEventListener('change', function() {
-        if (this.files.length > 0) {
-            dropZone.querySelector('p.text-xl').textContent = '✓ ' + this.files[0].name;
-        }
+        if (this.files.length > 0)
+            dropLabel.textContent = '✓ ' + this.files[0].name;
     });
 }
 </script>

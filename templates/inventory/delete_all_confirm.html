@@ -4,87 +4,90 @@
 
 {% block content %}
 <div class="max-w-2xl mx-auto">
-    <!-- Header Simple -->
     <div class="mb-6">
-        <h1 class="text-3xl font-bold mb-2" style="color: #3D2C2E;">
-            Borrar Todos los Artículos
-        </h1>
-        <p class="text-gray-600">
-            Esta acción no se puede deshacer
-        </p>
+        <h1 class="text-2xl font-bold text-main mb-1">Borrar Todos los Artículos</h1>
+        <p class="text-sub text-sm">Esta acción no se puede deshacer</p>
     </div>
 
-    <!-- Card Principal -->
-    <div class="glass-strong rounded-xl shadow-lg p-8">
-        
-        <!-- Info de lo que se va a borrar -->
-        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <h3 class="font-bold text-red-900 mb-3">Se eliminarán:</h3>
-            <ul class="text-sm text-red-800 space-y-2">
-                <li>• <strong>{{ total_articles }}</strong> artículos del inventario</li>
-                <li>• Todos los movimientos asociados</li>
-                <li>• Todos los préstamos registrados</li>
+    <div class="card-bg rounded-xl shadow-sm border card-border p-8">
+
+        <!-- Qué se borra -->
+        <div class="rounded-xl p-5 mb-5 border-l-4 border-red-400"
+             style="background: rgba(248,113,113,0.06);">
+            <h3 class="font-semibold text-red-500 mb-3 text-sm">Se eliminarán permanentemente:</h3>
+            <ul class="text-sm text-sub space-y-1.5">
+                <li class="flex items-center gap-2">
+                    <i class="fas fa-circle text-[6px] text-red-400"></i>
+                    <strong class="text-main">{{ total_articles }}</strong>&nbsp;artículos del inventario
+                </li>
+                <li class="flex items-center gap-2">
+                    <i class="fas fa-circle text-[6px] text-red-400"></i>
+                    Todos los movimientos asociados
+                </li>
+                <li class="flex items-center gap-2">
+                    <i class="fas fa-circle text-[6px] text-red-400"></i>
+                    Todos los préstamos registrados
+                </li>
             </ul>
         </div>
 
-        <!-- Cuándo usar esto -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h3 class="font-bold text-blue-900 mb-2">¿Cuándo usar esto?</h3>
-            <ul class="text-sm text-blue-800 space-y-1">
-                <li>✓ Actualizaste las categorías y necesitas re-importar</li>
-                <li>✓ Quieres empezar de cero con datos limpios</li>
-                <li>✓ Tienes tu Excel respaldado y listo para subir de nuevo</li>
+        <!-- Cuándo usar -->
+        <div class="rounded-xl p-5 mb-6 border-l-4"
+             style="border-color: #73956F; background: rgba(115,149,111,0.06);">
+            <h3 class="font-semibold text-main mb-2 text-sm">¿Cuándo usar esto?</h3>
+            <ul class="text-sm text-sub space-y-1.5">
+                <li class="flex items-center gap-2">
+                    <i class="fas fa-check text-xs" style="color: #73956F;"></i>
+                    Actualizaste las categorías y necesitas re-importar
+                </li>
+                <li class="flex items-center gap-2">
+                    <i class="fas fa-check text-xs" style="color: #73956F;"></i>
+                    Quieres empezar de cero con datos limpios
+                </li>
+                <li class="flex items-center gap-2">
+                    <i class="fas fa-check text-xs" style="color: #73956F;"></i>
+                    Tienes tu Excel respaldado y listo para subir de nuevo
+                </li>
             </ul>
         </div>
 
-        <!-- Formulario de Confirmación -->
-        <form method="post" action="{% url 'delete_all_articles_execute' %}" class="space-y-6">
+        <!-- Confirmación -->
+        <form method="post" action="{% url 'delete_all_articles_execute' %}" class="space-y-5">
             {% csrf_token %}
-            
+
             <div>
-                <label for="confirm_text" class="block text-sm font-medium mb-2 text-gray-700">
-                    Para confirmar, escribe: <strong class="text-red-600">BORRAR TODO</strong>
+                <label for="confirm_text"
+                       class="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                    Para confirmar escribe: <span class="text-red-500">BORRAR TODO</span>
                 </label>
-                <input 
-                    type="text" 
-                    name="confirm_text" 
-                    id="confirm_text"
-                    required
-                    autocomplete="off"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    placeholder="BORRAR TODO"
-                >
-                <p class="text-xs text-gray-500 mt-1">
-                    Debe ser exactamente en MAYÚSCULAS
-                </p>
+                <input type="text" name="confirm_text" id="confirm_text"
+                       required autocomplete="off"
+                       placeholder="BORRAR TODO"
+                       class="input-bg w-full px-4 py-3 border rounded-xl focus:outline-none focus:border-red-400 text-sm">
+                <p class="text-xs text-muted mt-1">Debe ser exactamente en MAYÚSCULAS</p>
             </div>
 
-            <!-- Botones -->
-            <div class="flex gap-3">
-                <button 
-                    type="submit" 
-                    class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-3 px-4 rounded-lg transition-colors"
-                    onclick="return confirm('¿Estás seguro de borrar {{ total_articles }} artículos?')"
-                >
-                    Borrar {{ total_articles }} Artículos
+            <div class="flex gap-3 pt-2">
+                <button type="submit"
+                        class="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-4 rounded-xl transition text-sm"
+                        onclick="return confirm('¿Estás seguro de borrar {{ total_articles }} artículos?')">
+                    <i class="fas fa-trash mr-2"></i>Borrar {{ total_articles }} Artículos
                 </button>
-                <a 
-                    href="{% url 'article_list' %}"
-                    class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-3 px-4 rounded-lg text-center transition-colors"
-                >
+                <a href="{% url 'article_list' %}"
+                   class="flex-1 text-center font-semibold py-3 px-4 rounded-xl transition text-sm"
+                   style="background: rgba(128,128,128,0.12); color: #9ca3af;">
                     Cancelar
                 </a>
             </div>
         </form>
 
-        <!-- Tip al final -->
-        <div class="mt-6 text-sm text-gray-600 text-center">
-            <p>
-                Después de borrar, ve a 
-                <a href="{% url 'import_preview' %}" class="text-blue-600 underline">Importar Excel</a> 
-                para subir tus datos de nuevo
-            </p>
-        </div>
+        <p class="mt-6 text-xs text-muted text-center">
+            Después de borrar, ve a
+            <a href="{% url 'import_preview' %}" class="hover:underline" style="color: #73956F;">
+                Importar Excel
+            </a>
+            para subir tus datos de nuevo
+        </p>
     </div>
 </div>
 {% endblock %}

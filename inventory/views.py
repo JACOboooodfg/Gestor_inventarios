@@ -70,6 +70,18 @@ def register_view(request):
     
     return render(request, 'inventory/register.html')
 
+# views.py
+def aseo_borrar_todo(request):
+    if request.method == 'POST':
+        confirm = request.POST.get('confirm_text', '')
+        if confirm == 'BORRAR TODO':
+            aseo_category = Category.objects.filter(name__iexact='aseo').first()
+            if aseo_category:
+                Article.objects.filter(category=aseo_category).delete()
+            messages.success(request, 'Todos los productos de aseo han sido eliminados.')
+        else:
+            messages.error(request, 'Texto de confirmación incorrecto.')
+    return redirect('aseo_dashboard')
 
 def login_view(request):
     """Vista de login"""
