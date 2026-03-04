@@ -1249,6 +1249,17 @@ def aseo_ajustar_cantidad(request, pk):
     return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
 
 @login_required
+def aseo_eliminar_producto(request, pk):
+    """Eliminar producto desde el dashboard de aseo"""
+    if request.method == 'POST':
+        article = get_object_or_404(Article, pk=pk)
+        name = article.name
+        article.delete()
+        messages.success(request, f'Producto "{name}" eliminado exitosamente')
+    
+    return redirect('aseo_dashboard')
+
+@login_required
 def aseo_crear_producto(request):
     """Crear producto directamente desde el dashboard de aseo"""
     if request.method == 'POST':
@@ -1301,24 +1312,32 @@ def aseo_crear_producto(request):
     return redirect('aseo_dashboard')
 
 @login_required
-def aseo_eliminar_producto(request, pk):
-    """Eliminar producto desde el dashboard de aseo"""
-    article = get_object_or_404(Article, pk=pk)
+def article_search_json(request):
+    """Búsqueda en vivo para el dashboard"""
+    query = request.GET.get('q', '').strip()
+    if len(query) < 2:
+        return JsonResponse({'results': []})
     
-    if request.method == 'POST':
-        name = article.name
-        article.delete()
-        messages.success(request, f'Producto "{name}" eliminado exitosamente')
-        return redirect('aseo_dashboard')
+    articles = Article.objects.filter(
+        Q(name__icontains=query) |
+        Q(code__icontains=query) |
+        Q(description__icontains=query)
+    ).select_related('category', 'location').only(
+        'id', 'code', 'name', 'status', 'quantity', 'unit',
+        'category__name', 'category__color', 'location__name'
+    )[:10]
     
-    return redirect('aseo_dashboard')
-
-
-
-# ==================== NOTA IMPORTANTE ====================
-# Las funciones de importación especializada para el colegio están en import_views.py:
-# - import_preview() - Importación con 15 hojas, lectura desde fila 8, detección de X
-# - import_colegio_excel() - Lógica especializada
-# - article_toggle_status() - Toggle de estado
-# 
-# Ver inventory/import_views.py para el código completo
+    results = [{
+        'id': a.id,
+        'code': a.code,
+        'name': a.name,
+        'category': a.category.name,
+        'color': a.category.color,
+        'quantity': a.quantity,
+        'unit': a.unit,
+        'location': a.location.name if a.location else 'Sin ubicación',
+        'status': a.get_status_display(),
+        'url': f'/articles/{a.id}/',
+    } for a in articles]
+    
+    return JsonResponse({'results': results})

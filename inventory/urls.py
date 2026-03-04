@@ -78,4 +78,5 @@ urlpatterns = [
     path('aseo/ajustar/<int:pk>/', views.aseo_ajustar_cantidad, name='aseo_ajustar_cantidad'),
     path('aseo/crear/', views.aseo_crear_producto, name='aseo_crear_producto'),
     path('aseo/eliminar/<int:pk>/', views.aseo_eliminar_producto, name='aseo_eliminar_producto'),
+    path('articles/search/json/', views.article_search_json, name='article_search_json'),
 ]
