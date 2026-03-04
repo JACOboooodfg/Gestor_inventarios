@@ -9,8 +9,8 @@
 {% block content %}
 <div class="mb-8 flex items-center justify-between">
     <div>
-        <h1 class="text-3xl font-bold text-gray-800 mb-1">Dashboard</h1>
-        <p class="text-gray-500 text-sm">Resumen general del inventario</p>
+        <h1 class="text-3xl font-bold text-main mb-1">Dashboard</h1>
+        <p class="text-sub text-sm">Resumen general del inventario</p>
     </div>
     <a href="{% url 'select_inventory' %}"
        class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-white shadow hover:opacity-90 transition text-sm"
@@ -22,46 +22,46 @@
 
 <!-- Stats Cards -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 hover:shadow-md transition" style="border-color: #73956F;">
+    <div class="card-bg rounded-xl shadow-sm p-5 border-l-4 hover:shadow-md transition" style="border-color: #73956F;">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Total Artículos</p>
-                <p class="text-3xl font-bold text-gray-800">{{ total_articles }}</p>
+                <p class="text-muted text-xs uppercase tracking-wider mb-1">Total Artículos</p>
+                <p class="text-3xl font-bold text-main">{{ total_articles }}</p>
             </div>
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(115,149,111,0.12);">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(115,149,111,0.15);">
                 <i class="fas fa-box" style="color: #73956F;"></i>
             </div>
         </div>
     </div>
-    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 hover:shadow-md transition" style="border-color: #916C80;">
+    <div class="card-bg rounded-xl shadow-sm p-5 border-l-4 hover:shadow-md transition" style="border-color: #916C80;">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Categorías</p>
-                <p class="text-3xl font-bold text-gray-800">{{ total_categories }}</p>
+                <p class="text-muted text-xs uppercase tracking-wider mb-1">Categorías</p>
+                <p class="text-3xl font-bold text-main">{{ total_categories }}</p>
             </div>
-            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(145,108,128,0.12);">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(145,108,128,0.15);">
                 <i class="fas fa-tags" style="color: #916C80;"></i>
             </div>
         </div>
     </div>
-    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-yellow-400 hover:shadow-md transition">
+    <div class="card-bg rounded-xl shadow-sm p-5 border-l-4 border-yellow-400 hover:shadow-md transition">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Stock Bajo</p>
-                <p class="text-3xl font-bold text-gray-800">{{ low_stock_count }}</p>
+                <p class="text-muted text-xs uppercase tracking-wider mb-1">Stock Bajo</p>
+                <p class="text-3xl font-bold text-main">{{ low_stock_count }}</p>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(250,204,21,0.12);">
                 <i class="fas fa-exclamation-triangle text-yellow-400"></i>
             </div>
         </div>
     </div>
-    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-400 hover:shadow-md transition">
+    <div class="card-bg rounded-xl shadow-sm p-5 border-l-4 border-red-400 hover:shadow-md transition">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Préstamos Vencidos</p>
-                <p class="text-3xl font-bold text-gray-800">{{ overdue_loans }}</p>
+                <p class="text-muted text-xs uppercase tracking-wider mb-1">Préstamos Vencidos</p>
+                <p class="text-3xl font-bold text-main">{{ overdue_loans }}</p>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center">
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(248,113,113,0.12);">
                 <i class="fas fa-clock text-red-400"></i>
             </div>
         </div>
@@ -70,15 +70,16 @@
 
 <!-- Buscador + Gráfica -->
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+
     <!-- Buscador -->
-    <div class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+    <div class="card-bg rounded-xl shadow-sm p-6">
+        <h2 class="text-xs font-semibold text-muted uppercase tracking-wider mb-4 flex items-center gap-2">
             <i class="fas fa-search" style="color: #73956F;"></i> Buscar Artículo
         </h2>
         <div class="flex gap-3 mb-3">
             <input type="text" id="dashboardSearch"
                    placeholder="Nombre, código o descripción..."
-                   class="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-gray-800 text-sm"
+                   class="input-bg flex-1 px-4 py-2.5 border rounded-lg focus:outline-none text-sm"
                    autocomplete="off">
             <a id="btnVerTodos" href="#"
                class="hidden px-4 py-2.5 border rounded-lg font-medium transition hover:opacity-80 flex items-center text-xs"
@@ -87,20 +88,20 @@
             </a>
         </div>
         <div id="searchResults" class="hidden">
-            <div id="searchLoading" class="hidden text-center py-5 text-gray-400 text-sm">
+            <div id="searchLoading" class="hidden text-center py-5 text-muted text-sm">
                 <i class="fas fa-spinner fa-spin mb-2 block"></i>Buscando...
             </div>
-            <div id="searchEmpty" class="hidden text-center py-6 text-gray-400 text-sm">
+            <div id="searchEmpty" class="hidden text-center py-6 text-muted text-sm">
                 <i class="fas fa-box-open mb-2 block text-xl"></i>Sin resultados
             </div>
-            <div id="searchList" class="divide-y divide-gray-100 rounded-lg border border-gray-100 overflow-hidden"></div>
+            <div id="searchList" class="divide-y divider rounded-lg border card-border overflow-hidden"></div>
         </div>
     </div>
 
     <!-- Gráfica -->
     {% if grafica_activa %}
-    <div class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+    <div class="card-bg rounded-xl shadow-sm p-6">
+        <h2 class="text-xs font-semibold text-muted uppercase tracking-wider mb-4 flex items-center gap-2">
             <i class="fas fa-chart-bar" style="color: #73956F;"></i>
             <span id="graficaTitulo"></span>
         </h2>
@@ -115,8 +116,8 @@
 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
     <!-- Acciones Rápidas -->
-    <div class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+    <div class="card-bg rounded-xl shadow-sm p-6">
+        <h2 class="text-xs font-semibold text-muted uppercase tracking-wider mb-4 flex items-center gap-2">
             <i class="fas fa-bolt text-yellow-400"></i> Acciones Rápidas
         </h2>
         <div class="grid grid-cols-2 gap-3">
@@ -148,14 +149,14 @@
     </div>
 
     <!-- Movimientos Recientes -->
-    <div class="bg-white rounded-xl shadow-sm p-6">
-        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+    <div class="card-bg rounded-xl shadow-sm p-6">
+        <h2 class="text-xs font-semibold text-muted uppercase tracking-wider mb-4 flex items-center gap-2">
             <i class="fas fa-history" style="color: #916C80;"></i> Movimientos Recientes
         </h2>
         {% if recent_movements %}
-        <div class="divide-y divide-gray-100">
+        <div class="divide-y divider">
             {% for movement in recent_movements %}
-            <div class="py-3 flex items-center justify-between">
+            <div class="py-3 flex items-center justify-between hover-row transition px-1 rounded">
                 <div class="flex items-center gap-3">
                     <span class="px-2 py-0.5 rounded-full text-xs font-medium
                         {% if movement.movement_type == 'entry' %}bg-green-100 text-green-700
@@ -170,10 +171,10 @@
                            class="text-sm font-medium hover:underline" style="color: #73956F;">
                             {{ movement.article.name }}
                         </a>
-                        <p class="text-xs text-gray-400">{{ movement.created_at|date:"d/m/Y H:i" }}</p>
+                        <p class="text-xs text-muted">{{ movement.created_at|date:"d/m/Y H:i" }}</p>
                     </div>
                 </div>
-                <span class="text-sm font-semibold text-gray-600">
+                <span class="text-sm font-semibold text-sub">
                     {{ movement.quantity }} {{ movement.article.unit }}
                 </span>
             </div>
@@ -185,7 +186,7 @@
             </a>
         </div>
         {% else %}
-        <p class="text-gray-400 text-center py-8 text-sm">No hay movimientos registrados</p>
+        <p class="text-muted text-center py-8 text-sm">No hay movimientos registrados</p>
         {% endif %}
     </div>
 </div>
@@ -229,15 +230,15 @@ input.addEventListener('input', function() {
                 btnVerTodos.href = `/articles/?query=${encodeURIComponent(query)}`;
                 btnVerTodos.classList.remove('hidden');
                 list.innerHTML = data.results.map(a => `
-                    <a href="${a.url}" class="flex items-center justify-between px-4 py-3 hover:bg-stone-50 transition">
+                    <a href="${a.url}" class="hover-row flex items-center justify-between px-4 py-3 transition">
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                                 style="background: ${a.color}20;">
+                                 style="background: ${a.color}25;">
                                 <i class="fas fa-box text-xs" style="color: ${a.color};"></i>
                             </div>
                             <div>
-                                <p class="font-medium text-gray-800 text-sm">${a.name}</p>
-                                <p class="text-xs text-gray-400">
+                                <p class="font-medium text-main text-sm">${a.name}</p>
+                                <p class="text-xs text-muted">
                                     <i class="fas fa-barcode mr-1"></i>${a.code}
                                     &nbsp;&middot;&nbsp;
                                     <i class="fas fa-tag mr-1"></i>${a.category}
@@ -247,7 +248,7 @@ input.addEventListener('input', function() {
                             </div>
                         </div>
                         <div class="text-right ml-4 flex-shrink-0">
-                            <p class="font-semibold text-gray-700 text-sm">${a.quantity} ${a.unit}</p>
+                            <p class="font-semibold text-sub text-sm">${a.quantity} ${a.unit}</p>
                             <span class="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">${a.status}</span>
                         </div>
                     </a>
@@ -275,8 +276,16 @@ document.addEventListener('click', function(e) {
         results.classList.add('hidden');
 });
 
-// GRÁFICA
-const PALETA = ['#73956F','#916C80','#A594F9','#000000','#5a7a56','#7a5a6b','#8b7fd4','#444444'];
+// GRÁFICA — adaptar colores al tema activo
+function getChartColors() {
+    const isDark = document.documentElement.classList.contains('dark');
+    return {
+        grid: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+        tick: isDark ? '#6b7280' : '#9ca3af',
+        palette: ['#73956F','#916C80','#A594F9','#5a7a56','#7a5a6b','#8b7fd4','#444','#ccc']
+    };
+}
+
 const graficaActiva = '{{ grafica_activa }}';
 
 const datos = {
@@ -293,16 +302,14 @@ const datos = {
         tipo: 'bar',
         labels: [{% for d in top_precio %}'{{ d.name|truncatechars:18 }}'{% if not forloop.last %},{% endif %}{% endfor %}],
         valores: [{% for d in top_precio %}{{ d.price }}{% if not forloop.last %},{% endif %}{% endfor %}],
-        colores: null,
-        labelEje: 'Precio ($)'
+        colores: null, labelEje: 'Precio ($)'
     },
     movimientos_mes: {
         titulo: 'Movimientos del último mes',
         tipo: 'doughnut',
         labels: [{% for d in movimientos_mes %}'{{ d.label }}'{% if not forloop.last %},{% endif %}{% endfor %}],
         valores: [{% for d in movimientos_mes %}{{ d.total }}{% if not forloop.last %},{% endif %}{% endfor %}],
-        colores: null,
-        labelEje: null
+        colores: null, labelEje: null
     },
     valor_categoria: {
         titulo: 'Valor del inventario por categoría',
@@ -317,26 +324,25 @@ const datos = {
         tipo: 'bar',
         labels: [{% for d in cantidad_ubicacion %}'{{ d.name }}'{% if not forloop.last %},{% endif %}{% endfor %}],
         valores: [{% for d in cantidad_ubicacion %}{{ d.total }}{% if not forloop.last %},{% endif %}{% endfor %}],
-        colores: null,
-        labelEje: 'Cantidad'
+        colores: null, labelEje: 'Cantidad'
     },
     valor_ubicacion: {
         titulo: 'Ubicaciones más valorizadas',
         tipo: 'bar',
         labels: [{% for d in valor_ubicacion %}'{{ d.name }}'{% if not forloop.last %},{% endif %}{% endfor %}],
         valores: [{% for d in valor_ubicacion %}{{ d.valor|floatformat:0 }}{% if not forloop.last %},{% endif %}{% endfor %}],
-        colores: null,
-        labelEje: 'Valor ($)'
+        colores: null, labelEje: 'Valor ($)'
     }
 };
 
 if (graficaActiva && datos[graficaActiva]) {
     const d = datos[graficaActiva];
+    const c = getChartColors();
     document.getElementById('graficaTitulo').textContent = d.titulo;
 
     const colores = d.colores && d.colores.length
         ? d.colores
-        : d.labels.map((_, i) => PALETA[i % PALETA.length]);
+        : d.labels.map((_, i) => c.palette[i % c.palette.length]);
 
     const ctx = document.getElementById('graficaPrincipal').getContext('2d');
 
@@ -345,12 +351,12 @@ if (graficaActiva && datos[graficaActiva]) {
             type: 'doughnut',
             data: {
                 labels: d.labels,
-                datasets: [{ data: d.valores, backgroundColor: colores, borderWidth: 2, borderColor: '#F1E9DB' }]
+                datasets: [{ data: d.valores, backgroundColor: colores, borderWidth: 2, borderColor: 'transparent' }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: 'right', labels: { font: { size: 11 }, padding: 14 } } }
+                plugins: { legend: { position: 'right', labels: { font: { size: 11 }, padding: 14, color: c.tick } } }
             }
         });
     } else {
@@ -361,7 +367,7 @@ if (graficaActiva && datos[graficaActiva]) {
                 datasets: [{
                     label: d.labelEje,
                     data: d.valores,
-                    backgroundColor: colores.map(c => c + 'BB'),
+                    backgroundColor: colores.map(col => col + 'BB'),
                     borderColor: colores,
                     borderWidth: 1.5,
                     borderRadius: 5,
@@ -374,12 +380,12 @@ if (graficaActiva && datos[graficaActiva]) {
                 scales: {
                     y: {
                         beginAtZero: true,
-                        ticks: { font: { size: 11 }, color: '#9CA3AF' },
-                        grid: { color: 'rgba(0,0,0,0.04)' },
-                        title: { display: true, text: d.labelEje, font: { size: 11 }, color: '#9CA3AF' }
+                        ticks: { font: { size: 11 }, color: c.tick },
+                        grid: { color: c.grid },
+                        title: { display: true, text: d.labelEje, font: { size: 11 }, color: c.tick }
                     },
                     x: {
-                        ticks: { font: { size: 10 }, color: '#9CA3AF' },
+                        ticks: { font: { size: 10 }, color: c.tick },
                         grid: { display: false }
                     }
                 }

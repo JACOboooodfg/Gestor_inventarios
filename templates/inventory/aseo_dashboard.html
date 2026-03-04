@@ -5,63 +5,64 @@
 {% block content %}
 <!-- Estadísticas -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-    <div class="glass-strong rounded-xl p-6">
+    <div class="card-bg rounded-xl p-6 shadow-sm border card-border">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-500 text-xs uppercase tracking-wider mb-1">Total Productos</p>
-                <p class="text-4xl font-bold" style="color: #424C55;">{{ total_productos }}</p>
+                <p class="text-muted text-xs uppercase tracking-wider mb-1">Total Productos</p>
+                <p class="text-4xl font-bold text-main">{{ total_productos }}</p>
             </div>
-            <div class="w-14 h-14 rounded-xl flex items-center justify-center" style="background: rgba(66,76,85,0.1);">
-                <i class="fas fa-box text-2xl" style="color: #424C55;"></i>
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center" style="background: rgba(115,149,111,0.15);">
+                <i class="fas fa-box text-2xl" style="color: #73956F;"></i>
             </div>
         </div>
     </div>
-    <div class="glass-strong rounded-xl p-6">
+    <div class="card-bg rounded-xl p-6 shadow-sm border card-border">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-500 text-xs uppercase tracking-wider mb-1">Stock Bajo</p>
-                <p class="text-4xl font-bold text-yellow-600">{{ stock_bajo }}</p>
+                <p class="text-muted text-xs uppercase tracking-wider mb-1">Stock Bajo</p>
+                <p class="text-4xl font-bold text-yellow-500">{{ stock_bajo }}</p>
             </div>
-            <div class="w-14 h-14 rounded-xl bg-yellow-50 flex items-center justify-center">
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center" style="background: rgba(250,204,21,0.12);">
                 <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl"></i>
             </div>
         </div>
     </div>
-    <div class="glass-strong rounded-xl p-6">
+    <div class="card-bg rounded-xl p-6 shadow-sm border card-border">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-500 text-xs uppercase tracking-wider mb-1">Ubicaciones</p>
-                <p class="text-4xl font-bold" style="color: #424C55;">{{ ubicaciones }}</p>
+                <p class="text-muted text-xs uppercase tracking-wider mb-1">Ubicaciones</p>
+                <p class="text-4xl font-bold text-main">{{ ubicaciones }}</p>
             </div>
-            <div class="w-14 h-14 rounded-xl flex items-center justify-center" style="background: rgba(66,76,85,0.1);">
-                <i class="fas fa-map-marker-alt text-2xl" style="color: #424C55;"></i>
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center" style="background: rgba(145,108,128,0.15);">
+                <i class="fas fa-map-marker-alt text-2xl" style="color: #916C80;"></i>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Búsqueda + Nuevo Producto -->
-<div class="glass-strong rounded-xl p-6 mb-8">
+<div class="card-bg rounded-xl p-6 mb-8 shadow-sm border card-border">
     <div class="flex flex-col md:flex-row gap-4">
         <form method="get" class="flex gap-4 flex-1">
             <input type="text" name="q" value="{{ query }}"
                    placeholder="Buscar producto..."
-                   class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 text-gray-800">
+                   class="input-bg flex-1 px-4 py-3 border rounded-xl focus:outline-none text-sm">
             <button type="submit"
-                    class="px-6 py-3 text-white rounded-xl hover:opacity-90 transition font-medium"
-                    style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
+                    class="px-6 py-3 text-white rounded-xl hover:opacity-90 transition font-medium text-sm"
+                    style="background: #73956F;">
                 <i class="fas fa-search mr-2"></i>Buscar
             </button>
             {% if query %}
             <a href="{% url 'aseo_dashboard' %}"
-               class="px-5 py-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition font-medium">
+               class="px-5 py-3 rounded-xl hover:opacity-80 transition font-medium text-sm"
+               style="background: rgba(145,108,128,0.15); color: #916C80;">
                 <i class="fas fa-times mr-1"></i>Limpiar
             </a>
             {% endif %}
         </form>
         <button onclick="document.getElementById('modalNuevoProducto').classList.remove('hidden')"
-                class="px-6 py-3 text-white rounded-xl font-medium transition hover:opacity-90 flex items-center gap-2"
-                style="background: linear-gradient(135deg, #886F68 0%, #3D2C2E 100%);">
+                class="px-6 py-3 text-white rounded-xl font-medium transition hover:opacity-90 flex items-center gap-2 text-sm"
+                style="background: #916C80;">
             <i class="fas fa-plus"></i> Nuevo Producto
         </button>
     </div>
@@ -72,14 +73,14 @@
 
     <!-- Lista de Productos (2/3) -->
     <div class="lg:col-span-2">
-        <div class="glass-strong rounded-xl overflow-hidden">
+        <div class="card-bg rounded-xl overflow-hidden shadow-sm border card-border">
             <div class="px-6 py-4 flex items-center justify-between"
-                 style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
-                <h2 class="text-lg font-bold text-white">
-                    <i class="fas fa-spray-can mr-2"></i>Productos de Aseo
+                 style="background: #000000;">
+                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-spray-can"></i>Productos de Aseo
                 </h2>
                 {% if query %}
-                <span class="text-xs text-white opacity-70">{{ productos|length }} resultado(s)</span>
+                <span class="text-xs text-white opacity-60">{{ productos|length }} resultado(s)</span>
                 {% endif %}
             </div>
 
@@ -87,22 +88,22 @@
             <div class="p-4 space-y-3">
                 {% for producto in productos %}
                 <div id="producto-{{ producto.pk }}"
-                     class="bg-white border {% if producto.is_low_stock %}border-yellow-300 bg-yellow-50{% else %}border-gray-100{% endif %} rounded-xl p-4 hover:shadow-md transition">
+                     class="card-bg border {% if producto.is_low_stock %}border-yellow-400{% else %}card-border{% endif %} rounded-xl p-4 hover:shadow-md transition">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center space-x-3 flex-1">
                             <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
-                                 style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
+                                 style="background: #73956F;">
                                 <i class="fas fa-spray-can text-white"></i>
                             </div>
                             <div class="flex-1">
-                                <h3 class="font-semibold text-gray-800">{{ producto.name }}</h3>
+                                <h3 class="font-semibold text-main">{{ producto.name }}</h3>
                                 {% if producto.location %}
-                                <p class="text-xs text-gray-400">
+                                <p class="text-xs text-muted">
                                     <i class="fas fa-map-marker-alt mr-1"></i>{{ producto.location.name }}
                                 </p>
                                 {% endif %}
                                 {% if producto.is_low_stock %}
-                                <span class="text-xs text-yellow-600 font-medium">
+                                <span class="text-xs text-yellow-500 font-medium">
                                     <i class="fas fa-exclamation-triangle mr-1"></i>Stock bajo
                                 </span>
                                 {% endif %}
@@ -116,9 +117,9 @@
                             </button>
 
                             <div class="text-center min-w-[70px]">
-                                <p class="text-3xl font-bold {% if producto.is_low_stock %}text-red-500{% else %}text-gray-800{% endif %}"
+                                <p class="text-3xl font-bold {% if producto.is_low_stock %}text-red-500{% else %}text-main{% endif %}"
                                    id="cantidad-{{ producto.pk }}">{{ producto.quantity }}</p>
-                                <p class="text-xs text-gray-400">{{ producto.unit }}</p>
+                                <p class="text-xs text-muted">{{ producto.unit }}</p>
                             </div>
 
                             <button onclick="ajustarCantidad({{ producto.pk }}, 1)"
@@ -126,13 +127,13 @@
                                 <i class="fas fa-plus text-sm"></i>
                             </button>
 
-                            <div class="w-px h-8 bg-gray-200 mx-1"></div>
+                            <div class="w-px h-8 mx-1" style="background: rgba(128,128,128,0.3);"></div>
 
                             <form method="post" action="{% url 'aseo_eliminar_producto' producto.pk %}"
                                   onsubmit="return confirm('¿Eliminar {{ producto.name }} permanentemente?')">
                                 {% csrf_token %}
                                 <button type="submit"
-                                        class="w-10 h-10 hover:bg-red-50 text-red-400 hover:text-red-600 rounded-lg transition">
+                                        class="w-10 h-10 text-red-400 hover:text-red-600 rounded-lg transition hover:bg-red-50">
                                     <i class="fas fa-trash text-sm"></i>
                                 </button>
                             </form>
@@ -143,8 +144,8 @@
             </div>
             {% else %}
             <div class="text-center py-16">
-                <i class="fas fa-broom text-gray-200 text-6xl mb-4 block"></i>
-                <p class="text-gray-400 font-medium">
+                <i class="fas fa-broom text-4xl mb-4 block text-muted"></i>
+                <p class="text-muted font-medium">
                     {% if query %}No se encontró "{{ query }}"{% else %}No hay productos de aseo{% endif %}
                 </p>
             </div>
@@ -154,18 +155,17 @@
 
     <!-- Historial (1/3) -->
     <div class="lg:col-span-1">
-        <div class="glass-strong rounded-xl overflow-hidden">
-            <div class="px-6 py-4"
-                 style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
-                <h2 class="text-lg font-bold text-white">
-                    <i class="fas fa-history mr-2"></i>Historial
+        <div class="card-bg rounded-xl overflow-hidden shadow-sm border card-border">
+            <div class="px-6 py-4" style="background: #000000;">
+                <h2 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-history"></i>Historial
                 </h2>
             </div>
 
             {% if historial %}
-            <div id="historialLista" class="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
+            <div id="historialLista" class="divide-y divider max-h-[600px] overflow-y-auto">
                 {% for mov in historial %}
-                <div class="px-4 py-3 hover:bg-gray-50 transition">
+                <div class="hover-row px-4 py-3 transition">
                     <div class="flex items-start justify-between gap-2">
                         <div class="flex items-start gap-2 flex-1">
                             <div class="mt-0.5 w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0
@@ -173,20 +173,20 @@
                                 <i class="fas {% if mov.movement_type == 'entry' %}fa-plus text-green-600{% else %}fa-minus text-red-600{% endif %} text-xs"></i>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-gray-800 truncate">{{ mov.article.name }}</p>
-                                <p class="text-xs text-gray-400">
-                                    {{ mov.previous_quantity }} 
+                                <p class="text-sm font-medium text-main truncate">{{ mov.article.name }}</p>
+                                <p class="text-xs text-muted">
+                                    {{ mov.previous_quantity }}
                                     <i class="fas fa-arrow-right mx-1"></i>
                                     {{ mov.new_quantity }} {{ mov.article.unit }}
                                 </p>
-                                <p class="text-xs text-gray-400">{{ mov.user.username|default:"Sistema" }}</p>
+                                <p class="text-xs text-muted">{{ mov.user.username|default:"Sistema" }}</p>
                             </div>
                         </div>
                         <div class="text-right flex-shrink-0">
-                            <span class="text-xs font-semibold {% if mov.movement_type == 'entry' %}text-green-600{% else %}text-red-500{% endif %}">
+                            <span class="text-xs font-semibold {% if mov.movement_type == 'entry' %}text-green-500{% else %}text-red-500{% endif %}">
                                 {% if mov.movement_type == 'entry' %}+{% else %}-{% endif %}{{ mov.quantity }}
                             </span>
-                            <p class="text-xs text-gray-400 mt-0.5">{{ mov.created_at|date:"d/m H:i" }}</p>
+                            <p class="text-xs text-muted mt-0.5">{{ mov.created_at|date:"d/m H:i" }}</p>
                         </div>
                     </div>
                 </div>
@@ -194,8 +194,8 @@
             </div>
             {% else %}
             <div class="text-center py-12">
-                <i class="fas fa-history text-gray-200 text-4xl mb-3 block"></i>
-                <p class="text-gray-400 text-sm">Sin movimientos registrados</p>
+                <i class="fas fa-history text-3xl mb-3 block text-muted"></i>
+                <p class="text-muted text-sm">Sin movimientos registrados</p>
             </div>
             {% endif %}
         </div>
@@ -205,12 +205,12 @@
 
 <!-- MODAL: Nuevo Producto -->
 <div id="modalNuevoProducto" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
-     style="background: rgba(61,44,46,0.6); backdrop-filter: blur(4px);">
-    <div class="glass-strong rounded-2xl shadow-2xl w-full max-w-lg">
+     style="background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);">
+    <div class="card-bg rounded-2xl shadow-2xl w-full max-w-lg border card-border">
         <div class="px-8 py-6 rounded-t-2xl flex items-center justify-between"
-             style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
-            <h3 class="text-xl font-bold text-white">
-                <i class="fas fa-plus-circle mr-3"></i>Nuevo Producto de Aseo
+             style="background: #000000;">
+            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fas fa-plus-circle"></i>Nuevo Producto de Aseo
             </h3>
             <button onclick="document.getElementById('modalNuevoProducto').classList.add('hidden')"
                     class="text-white hover:opacity-70 transition text-xl">
@@ -220,26 +220,26 @@
         <form method="post" action="{% url 'aseo_crear_producto' %}" class="p-8 space-y-5">
             {% csrf_token %}
             <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
                     Nombre del producto *
                 </label>
                 <input type="text" name="name" required
                        placeholder="Ej: Jabón líquido, Desinfectante..."
-                       class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 text-gray-800">
+                       class="input-bg w-full px-4 py-3 border rounded-xl focus:outline-none text-sm">
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
                         Cantidad inicial
                     </label>
                     <input type="number" name="quantity" value="0" min="0"
-                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 text-gray-800">
+                           class="input-bg w-full px-4 py-3 border rounded-xl focus:outline-none text-sm">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
                         Unidad
                     </label>
-                    <select name="unit" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 text-gray-800">
+                    <select name="unit" class="input-bg w-full px-4 py-3 border rounded-xl focus:outline-none text-sm">
                         <option value="unidad">Unidad</option>
                         <option value="litro">Litro</option>
                         <option value="kg">Kilogramo</option>
@@ -251,10 +251,10 @@
                 </div>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
                     Ubicación
                 </label>
-                <select name="location" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 text-gray-800">
+                <select name="location" class="input-bg w-full px-4 py-3 border rounded-xl focus:outline-none text-sm">
                     <option value="">Sin ubicación</option>
                     {% for loc in locations %}
                     <option value="{{ loc.pk }}">{{ loc.name }}</option>
@@ -262,21 +262,22 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                    Cantidad mínima (alerta stock bajo)
+                <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                    Cantidad mínima
                 </label>
                 <input type="number" name="min_quantity" value="5" min="0"
-                       class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 text-gray-800">
+                       class="input-bg w-full px-4 py-3 border rounded-xl focus:outline-none text-sm">
             </div>
             <div class="flex gap-4 pt-2">
                 <button type="button"
                         onclick="document.getElementById('modalNuevoProducto').classList.add('hidden')"
-                        class="flex-1 py-3 bg-gray-100 text-gray-600 rounded-xl font-medium hover:bg-gray-200 transition">
+                        class="flex-1 py-3 rounded-xl font-medium transition text-sm"
+                        style="background: rgba(128,128,128,0.15); color: #9ca3af;">
                     Cancelar
                 </button>
                 <button type="submit"
-                        class="flex-1 py-3 text-white rounded-xl font-bold hover:opacity-90 transition"
-                        style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
+                        class="flex-1 py-3 text-white rounded-xl font-bold hover:opacity-90 transition text-sm"
+                        style="background: #73956F;">
                     <i class="fas fa-save mr-2"></i>Guardar
                 </button>
             </div>
@@ -300,11 +301,9 @@ function ajustarCantidad(productoId, cambio) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            // Actualizar cantidad en pantalla
             document.getElementById('cantidad-' + productoId).textContent = data.nueva_cantidad;
             showNotification(data.message, 'success');
 
-            // Agregar al historial en vivo sin recargar
             const lista = document.getElementById('historialLista');
             if (lista) {
                 const esEntrada = cambio > 0;
@@ -313,7 +312,8 @@ function ajustarCantidad(productoId, cambio) {
                             + ' ' + ahora.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'});
 
                 const div = document.createElement('div');
-                div.className = 'px-4 py-3 hover:bg-gray-50 transition border-b border-gray-100 bg-yellow-50';
+                div.className = 'hover-row px-4 py-3 transition border-b divider';
+                div.style.background = 'rgba(115,149,111,0.08)';
                 div.innerHTML = `
                     <div class="flex items-start justify-between gap-2">
                         <div class="flex items-start gap-2 flex-1">
@@ -322,23 +322,22 @@ function ajustarCantidad(productoId, cambio) {
                                 <i class="fas ${esEntrada ? 'fa-plus text-green-600' : 'fa-minus text-red-600'} text-xs"></i>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-sm font-medium text-gray-800">${data.nombre || 'Producto'}</p>
-                                <p class="text-xs text-gray-400">
+                                <p class="text-sm font-medium text-main">${data.nombre || 'Producto'}</p>
+                                <p class="text-xs text-muted">
                                     ${data.cantidad_anterior} <i class="fas fa-arrow-right mx-1"></i> ${data.nueva_cantidad}
                                 </p>
                             </div>
                         </div>
                         <div class="text-right flex-shrink-0">
-                            <span class="text-xs font-semibold ${esEntrada ? 'text-green-600' : 'text-red-500'}">
+                            <span class="text-xs font-semibold ${esEntrada ? 'text-green-500' : 'text-red-500'}">
                                 ${esEntrada ? '+' : ''}${cambio}
                             </span>
-                            <p class="text-xs text-gray-400 mt-0.5">${hora}</p>
+                            <p class="text-xs text-muted mt-0.5">${hora}</p>
                         </div>
                     </div>
                 `;
                 lista.insertBefore(div, lista.firstChild);
-                // Quitar fondo amarillo después de 2s
-                setTimeout(() => div.classList.remove('bg-yellow-50'), 2000);
+                setTimeout(() => div.style.background = '', 2000);
             }
         } else {
             showNotification(data.message, 'error');
