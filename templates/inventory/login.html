@@ -1,128 +1,191 @@
 {% extends 'base.html' %}
-
 {% block title %}Iniciar Sesión - Gestor Escolar{% endblock %}
 
+{% block extra_css %}
+<style>
+.auth-card {
+    background: rgba(255,255,255,0.97);
+    border: 1px solid rgba(115,149,111,0.2);
+    backdrop-filter: blur(20px);
+}
+html.dark .auth-card {
+    background: rgba(26,26,26,0.98);
+    border: 1px solid rgba(115,149,111,0.25);
+}
+.auth-input {
+    width: 100%; padding: 0.8rem 1rem 0.8rem 2.8rem;
+    border: 1.5px solid #e5e7eb; border-radius: 0.75rem;
+    font-size: 0.875rem; transition: all 0.2s;
+    background: #f9fafb; color: #111827; outline: none;
+}
+html.dark .auth-input { background: #242424; border-color: #333; color: #f5f5f5; }
+.auth-input::placeholder { color: #9ca3af; }
+.auth-input:focus { border-color: #73956F; box-shadow: 0 0 0 3px rgba(115,149,111,0.15); background: #fff; }
+html.dark .auth-input:focus { background: #2a2a2a; }
+.auth-input.error { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.12); }
+
+.auth-label { color: #374151; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.04em; display: block; margin-bottom: 0.4rem; }
+html.dark .auth-label { color: #d1d5db; }
+
+.btn-auth {
+    width: 100%; padding: 0.9rem; background: #73956F; color: white;
+    font-weight: 700; border-radius: 0.75rem; border: none;
+    cursor: pointer; font-size: 0.9rem; transition: all 0.2s;
+    letter-spacing: 0.03em;
+}
+.btn-auth:hover:not(:disabled) { background: #5a7a56; transform: translateY(-1px); box-shadow: 0 8px 20px rgba(115,149,111,0.3); }
+.btn-auth:active:not(:disabled) { transform: translateY(0); }
+.btn-auth:disabled { opacity: 0.7; cursor: not-allowed; }
+
+.input-wrap { position: relative; }
+.input-icon {
+    position: absolute; left: 0.9rem; top: 50%; transform: translateY(-50%);
+    color: #9ca3af; font-size: 0.8rem; pointer-events: none; transition: color 0.2s; z-index: 1;
+}
+.auth-input:focus ~ .input-icon { color: #73956F; }
+.eye-btn {
+    position: absolute; right: 0.9rem; top: 50%; transform: translateY(-50%);
+    color: #9ca3af; cursor: pointer; font-size: 0.8rem;
+    background: none; border: none; padding: 0; transition: color 0.2s; z-index: 1;
+}
+.eye-btn:hover { color: #73956F; }
+
+.divider-line { border-color: rgba(115,149,111,0.2); }
+.divider-txt { padding: 0 0.75rem; font-size: 0.75rem; color: #9ca3af; background: rgba(255,255,255,0.97); }
+html.dark .divider-txt { background: rgba(26,26,26,0.98); color: #6b7280; }
+.subtext { color: #6b7280; }
+html.dark .subtext { color: #9ca3af; }
+.link-auth { color: #73956F; font-weight: 600; }
+.link-auth:hover { text-decoration: underline; }
+
+@keyframes shake {
+    0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-5px)} 40%,80%{transform:translateX(5px)}
+}
+.shake { animation: shake 0.4s ease; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full">
-        <!-- Logo y Título -->
-        <div class="text-center mb-8">
-            <div class="inline-block bg-white bg-opacity-20 p-6 rounded-full mb-4">
-                <i class="fas fa-boxes text-white text-5xl"></i>
-            </div>
-            <h2 class="text-4xl font-bold text-white mb-2">
-                Bienvenido
-            </h2>
-            <p class="text-white text-opacity-80">
-                Gestor Escolar
-            </p>
-        </div>
-        
-        <!-- Card de Login -->
-        <div class="glass-strong rounded-2xl shadow-2xl p-8">
-            <form method="post" action="{% url 'login' %}" class="space-y-6">
-                {% csrf_token %}
-                
-                <!-- Username -->
-                <div>
-                    <label for="id_username" class="block text-sm font-medium mb-2" style="color: #3D2C2E;">
-                        <i class="fas fa-user mr-2" style="color: #424C55;"></i>Usuario
-                    </label>
-                    <div class="relative">
-                        <input 
-                            type="text" 
-                            name="username" 
-                            id="id_username"
-                            required
-                            class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-xl focus:ring-4 focus:ring-opacity-20 focus:border-opacity-50 transition-all"
-                            placeholder="Ingresa tu usuario"
-                        >
-                        <i class="fas fa-user absolute left-4 top-4 text-gray-400"></i>
-                    </div>
-                </div>
-                
-                <!-- Password -->
-                <div>
-                    <label for="id_password" class="block text-sm font-medium mb-2" style="color: #3D2C2E;">
-                        <i class="fas fa-lock mr-2" style="color: #424C55;"></i>Contraseña
-                    </label>
-                    <div class="relative">
-                        <input 
-                            type="password" 
-                            name="password" 
-                            id="id_password"
-                            required
-                            class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-xl focus:ring-4 focus:ring-opacity-20 transition-all"
-                            placeholder="Ingresa tu contraseña"
-                        >
-                        <i class="fas fa-lock absolute left-4 top-4 text-gray-400"></i>
-                    </div>
-                </div>
-                
-                <!-- Remember Me -->
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center">
-                        <input 
-                            id="remember_me" 
-                            name="remember_me" 
-                            type="checkbox" 
-                            class="h-4 w-4 border-gray-300 rounded"
-                        >
-                        <label for="remember_me" class="ml-2 block text-sm text-gray-700">
-                            Recordarme
-                        </label>
-                    </div>
-                </div>
-                
-                <!-- Submit Button -->
-                <button 
-                    type="submit" 
-                    class="w-full btn-modern gradient-primary text-white font-bold py-4 px-6 rounded-xl shadow-lg"
-                >
-                    <i class="fas fa-sign-in-alt mr-2"></i>
-                    Iniciar Sesión
-                </button>
-            </form>
-            
-            <!-- Google Login -->
-            {% if google_login_enabled %}
-            <div class="mt-6">
-                <div class="relative">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-300"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-white text-gray-500">O continúa con</span>
-                    </div>
-                </div>
+<div class="min-h-[80vh] flex items-center justify-center py-12 px-4">
+<div class="w-full max-w-md">
 
-                <div class="mt-6">
-                    <a href="{% url 'social:begin' 'google-oauth2' %}" 
-                       class="w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-all">
-                        <svg class="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                        </svg>
-                        Iniciar sesión con Google
-                    </a>
+    <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-xl"
+             style="background: linear-gradient(135deg,#73956F,#916C80);">
+            <i class="fas fa-boxes text-white text-2xl"></i>
+        </div>
+        <h1 class="text-3xl font-bold text-main">Bienvenido</h1>
+        <p class="subtext text-sm mt-1">Gestor Escolar · Inventarios</p>
+    </div>
+
+    <div class="auth-card rounded-2xl shadow-2xl p-8">
+
+        {% if messages %}{% for message in messages %}
+        <div class="mb-5 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2
+            {% if message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% else %}bg-green-50 text-green-700 border border-green-200{% endif %}">
+            <i class="fas {% if message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-check{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endfor %}{% endif %}
+
+        <div id="inlineError" class="hidden mb-5 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 bg-red-50 text-red-700 border border-red-200">
+            <i class="fas fa-circle-exclamation"></i><span id="inlineErrorMsg"></span>
+        </div>
+
+        <form method="post" action="{% url 'login' %}" id="loginForm" class="space-y-5" novalidate>
+            {% csrf_token %}
+
+            <div>
+                <label class="auth-label" for="id_username">
+                    <i class="fas fa-user mr-1.5" style="color:#73956F;"></i>Usuario
+                </label>
+                <div class="input-wrap">
+                    <input type="text" name="username" id="id_username" required
+                           class="auth-input" placeholder="Tu nombre de usuario" autocomplete="username">
+                    <i class="fas fa-user input-icon"></i>
                 </div>
             </div>
-            {% endif %}
-            
-            <!-- Register Link -->
-            <div class="mt-6 text-center">
-                <p class="text-sm text-gray-600">
-                    ¿No tienes una cuenta? 
-                    <a href="{% url 'register' %}" class="font-medium hover:underline transition-colors" style="color: #424C55;">
-                        Regístrate aquí
-                    </a>
-                </p>
-            </div>
-        </div>
-        
 
+            <div>
+                <label class="auth-label" for="id_password">
+                    <i class="fas fa-lock mr-1.5" style="color:#73956F;"></i>Contraseña
+                </label>
+                <div class="input-wrap">
+                    <input type="password" name="password" id="id_password" required
+                           class="auth-input pr-10" placeholder="Tu contraseña" autocomplete="current-password">
+                    <i class="fas fa-lock input-icon"></i>
+                    <button type="button" class="eye-btn" onclick="togglePwd('id_password',this)">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <input type="checkbox" id="remember_me" name="remember_me" class="w-4 h-4 rounded cursor-pointer" style="accent-color:#73956F;">
+                <label for="remember_me" class="text-sm subtext cursor-pointer">Recordarme</label>
+            </div>
+
+            <button type="submit" class="btn-auth" id="loginBtn">
+                <i class="fas fa-sign-in-alt mr-2"></i>Iniciar Sesión
+            </button>
+        </form>
+
+        {% if google_login_enabled %}
+        <div class="mt-6 relative flex items-center">
+            <div class="flex-1 border-t divider-line"></div>
+            <span class="divider-txt">O continúa con</span>
+            <div class="flex-1 border-t divider-line"></div>
+        </div>
+        <div class="mt-4">
+            <a href="{% url 'social:begin' 'google-oauth2' %}"
+               class="w-full flex justify-center items-center px-4 py-3 rounded-xl text-sm font-semibold transition border divider-line subtext hover:opacity-80"
+               style="background:rgba(115,149,111,0.06);">
+                <svg class="w-5 h-5 mr-2.5" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Iniciar sesión con Google
+            </a>
+        </div>
+        {% endif %}
+
+        <div class="mt-6 text-center text-sm subtext">
+            ¿No tienes cuenta? <a href="{% url 'register' %}" class="link-auth ml-1">Regístrate aquí</a>
+        </div>
     </div>
 </div>
+</div>
+<script>
+function togglePwd(id, btn) {
+    const inp = document.getElementById(id);
+    const ico = btn.querySelector('i');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    ico.className = inp.type === 'password' ? 'fas fa-eye' : 'fas fa-eye-slash';
+}
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    const u = document.getElementById('id_username').value.trim();
+    const p = document.getElementById('id_password').value;
+    const errBox = document.getElementById('inlineError');
+    const errMsg = document.getElementById('inlineErrorMsg');
+
+    document.querySelectorAll('.auth-input').forEach(i => i.classList.remove('error'));
+    errBox.classList.add('hidden');
+
+    if (!u || !p) {
+        e.preventDefault();
+        errMsg.textContent = !u ? 'El usuario es requerido' : 'La contraseña es requerida';
+        if (!u) document.getElementById('id_username').classList.add('error');
+        if (!p) document.getElementById('id_password').classList.add('error');
+        errBox.classList.remove('hidden');
+        this.classList.add('shake');
+        setTimeout(() => this.classList.remove('shake'), 400);
+        return;
+    }
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Iniciando...';
+});
+</script>
 {% endblock %}

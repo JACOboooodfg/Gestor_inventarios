@@ -1,24 +1,54 @@
 {% extends 'base.html' %}
-
 {% block title %}Artículos - Gestor Escolar{% endblock %}
 
+{% block extra_css %}
+<style>
+/* Make Django form widgets respect dark mode */
+.search-form select,
+.search-form input[type="text"],
+.search-form input[type="date"] {
+    width: 100%;
+    padding: 0.6rem 0.9rem;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    background: #f9fafb;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.2s;
+}
+html.dark .search-form select,
+html.dark .search-form input[type="text"],
+html.dark .search-form input[type="date"] {
+    background: #242424;
+    border-color: #333;
+    color: #f5f5f5;
+}
+.search-form select:focus,
+.search-form input:focus {
+    border-color: #73956F;
+    box-shadow: 0 0 0 3px rgba(115,149,111,0.12);
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="flex justify-between items-center mb-8">
+<div class="flex flex-wrap justify-between items-center mb-8 gap-4">
     <div>
         <h1 class="text-3xl font-bold text-main mb-1 flex items-center gap-3">
-            <i class="fas fa-box" style="color: #73956F;"></i>Artículos
+            <i class="fas fa-box" style="color:#73956F;"></i>Artículos
         </h1>
         <p class="text-sub text-sm">{{ total_count }} artículos en total</p>
     </div>
-    <div class="flex gap-3">
+    <div class="flex flex-wrap gap-3">
         <a href="{% url 'article_create' %}"
            class="text-white font-semibold py-2.5 px-5 rounded-xl transition shadow inline-flex items-center text-sm"
-           style="background: #73956F;">
+           style="background:#73956F;">
             <i class="fas fa-plus mr-2"></i>Nuevo Artículo
         </a>
         <a href="{% url 'import_preview' %}"
            class="text-white font-semibold py-2.5 px-5 rounded-xl transition shadow inline-flex items-center text-sm"
-           style="background: #916C80;">
+           style="background:#916C80;">
             <i class="fas fa-file-import mr-2"></i>Importar Excel
         </a>
         <a href="{% url 'export_articles' %}?{{ request.GET.urlencode }}"
@@ -29,7 +59,7 @@
 </div>
 
 <!-- Filtros -->
-<div class="card-bg rounded-xl shadow-sm p-6 mb-8 border card-border">
+<div class="card-bg rounded-xl shadow-sm p-6 mb-8 border card-border search-form">
     <form method="get" class="space-y-4">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
@@ -79,14 +109,11 @@
             <div></div>
         </div>
         <div class="flex gap-3">
-            <button type="submit"
-                    class="text-white font-semibold py-2 px-6 rounded-xl transition text-sm"
-                    style="background: #73956F;">
+            <button type="submit" class="text-white font-semibold py-2 px-6 rounded-xl transition text-sm" style="background:#73956F;">
                 <i class="fas fa-filter mr-2"></i>Filtrar
             </button>
-            <a href="{% url 'article_list' %}"
-               class="font-semibold py-2 px-6 rounded-xl transition text-sm"
-               style="background: rgba(145,108,128,0.15); color: #916C80;">
+            <a href="{% url 'article_list' %}" class="font-semibold py-2 px-6 rounded-xl transition text-sm"
+               style="background:rgba(145,108,128,0.15);color:#916C80;">
                 <i class="fas fa-times mr-2"></i>Limpiar
             </a>
         </div>
@@ -99,79 +126,74 @@
     <div class="overflow-x-auto">
         <table class="w-full">
             <thead>
-                <tr class="border-b card-border" style="background: rgba(115,149,111,0.08);">
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Código</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Nombre</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Categoría</th>
-                    <th class="px-6 py-4 text-center text-xs font-semibold text-muted uppercase tracking-wider">Cantidad</th>
-                    <th class="px-6 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Ubicación</th>
-                    <th class="px-6 py-4 text-center text-xs font-semibold text-muted uppercase tracking-wider">Fecha Compra</th>
-                    <th class="px-6 py-4 text-center text-xs font-semibold text-muted uppercase tracking-wider">Proveedor</th>
-                    <th class="px-6 py-4 text-center text-xs font-semibold text-muted uppercase tracking-wider">Estado</th>
-                    <th class="px-6 py-4 text-center text-xs font-semibold text-muted uppercase tracking-wider">Acciones</th>
+                <tr class="border-b card-border" style="background:rgba(115,149,111,0.08);">
+                    <th class="px-5 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Código</th>
+                    <th class="px-5 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Nombre</th>
+                    <th class="px-5 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Categoría</th>
+                    <th class="px-5 py-4 text-center text-xs font-semibold text-muted uppercase tracking-wider">Cantidad</th>
+                    <th class="px-5 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Ubicación</th>
+                    <th class="px-5 py-4 text-center text-xs font-semibold text-muted uppercase tracking-wider">Fecha Compra</th>
+                    <th class="px-5 py-4 text-center text-xs font-semibold text-muted uppercase tracking-wider">Proveedor</th>
+                    <th class="px-5 py-4 text-center text-xs font-semibold text-muted uppercase tracking-wider">Estado</th>
+                    <th class="px-5 py-4 text-center text-xs font-semibold text-muted uppercase tracking-wider">Acciones</th>
                 </tr>
             </thead>
             <tbody class="divide-y divider">
                 {% for article in articles %}
                 <tr class="hover-row transition {% if article.is_low_stock %}border-l-2 border-yellow-400{% endif %}">
-                    <td class="px-6 py-4 text-sm font-medium text-sub">{{ article.code }}</td>
-                    <td class="px-6 py-4">
-                        <div class="flex items-center">
+                    <td class="px-5 py-4 text-xs font-medium text-sub">{{ article.code|default:"-" }}</td>
+                    <td class="px-5 py-4">
+                        <div class="flex items-center gap-3">
                             {% if article.image %}
-                            <img src="{{ article.image.url }}" alt="{{ article.name }}" class="w-10 h-10 rounded-lg object-cover mr-3">
+                            <img src="{{ article.image.url }}" alt="{{ article.name }}" class="w-9 h-9 rounded-lg object-cover flex-shrink-0">
                             {% else %}
-                            <div class="w-10 h-10 rounded-lg flex items-center justify-center mr-3"
-                                 style="background: rgba(115,149,111,0.12);">
-                                <i class="fas fa-box text-sm" style="color: #73956F;"></i>
+                            <div class="w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0"
+                                 style="background:rgba(115,149,111,0.12);">
+                                <i class="fas fa-box text-xs" style="color:#73956F;"></i>
                             </div>
                             {% endif %}
                             <div>
                                 <a href="{% url 'article_detail' article.pk %}"
-                                   class="text-sm font-semibold hover:underline" style="color: #73956F;">
+                                   class="text-sm font-semibold hover:underline" style="color:#73956F;">
                                     {{ article.name }}
                                 </a>
                                 {% if article.description %}
-                                <p class="text-xs text-muted">{{ article.description|truncatewords:8 }}</p>
+                                <p class="text-xs text-muted truncate max-w-[160px]">{{ article.description|truncatewords:6 }}</p>
                                 {% endif %}
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-5 py-4">
                         <span class="px-2.5 py-1 rounded-full text-xs font-semibold"
-                              style="background: {{ article.category.color }}20; color: {{ article.category.color }};">
+                              style="background:rgba(115,149,111,0.12);color:#73956F;">
                             {{ article.category.name }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-center">
+                    <td class="px-5 py-4 text-center">
                         <span class="font-bold text-sm {% if article.is_low_stock %}text-red-500{% else %}text-main{% endif %}">
                             {{ article.quantity }} {{ article.unit }}
                         </span>
                         {% if article.is_low_stock %}
-                        <br><span class="text-xs text-yellow-500"><i class="fas fa-exclamation-triangle mr-1"></i>Bajo</span>
+                        <br><span class="text-xs text-yellow-500">
+                            <i class="fas fa-exclamation-triangle mr-0.5"></i>Bajo
+                        </span>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4 text-sm text-sub">
+                    <td class="px-5 py-4 text-sm text-sub">
                         {% if article.location %}
                         <i class="fas fa-map-marker-alt mr-1 text-muted"></i>{{ article.location.name }}
-                        {% else %}
-                        <span class="text-muted">Sin ubicación</span>
-                        {% endif %}
+                        {% else %}<span class="text-muted">—</span>{% endif %}
                     </td>
-                    <td class="px-6 py-4 text-center text-sm text-sub">
-                        {% if article.purchase_date %}
-                            {{ article.purchase_date|date:"d/m/Y" }}
-                        {% else %}
-                            <span class="text-muted">-</span>
-                        {% endif %}
+                    <td class="px-5 py-4 text-center text-xs text-sub">
+                        {% if article.purchase_date %}{{ article.purchase_date|date:"d/m/Y" }}
+                        {% else %}<span class="text-muted">—</span>{% endif %}
                     </td>
-                    <td class="px-6 py-4 text-center text-sm text-sub">
+                    <td class="px-5 py-4 text-center text-xs text-sub">
                         {% if article.supplier %}
-                            <span class="text-xs" title="{{ article.supplier }}">{{ article.supplier|truncatechars:20 }}</span>
-                        {% else %}
-                            <span class="text-muted">-</span>
-                        {% endif %}
+                        <span title="{{ article.supplier }}">{{ article.supplier|truncatechars:18 }}</span>
+                        {% else %}<span class="text-muted">—</span>{% endif %}
                     </td>
-                    <td class="px-6 py-4 text-center">
+                    <td class="px-5 py-4 text-center">
                         <span class="px-2.5 py-1 rounded-full text-xs font-semibold
                             {% if article.status == 'available' %}bg-green-100 text-green-700
                             {% elif article.status == 'in_use' %}bg-blue-100 text-blue-700
@@ -181,23 +203,20 @@
                             {{ article.get_status_display }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-center">
+                    <td class="px-5 py-4">
                         <div class="flex justify-center gap-3">
-                            <a href="{% url 'article_detail' article.pk %}"
-                               class="text-blue-500 hover:text-blue-700 transition" title="Ver">
+                            <a href="{% url 'article_detail' article.pk %}" class="text-blue-400 hover:text-blue-600 transition" title="Ver">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{% url 'article_update' article.pk %}"
-                               style="color: #73956F;" class="hover:opacity-70 transition" title="Editar">
+                            <a href="{% url 'article_update' article.pk %}" style="color:#73956F;" class="hover:opacity-60 transition" title="Editar">
                                 <i class="fas fa-edit"></i>
                             </a>
                             <button onclick="toggleArticleStatus({{ article.pk }}, this)"
-                                    class="{% if article.status == 'available' %}text-yellow-500{% else %}text-green-500{% endif %} hover:opacity-70 transition"
+                                    class="{% if article.status == 'available' %}text-yellow-500{% else %}text-green-500{% endif %} hover:opacity-60 transition"
                                     title="Cambiar estado" data-status="{{ article.status }}">
                                 <i class="fas {% if article.status == 'available' %}fa-toggle-on{% else %}fa-toggle-off{% endif %}"></i>
                             </button>
-                            <a href="{% url 'article_delete' article.pk %}"
-                               class="text-red-500 hover:text-red-700 transition" title="Eliminar">
+                            <a href="{% url 'article_delete' article.pk %}" class="text-red-400 hover:text-red-600 transition" title="Eliminar">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </div>
@@ -208,32 +227,26 @@
         </table>
     </div>
 
-    <!-- Paginación -->
     {% if page_obj.has_other_pages %}
-    <div class="flex justify-center items-center gap-3 p-5 border-t divider">
+    <div class="flex justify-center items-center gap-3 p-5 border-t card-border">
         {% if page_obj.has_previous %}
         <a href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}"
-           class="px-4 py-2 text-white rounded-lg text-sm transition hover:opacity-90"
-           style="background: #73956F;">
-            Anterior
+           class="px-4 py-2 text-white rounded-lg text-sm transition hover:opacity-90" style="background:#73956F;">
+            ← Anterior
         </a>
         {% else %}
-        <span class="px-4 py-2 rounded-lg text-sm text-muted" style="background: rgba(128,128,128,0.1);">Anterior</span>
+        <span class="px-4 py-2 rounded-lg text-sm text-muted" style="background:rgba(128,128,128,0.1);">← Anterior</span>
         {% endif %}
-
         <span class="text-sub text-sm px-4">
             Página <strong class="text-main">{{ page_obj.number }}</strong> de <strong class="text-main">{{ page_obj.paginator.num_pages }}</strong>
-            &nbsp;·&nbsp; {{ total_count }} artículos
         </span>
-
         {% if page_obj.has_next %}
         <a href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}"
-           class="px-4 py-2 text-white rounded-lg text-sm transition hover:opacity-90"
-           style="background: #73956F;">
-            Siguiente
+           class="px-4 py-2 text-white rounded-lg text-sm transition hover:opacity-90" style="background:#73956F;">
+            Siguiente →
         </a>
         {% else %}
-        <span class="px-4 py-2 rounded-lg text-sm text-muted" style="background: rgba(128,128,128,0.1);">Siguiente</span>
+        <span class="px-4 py-2 rounded-lg text-sm text-muted" style="background:rgba(128,128,128,0.1);">Siguiente →</span>
         {% endif %}
     </div>
     {% endif %}
@@ -242,7 +255,7 @@
     <div class="text-center py-16">
         <i class="fas fa-box-open text-4xl mb-4 block text-muted"></i>
         <p class="text-sub text-lg mb-2">No se encontraron artículos</p>
-        <a href="{% url 'article_create' %}" class="text-sm hover:underline" style="color: #73956F;">
+        <a href="{% url 'article_create' %}" class="text-sm hover:underline" style="color:#73956F;">
             <i class="fas fa-plus mr-1"></i>Crear el primer artículo
         </a>
     </div>
@@ -253,7 +266,6 @@
 {% verbatim %}
 function toggleArticleStatus(articleId, button) {
     if (!confirm('¿Cambiar el estado de este artículo?')) return;
-
     fetch(`/articles/${articleId}/toggle-status/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') }
@@ -262,23 +274,22 @@ function toggleArticleStatus(articleId, button) {
     .then(data => {
         if (data.success) {
             const icon = button.querySelector('i');
-            const statusCell = button.closest('tr').querySelector('td:nth-child(8) span');
+            const row = button.closest('tr');
+            const statusCell = row.querySelector('td:nth-child(8) span');
             if (data.new_status === 'available') {
-                button.className = 'text-yellow-500 hover:opacity-70 transition';
+                button.className = 'text-yellow-500 hover:opacity-60 transition';
                 icon.className = 'fas fa-toggle-on';
                 statusCell.className = 'px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700';
             } else {
-                button.className = 'text-green-500 hover:opacity-70 transition';
+                button.className = 'text-green-500 hover:opacity-60 transition';
                 icon.className = 'fas fa-toggle-off';
                 statusCell.className = 'px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600';
             }
-            statusCell.textContent = data.status_display;
-            showNotification(data.message, 'success');
-        } else {
-            showNotification(data.message, 'error');
+            if (statusCell) statusCell.textContent = data.status_display;
+            if (typeof showNotification === 'function') showNotification(data.message, 'success');
         }
     })
-    .catch(() => showNotification('Error al cambiar el estado', 'error'));
+    .catch(() => { if (typeof showNotification === 'function') showNotification('Error al cambiar el estado', 'error'); });
 }
 {% endverbatim %}
 </script>

@@ -1,75 +1,181 @@
 {% extends 'base.html' %}
+{% block title %}Importar Inventario - Gestor Escolar{% endblock %}
 
-{% block title %}Importar Artículos - Vista Mejorada{% endblock %}
+{% block extra_css %}
+<style>
+.drop-zone {
+    border: 2.5px dashed rgba(115,149,111,0.4);
+    border-radius: 1rem;
+    transition: all 0.2s;
+    background: rgba(115,149,111,0.04);
+    cursor: pointer;
+}
+.drop-zone:hover, .drop-zone.dragging {
+    border-color: #73956F;
+    background: rgba(115,149,111,0.09);
+}
+html.dark .drop-zone {
+    border-color: rgba(115,149,111,0.35);
+    background: rgba(115,149,111,0.05);
+}
+html.dark .drop-zone:hover, html.dark .drop-zone.dragging {
+    border-color: #73956F;
+    background: rgba(115,149,111,0.1);
+}
+
+.step-badge {
+    width: 2.5rem; height: 2.5rem;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1rem; color: white;
+    background: #73956F; flex-shrink: 0;
+}
+
+.info-box {
+    background: rgba(115,149,111,0.08);
+    border-left: 3px solid #73956F;
+    border-radius: 0 0.75rem 0.75rem 0;
+}
+html.dark .info-box { background: rgba(115,149,111,0.1); }
+
+.warn-box {
+    background: rgba(234,179,8,0.08);
+    border-left: 3px solid #eab308;
+    border-radius: 0 0.75rem 0.75rem 0;
+}
+html.dark .warn-box { background: rgba(234,179,8,0.1); }
+
+.col-tag {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    background: rgba(115,149,111,0.12);
+    color: #73956F;
+}
+html.dark .col-tag { background: rgba(115,149,111,0.18); }
+
+.sheet-card {
+    background: rgba(115,149,111,0.05);
+    border: 1px solid rgba(115,149,111,0.15);
+    border-radius: 0.75rem;
+}
+html.dark .sheet-card {
+    background: rgba(115,149,111,0.07);
+    border-color: rgba(115,149,111,0.2);
+}
+
+.mapping-select {
+    width: 100%; padding: 0.6rem 0.8rem;
+    border: 1.5px solid #e5e7eb; border-radius: 0.6rem;
+    font-size: 0.8rem; outline: none; transition: border-color 0.2s;
+    background: #f9fafb; color: #111827;
+}
+html.dark .mapping-select { background: #242424; border-color: #333; color: #f5f5f5; }
+.mapping-select:focus { border-color: #73956F; }
+
+.btn-primary {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0.8rem 1.5rem; border-radius: 0.75rem;
+    background: #73956F; color: white; font-weight: 700;
+    font-size: 0.9rem; border: none; cursor: pointer;
+    transition: all 0.2s; letter-spacing: 0.02em;
+}
+.btn-primary:hover { background: #5a7a56; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(115,149,111,0.3); }
+
+.btn-secondary {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0.8rem 1.5rem; border-radius: 0.75rem;
+    font-weight: 600; font-size: 0.9rem; text-decoration: none;
+    transition: all 0.2s;
+    background: rgba(145,108,128,0.12); color: #916C80;
+}
+.btn-secondary:hover { background: rgba(145,108,128,0.2); }
+
+.preview-table th {
+    background: rgba(115,149,111,0.1);
+    color: #73956F; font-size: 0.72rem;
+    font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.05em; padding: 0.6rem 0.8rem;
+}
+html.dark .preview-table th { background: rgba(115,149,111,0.15); }
+.preview-table td { padding: 0.5rem 0.8rem; font-size: 0.8rem; }
+.preview-table tr:hover td { background: rgba(115,149,111,0.04); }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="max-w-7xl mx-auto">
+<div class="max-w-5xl mx-auto">
+
+    <!-- Header -->
     <div class="mb-8">
-        <h1 class="text-4xl font-bold text-gray-800 mb-2">
-            <i class="fas fa-file-import text-green-600 mr-3"></i>Importar Artículos desde Excel
+        <h1 class="text-3xl font-bold text-main mb-1 flex items-center gap-3">
+            <i class="fas fa-file-excel" style="color:#73956F;"></i>Importar Inventario
         </h1>
-        <p class="text-gray-600">Carga masiva con mapeo inteligente de columnas</p>
+        <p class="text-sub text-sm">Carga masiva desde Excel con detección inteligente</p>
     </div>
 
-    {% if step == 'upload' %}
-    <!-- PASO 1: SUBIR ARCHIVO -->
-    <div class="bg-white rounded-lg shadow-lg p-8">
-        <div class="mb-6">
-            <div class="flex items-center mb-4">
-                <div class="flex items-center justify-center w-10 h-10 bg-blue-600 text-white rounded-full mr-3">1</div>
-                <h2 class="text-2xl font-bold text-gray-800">Subir Archivo Excel</h2>
+    <!-- Progress steps -->
+    <div class="flex items-center gap-3 mb-8">
+        <div class="flex items-center gap-2">
+            <div class="step-badge" {% if step == 'preview' %}style="background:#5a7a56;"{% endif %}>1</div>
+            <span class="text-sm font-semibold {% if step == 'preview' %}text-muted{% else %}text-main{% endif %}">Subir archivo</span>
+        </div>
+        <div class="flex-1 h-px" style="background:rgba(115,149,111,0.3);"></div>
+        <div class="flex items-center gap-2">
+            <div class="step-badge" {% if step != 'preview' %}style="background:rgba(115,149,111,0.3);"{% endif %}>2</div>
+            <span class="text-sm font-semibold {% if step != 'preview' %}text-muted{% else %}text-main{% endif %}">Vista previa e importar</span>
+        </div>
+    </div>
+
+    {% if step == 'upload' or not step %}
+    <!-- ── PASO 1: SUBIR ── -->
+    <div class="card-bg rounded-2xl shadow-sm border card-border p-8">
+
+        <div class="flex items-center gap-3 mb-6">
+            <div class="step-badge">1</div>
+            <div>
+                <h2 class="text-xl font-bold text-main">Subir Archivo Excel</h2>
+                <p class="text-sub text-sm">Selecciona tu archivo de inventario (.xlsx)</p>
             </div>
         </div>
 
-        <div class="bg-blue-50 border-l-4 border-blue-500 p-6 mb-6 rounded">
-            <h3 class="font-semibold text-blue-800 mb-3 flex items-center">
-                <i class="fas fa-info-circle mr-2"></i>
-                Ventajas de esta importación mejorada
-            </h3>
-            <ul class="list-disc list-inside text-sm text-blue-700 space-y-2">
-                <li><strong>Detección automática</strong> de columnas - el sistema identifica tus campos</li>
-                <li><strong>Vista previa</strong> antes de importar - revisa tus datos antes de guardar</li>
-                <li><strong>Mapeo flexible</strong> - puedes tener cualquier nombre de columnas</li>
-                <li><strong>Creación automática</strong> de categorías si no existen</li>
-                <li><strong>Validación inteligente</strong> - te muestra errores específicos por fila</li>
-            </ul>
-        </div>
-
-        <div class="bg-gray-50 border-l-4 border-gray-400 p-6 mb-6 rounded">
-            <h3 class="font-semibold text-gray-800 mb-3">📋 Columnas recomendadas (pero no obligatorias)</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-700">
-                <div><span class="font-semibold text-red-600">* nombre</span> - Requerido</div>
-                <div><span class="font-semibold">codigo</span> - Se auto-genera si está vacío</div>
-                <div><span class="font-semibold">categoria</span> - Se crea si no existe</div>
-                <div><span class="font-semibold">ubicacion</span> - Debe existir previamente</div>
-                <div><span class="font-semibold">cantidad</span> - Número de unidades</div>
-                <div><span class="font-semibold">unidad</span> - ej: pieza, litro, kg</div>
-                <div><span class="font-semibold">cantidad_minima</span> - Para alertas</div>
-                <div><span class="font-semibold">precio</span> - Opcional</div>
-                <div><span class="font-semibold">estado</span> - available, in_use, etc.</div>
-                <div><span class="font-semibold">codigo_barras</span> - Opcional</div>
-                <div><span class="font-semibold">descripcion</span> - Texto descriptivo</div>
-                <div><span class="font-semibold">notas</span> - Comentarios adicionales</div>
-            </div>
-        </div>
-
-        <form method="post" enctype="multipart/form-data" class="space-y-6">
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
             {% csrf_token %}
-            
-            <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition">
-                <i class="fas fa-cloud-upload-alt text-6xl text-gray-400 mb-4"></i>
-                <label for="id_excel_file" class="cursor-pointer">
-                    <span class="text-lg font-semibold text-gray-700">Arrastra tu archivo aquí o haz click para seleccionar</span>
-                    <p class="text-sm text-gray-500 mt-2">Archivos .xlsx o .xls</p>
-                </label>
-                {{ form.excel_file }}
+
+            <!-- Drop zone -->
+            <div id="drop-zone" class="drop-zone p-12 text-center mb-6" onclick="document.getElementById('id_excel_file').click()">
+                <div id="dzIcon">
+                    <i class="fas fa-cloud-upload-alt text-5xl mb-4 block" style="color:#73956F;opacity:0.7;"></i>
+                    <p class="text-main font-semibold text-lg mb-1" id="dzText">Arrastra tu archivo aquí</p>
+                    <p class="text-muted text-sm mb-4">o haz click para seleccionar</p>
+                    <span class="btn-primary text-sm px-5 py-2.5 pointer-events-none">
+                        <i class="fas fa-folder-open mr-2"></i>Seleccionar Archivo
+                    </span>
+                    <p class="text-muted text-xs mt-4">Formatos soportados: .xlsx, .xls</p>
+                </div>
+                <input type="file" name="excel_file" id="id_excel_file" accept=".xlsx,.xls" required class="hidden">
             </div>
 
-            <div class="flex justify-end space-x-3 pt-6 border-t">
-                <a href="{% url 'article_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition">
+            <!-- Info box -->
+            <div class="info-box p-5 mb-6">
+                <h3 class="font-semibold text-main mb-3 flex items-center gap-2">
+                    <i class="fas fa-info-circle" style="color:#73956F;"></i>¿Cómo funciona?
+                </h3>
+                <ul class="space-y-1.5 text-sm text-sub">
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color:#73956F;"></i>El sistema procesa <strong class="text-main">15 hojas</strong> automáticamente</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color:#73956F;"></i>Los datos deben comenzar en la <strong class="text-main">fila 8</strong></li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color:#73956F;"></i>El estado se detecta por la <strong class="text-main">X</strong> en BUENO / REGULAR / MALO</li>
+                    <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color:#73956F;"></i>Las categorías y ubicaciones se crean automáticamente</li>
+                </ul>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-6 border-t card-border">
+                <a href="{% url 'article_list' %}" class="btn-secondary">
                     <i class="fas fa-times mr-2"></i>Cancelar
                 </a>
-                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg">
+                <button type="submit" class="btn-primary" id="uploadBtn">
                     <i class="fas fa-arrow-right mr-2"></i>Siguiente: Vista Previa
                 </button>
             </div>
@@ -77,139 +183,172 @@
     </div>
 
     {% elif step == 'preview' %}
-    <!-- PASO 2: PREVIEW Y MAPEO -->
-    <div class="bg-white rounded-lg shadow-lg p-8">
-        <div class="mb-6">
-            <div class="flex items-center mb-4">
-                <div class="flex items-center justify-center w-10 h-10 bg-green-600 text-white rounded-full mr-3">2</div>
-                <h2 class="text-2xl font-bold text-gray-800">Mapeo de Columnas y Vista Previa</h2>
+    <!-- ── PASO 2: PREVIEW ── -->
+    <div class="space-y-6">
+
+        <!-- Resumen de hojas -->
+        <div class="card-bg rounded-2xl shadow-sm border card-border p-6">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="step-badge">2</div>
+                    <div>
+                        <h2 class="text-xl font-bold text-main">Vista Previa</h2>
+                        <p class="text-sub text-sm">Revisa las hojas detectadas antes de importar</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="text-4xl font-bold" style="color:#73956F;">{{ total_sheets }}</p>
+                    <p class="text-xs text-muted uppercase tracking-wider">Hojas detectadas</p>
+                </div>
             </div>
-            <p class="text-gray-600">Revisa cómo se interpretarán tus datos y ajusta si es necesario</p>
         </div>
 
-        <form method="post" id="import-form">
-            {% csrf_token %}
-            <input type="hidden" name="confirm_mapping" value="1">
-            <input type="hidden" name="column_mapping" id="column_mapping" value="">
-
-            <!-- Mapeo de Columnas -->
-            <div class="bg-blue-50 rounded-lg p-6 mb-6">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">
-                    <i class="fas fa-map-marked-alt text-blue-600 mr-2"></i>Mapeo de Columnas
-                </h3>
-                <p class="text-sm text-gray-600 mb-4">El sistema detectó automáticamente tus columnas. Verifica que el mapeo sea correcto:</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {% for header in headers %}
-                    <div class="bg-white rounded-lg p-4 border border-gray-200">
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Columna en Excel: <span class="font-bold text-blue-600">{{ header.original }}</span>
-                        </label>
-                        <select name="mapping_{{ header.clean }}" class="column-mapping w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500" data-original="{{ header.original }}">
-                            <option value="ignore">-- Ignorar esta columna --</option>
-                            <option value="nombre" {% if field_mappings[header.original].suggested == 'nombre' %}selected{% endif %}>Nombre del Artículo *</option>
-                            <option value="codigo" {% if field_mappings[header.original].suggested == 'codigo' %}selected{% endif %}>Código</option>
-                            <option value="categoria" {% if field_mappings[header.original].suggested == 'categoria' %}selected{% endif %}>Categoría</option>
-                            <option value="ubicacion" {% if field_mappings[header.original].suggested == 'ubicacion' %}selected{% endif %}>Ubicación</option>
-                            <option value="cantidad" {% if field_mappings[header.original].suggested == 'cantidad' %}selected{% endif %}>Cantidad</option>
-                            <option value="unidad" {% if field_mappings[header.original].suggested == 'unidad' %}selected{% endif %}>Unidad</option>
-                            <option value="cantidad_minima" {% if field_mappings[header.original].suggested == 'cantidad_minima' %}selected{% endif %}>Cantidad Mínima</option>
-                            <option value="precio" {% if field_mappings[header.original].suggested == 'precio' %}selected{% endif %}>Precio</option>
-                            <option value="estado" {% if field_mappings[header.original].suggested == 'estado' %}selected{% endif %}>Estado</option>
-                            <option value="codigo_barras" {% if field_mappings[header.original].suggested == 'codigo_barras' %}selected{% endif %}>Código de Barras</option>
-                            <option value="descripcion" {% if field_mappings[header.original].suggested == 'descripcion' %}selected{% endif %}>Descripción</option>
-                            <option value="notas" {% if field_mappings[header.original].suggested == 'notas' %}selected{% endif %}>Notas</option>
-                        </select>
+        <!-- Grid de hojas -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            {% for sheet in sheets_info %}
+            <div class="sheet-card p-5">
+                <div class="flex items-start justify-between mb-3">
+                    <div>
+                        <h3 class="font-bold text-main flex items-center gap-2">
+                            <i class="fas fa-table text-xs" style="color:#73956F;"></i>{{ sheet.name }}
+                        </h3>
+                        <p class="text-xs text-muted mt-0.5">
+                            <i class="fas fa-database mr-1"></i>~{{ sheet.row_count }} registros
+                        </p>
                     </div>
+                    <span class="col-tag">✓ Detectada</span>
+                </div>
+
+                <div class="mb-3">
+                    <p class="text-xs text-muted mb-2 font-semibold uppercase tracking-wider">Columnas:</p>
+                    <div class="flex flex-wrap gap-1.5">
+                        {% for header in sheet.headers|slice:":6" %}
+                        <span class="col-tag">{{ header }}</span>
+                        {% endfor %}
+                        {% if sheet.headers|length > 6 %}
+                        <span class="text-muted text-xs py-1">+{{ sheet.headers|length|add:"-6" }} más</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if sheet.preview %}
+                <div class="space-y-1">
+                    {% for row in sheet.preview|slice:":2" %}
+                    <p class="text-xs text-muted truncate">
+                        <span class="text-main font-medium">Fila {{ row.row_number }}:</span>
+                        {{ row.data|slice:":3"|join:", " }}…
+                    </p>
                     {% endfor %}
                 </div>
+                {% endif %}
             </div>
+            {% endfor %}
+        </div>
 
-            <!-- Vista Previa de Datos -->
-            <div class="bg-gray-50 rounded-lg p-6 mb-6">
-                <h3 class="text-xl font-bold text-gray-800 mb-4">
-                    <i class="fas fa-eye text-purple-600 mr-2"></i>Vista Previa (Primeras 10 filas)
-                </h3>
-                
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead class="bg-gray-200">
-                            <tr>
-                                <th class="px-3 py-2 text-left font-semibold">#</th>
-                                {% for header in headers %}
-                                <th class="px-3 py-2 text-left font-semibold">{{ header.original }}</th>
-                                {% endfor %}
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-gray-200">
-                            {% for row in preview_data %}
-                            <tr class="hover:bg-white transition">
-                                <td class="px-3 py-2 font-mono text-gray-500">{{ row.row_number }}</td>
-                                {% for header in headers %}
-                                <td class="px-3 py-2">
-                                    <span class="{% if not row.data[header.clean] %}text-gray-400 italic{% endif %}">
-                                        {{ row.data[header.clean]|default:"vacío" }}
-                                    </span>
-                                </td>
-                                {% endfor %}
-                            </tr>
+        <!-- Vista previa tabla (si hay headers/preview_data del modo genérico) -->
+        {% if headers %}
+        <div class="card-bg rounded-2xl shadow-sm border card-border p-6">
+            <h3 class="font-bold text-main mb-4 flex items-center gap-2">
+                <i class="fas fa-eye" style="color:#73956F;"></i>Vista Previa de Datos
+            </h3>
+            <div class="overflow-x-auto rounded-xl border card-border">
+                <table class="w-full preview-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            {% for header in headers %}<th>{{ header.original }}</th>{% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divider">
+                        {% for row in preview_data %}
+                        <tr>
+                            <td class="text-muted font-mono text-xs">{{ row.row_number }}</td>
+                            {% for header in headers %}
+                            <td class="{% if not row.data[header.clean] %}text-muted italic{% else %}text-sub{% endif %}">
+                                {{ row.data[header.clean]|default:"—" }}
+                            </td>
                             {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Advertencia + Confirmar -->
+        <div class="card-bg rounded-2xl shadow-sm border card-border p-6">
+            <div class="warn-box p-4 mb-6">
+                <h3 class="font-semibold text-main mb-2 flex items-center gap-2">
+                    <i class="fas fa-exclamation-triangle text-yellow-500"></i>Antes de importar
+                </h3>
+                <ul class="text-sm text-sub space-y-1">
+                    <li>• Este proceso puede tardar varios minutos con archivos grandes</li>
+                    <li>• Las categorías y ubicaciones se crearán si no existen</li>
+                    <li>• El estado se detectará por la posición de la "X"</li>
+                    <li>• Asegúrate de haber revisado las hojas arriba</li>
+                </ul>
             </div>
 
-            <div class="flex justify-end space-x-3 pt-6 border-t">
-                <a href="{% url 'import_preview' %}" class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-3 px-6 rounded-lg transition">
+            <form method="post" class="flex flex-wrap gap-3">
+                {% csrf_token %}
+                <button type="submit" name="confirm_import" class="btn-primary flex-1" id="confirmBtn">
+                    <i class="fas fa-check-circle mr-2"></i>Confirmar e Importar Todo
+                </button>
+                <a href="{% url 'import_preview' %}" class="btn-secondary">
                     <i class="fas fa-arrow-left mr-2"></i>Volver
                 </a>
-                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition shadow-lg">
-                    <i class="fas fa-check mr-2"></i>Confirmar e Importar
-                </button>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
     {% endif %}
 </div>
 
 <script>
-// Guardar mapeo de columnas antes de enviar el formulario
-document.getElementById('import-form')?.addEventListener('submit', function(e) {
-    const mappings = {};
-    document.querySelectorAll('.column-mapping').forEach(select => {
-        const original = select.getAttribute('data-original');
-        mappings[original] = select.value;
-    });
-    document.getElementById('column_mapping').value = JSON.stringify(mappings);
-});
+// ── Drag & Drop ──
+const dz = document.getElementById('drop-zone');
+const fi = document.getElementById('id_excel_file');
 
-// Drag and drop para archivo
-const fileInput = document.getElementById('id_excel_file');
-const dropZone = fileInput?.closest('.border-dashed');
+if (dz && fi) {
+    dz.addEventListener('click', e => { if (e.target !== fi) fi.click(); });
 
-if (dropZone) {
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, preventDefaults, false);
-    });
+    ['dragenter','dragover','dragleave','drop'].forEach(ev =>
+        dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); })
+    );
+    ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, () => dz.classList.add('dragging')));
+    ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, () => dz.classList.remove('dragging')));
 
-    function preventDefaults(e) {
-        e.preventDefault();
-        e.stopPropagation();
-    }
-
-    ['dragenter', 'dragover'].forEach(eventName => {
-        dropZone.addEventListener(eventName, () => dropZone.classList.add('border-blue-500', 'bg-blue-50'), false);
+    dz.addEventListener('drop', e => {
+        const files = e.dataTransfer.files;
+        if (files.length) { fi.files = files; updateFileName(files[0].name); }
     });
 
-    ['dragleave', 'drop'].forEach(eventName => {
-        dropZone.addEventListener(eventName, () => dropZone.classList.remove('border-blue-500', 'bg-blue-50'), false);
-    });
-
-    dropZone.addEventListener('drop', function(e) {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        fileInput.files = files;
+    fi.addEventListener('change', function() {
+        if (this.files.length) updateFileName(this.files[0].name);
     });
 }
+
+function updateFileName(name) {
+    const txt = document.getElementById('dzText');
+    if (txt) {
+        txt.innerHTML = '<i class="fas fa-check-circle mr-2" style="color:#73956F;"></i>' + name;
+    }
+    const dz = document.getElementById('drop-zone');
+    if (dz) { dz.style.borderColor = '#73956F'; }
+}
+
+// ── Loading state on submit ──
+document.getElementById('uploadForm')?.addEventListener('submit', function() {
+    const btn = document.getElementById('uploadBtn');
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Procesando...';
+    }
+});
+
+document.getElementById('confirmBtn')?.addEventListener('click', function() {
+    this.disabled = true;
+    this.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i>Importando, espera...';
+});
 </script>
 {% endblock %}

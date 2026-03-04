@@ -1,245 +1,306 @@
 {% extends 'base.html' %}
-
 {% block title %}{{ article.name }} - Gestor Escolar{% endblock %}
+
+{% block extra_css %}
+<style>
+.detail-label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: #9ca3af; margin-bottom: 0.25rem; }
+.detail-value { font-size: 0.9rem; font-weight: 500; color: #111827; }
+html.dark .detail-value { color: #f5f5f5; }
+.detail-muted { color: #9ca3af; font-style: italic; font-size: 0.85rem; }
+
+.info-card { background: rgba(255,255,255,0.97); border: 1px solid #e5e7eb; border-radius: 0.875rem; padding: 1.5rem; }
+html.dark .info-card { background: #1a1a1a; border-color: #2a2a2a; }
+
+.stock-number { font-size: 3.5rem; font-weight: 800; line-height: 1; }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
+
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-wrap justify-between items-start gap-4 mb-6">
         <div>
-            <h1 class="text-3xl font-bold mb-2" style="color: #3D2C2E;">
-                {{ article.name }}
-            </h1>
-            <p class="text-gray-600">
-                <span class="font-medium">Código:</span> {{ article.code }}
+            <div class="flex items-center gap-2 mb-1">
+                <a href="{% url 'article_list' %}"
+                   class="w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:text-main transition"
+                   style="background:rgba(115,149,111,0.1);">
+                    <i class="fas fa-arrow-left text-sm"></i>
+                </a>
+                <h1 class="text-2xl font-bold text-main">{{ article.name }}</h1>
+            </div>
+            {% if article.code %}
+            <p class="text-sub text-sm ml-10">
+                <i class="fas fa-barcode mr-1 text-muted"></i>Código: <span class="font-mono font-semibold">{{ article.code }}</span>
             </p>
+            {% endif %}
         </div>
-        <div class="flex gap-3">
-            <a href="{% url 'article_update' article.pk %}" class="btn-modern bg-gradient-primary text-white">
-                <i class="fas fa-edit mr-2"></i>
-                Editar
+        <div class="flex flex-wrap gap-3">
+            <!-- ✅ BOTÓN DE PRÉSTAMO -->
+            <a href="{% url 'loan_create' %}?article={{ article.pk }}"
+               class="text-white font-semibold py-2.5 px-5 rounded-xl transition shadow inline-flex items-center text-sm"
+               style="background:#916C80;">
+                <i class="fas fa-handshake mr-2"></i>Prestar
             </a>
-            <a href="{% url 'article_list' %}" class="btn-modern bg-gray-200 text-gray-700">
-                <i class="fas fa-arrow-left mr-2"></i>
-                Volver
+            <a href="{% url 'article_update' article.pk %}"
+               class="text-white font-semibold py-2.5 px-5 rounded-xl transition shadow inline-flex items-center text-sm"
+               style="background:#73956F;">
+                <i class="fas fa-edit mr-2"></i>Editar
+            </a>
+            <a href="{% url 'article_delete' article.pk %}"
+               class="font-semibold py-2.5 px-5 rounded-xl transition inline-flex items-center text-sm text-red-500"
+               style="background:rgba(239,68,68,0.1);">
+                <i class="fas fa-trash mr-2"></i>Eliminar
             </a>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Columna izquierda - Información principal -->
-        <div class="lg:col-span-2 space-y-6">
-            
-            <!-- Información básica -->
-            <div class="glass-strong rounded-xl p-6">
-                <h2 class="text-xl font-bold mb-4" style="color: #3D2C2E;">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    Información General
+
+        <!-- ── Columna principal ── -->
+        <div class="lg:col-span-2 space-y-5">
+
+            <!-- Información General -->
+            <div class="info-card">
+                <h2 class="text-base font-bold text-main mb-4 flex items-center gap-2">
+                    <i class="fas fa-info-circle" style="color:#73956F;"></i>Información General
                 </h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="text-sm font-medium text-gray-600">Categoría</label>
-                        <p class="mt-1 text-gray-900">
-                            <span class="px-3 py-1 bg-gradient-primary text-white rounded-lg inline-block">
-                                {{ article.category.name }}
-                            </span>
-                        </p>
+                        <p class="detail-label">Categoría</p>
+                        <span class="inline-block px-2.5 py-1 rounded-lg text-xs font-semibold text-white"
+                              style="background:{{ article.category.color|default:'#73956F' }};">
+                            {{ article.category.name }}
+                        </span>
                     </div>
-                    
                     <div>
-                        <label class="text-sm font-medium text-gray-600">Ubicación</label>
-                        <p class="mt-1 text-gray-900">
-                            <span class="px-3 py-1 bg-gradient-secondary text-white rounded-lg inline-block">
-                                <i class="fas fa-map-marker-alt mr-1"></i>
-                                {{ article.location.name|default:"Sin ubicación" }}
-                            </span>
-                        </p>
+                        <p class="detail-label">Ubicación</p>
+                        {% if article.location %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-white"
+                              style="background:#916C80;">
+                            <i class="fas fa-map-marker-alt text-xs"></i>{{ article.location.name }}
+                        </span>
+                        {% else %}<p class="detail-muted">Sin ubicación</p>{% endif %}
                     </div>
-                    
                     <div>
-                        <label class="text-sm font-medium text-gray-600">Estado</label>
-                        <p class="mt-1">
-                            {% if article.status == 'available' %}
-                                <span class="px-3 py-1 bg-green-100 text-green-800 rounded-lg inline-block">
-                                    <i class="fas fa-check-circle mr-1"></i>
-                                    Disponible
-                                </span>
-                            {% elif article.status == 'maintenance' %}
-                                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-lg inline-block">
-                                    <i class="fas fa-wrench mr-1"></i>
-                                    Mantenimiento
-                                </span>
-                            {% elif article.status == 'damaged' %}
-                                <span class="px-3 py-1 bg-red-100 text-red-800 rounded-lg inline-block">
-                                    <i class="fas fa-exclamation-triangle mr-1"></i>
-                                    Dañado
-                                </span>
-                            {% else %}
-                                <span class="px-3 py-1 bg-gray-100 text-gray-800 rounded-lg inline-block">
-                                    {{ article.get_status_display }}
-                                </span>
-                            {% endif %}
-                        </p>
+                        <p class="detail-label">Estado</p>
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold
+                            {% if article.status == 'available' %}bg-green-100 text-green-700
+                            {% elif article.status == 'in_use' %}bg-blue-100 text-blue-700
+                            {% elif article.status == 'maintenance' %}bg-yellow-100 text-yellow-700
+                            {% elif article.status == 'damaged' %}bg-red-100 text-red-700
+                            {% else %}bg-gray-100 text-gray-600{% endif %}">
+                            {{ article.get_status_display }}
+                        </span>
                     </div>
-                    
                     <div>
-                        <label class="text-sm font-medium text-gray-600">Unidad</label>
-                        <p class="mt-1 text-gray-900">{{ article.unit }}</p>
+                        <p class="detail-label">Unidad</p>
+                        <p class="detail-value">{{ article.unit }}</p>
                     </div>
-                </div>
-                
-                {% if article.description %}
-                <div class="mt-4">
-                    <label class="text-sm font-medium text-gray-600">Descripción</label>
-                    <p class="mt-1 text-gray-900">{{ article.description }}</p>
-                </div>
-                {% endif %}
-            </div>
-            
-            <!-- Información de compra -->
-            <div class="glass-strong rounded-xl p-6">
-                <h2 class="text-xl font-bold mb-4" style="color: #3D2C2E;">
-                    <i class="fas fa-shopping-cart mr-2"></i>
-                    Información de Compra
-                </h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- 📅 FECHA DE COMPRA -->
+                    {% if article.barcode %}
                     <div>
-                        <label class="text-sm font-medium text-gray-600">
-                            <i class="fas fa-calendar mr-1"></i>
-                            Fecha de Compra
-                        </label>
-                        <p class="mt-1 text-gray-900">
-                            {% if article.purchase_date %}
-                                {{ article.purchase_date|date:"d/m/Y" }}
-                            {% else %}
-                                <span class="text-gray-400 italic">No especificado</span>
-                            {% endif %}
-                        </p>
-                    </div>
-                    
-                    <!-- 🏪 PROVEEDOR -->
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">
-                            <i class="fas fa-store mr-1"></i>
-                            Proveedor / Lugar de Compra
-                        </label>
-                        <p class="mt-1 text-gray-900">
-                            {% if article.supplier %}
-                                {{ article.supplier }}
-                            {% else %}
-                                <span class="text-gray-400 italic">No especificado</span>
-                            {% endif %}
-                        </p>
-                    </div>
-                    
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">
-                            <i class="fas fa-dollar-sign mr-1"></i>
-                            Precio Unitario
-                        </label>
-                        <p class="mt-1 text-gray-900 text-xl font-bold" style="color: #3D2C2E;">
-                            {% if article.price %}
-                                ${{ article.price|floatformat:0 }}
-                            {% else %}
-                                <span class="text-gray-400 italic text-base font-normal">No especificado</span>
-                            {% endif %}
-                        </p>
-                    </div>
-                    
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">
-                            <i class="fas fa-calculator mr-1"></i>
-                            Valor Total
-                        </label>
-                        <p class="mt-1 text-gray-900 text-xl font-bold" style="color: #3D2C2E;">
-                            {% if article.total_value %}
-                                ${{ article.total_value|floatformat:0 }}
-                            {% else %}
-                                <span class="text-gray-400 italic text-base font-normal">-</span>
-                            {% endif %}
-                        </p>
-                    </div>
-                </div>
-            </div>
-            
-            {% if article.notes %}
-            <!-- Notas -->
-            <div class="glass-strong rounded-xl p-6">
-                <h2 class="text-xl font-bold mb-4" style="color: #3D2C2E;">
-                    <i class="fas fa-sticky-note mr-2"></i>
-                    Notas
-                </h2>
-                <p class="text-gray-700">{{ article.notes }}</p>
-            </div>
-            {% endif %}
-        </div>
-        
-        <!-- Columna derecha - Stock e imagen -->
-        <div class="space-y-6">
-            
-            <!-- Imagen -->
-            {% if article.image %}
-            <div class="glass-strong rounded-xl p-6">
-                <img src="{{ article.image.url }}" alt="{{ article.name }}" class="w-full rounded-lg">
-            </div>
-            {% endif %}
-            
-            <!-- Stock -->
-            <div class="glass-strong rounded-xl p-6">
-                <h2 class="text-xl font-bold mb-4" style="color: #3D2C2E;">
-                    <i class="fas fa-boxes mr-2"></i>
-                    Stock
-                </h2>
-                
-                <div class="text-center mb-4">
-                    <p class="text-5xl font-bold mb-2" style="color: #3D2C2E;">
-                        {{ article.quantity }}
-                    </p>
-                    <p class="text-gray-600">{{ article.unit }}(es) disponibles</p>
-                </div>
-                
-                <div class="space-y-2">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-600">Mínimo requerido:</span>
-                        <span class="font-medium">{{ article.min_quantity }}</span>
-                    </div>
-                    
-                    {% if article.is_low_stock %}
-                    <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
-                        <i class="fas fa-exclamation-triangle text-red-600 mr-1"></i>
-                        <span class="text-red-800 font-medium">Stock Bajo</span>
-                    </div>
-                    {% else %}
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-3 text-center">
-                        <i class="fas fa-check-circle text-green-600 mr-1"></i>
-                        <span class="text-green-800 font-medium">Stock Normal</span>
+                        <p class="detail-label">Código de Barras</p>
+                        <p class="detail-value font-mono text-sm">{{ article.barcode }}</p>
                     </div>
                     {% endif %}
                 </div>
+                {% if article.description %}
+                <div class="mt-4 pt-4 border-t card-border">
+                    <p class="detail-label">Descripción</p>
+                    <p class="detail-value leading-relaxed">{{ article.description }}</p>
+                </div>
+                {% endif %}
+                {% if article.notes %}
+                <div class="mt-4 pt-4 border-t card-border">
+                    <p class="detail-label"><i class="fas fa-sticky-note mr-1"></i>Notas</p>
+                    <p class="detail-value leading-relaxed">{{ article.notes }}</p>
+                </div>
+                {% endif %}
             </div>
-            
-            <!-- Metadatos -->
-            <div class="glass-strong rounded-xl p-6">
-                <h2 class="text-xl font-bold mb-4" style="color: #3D2C2E;">
-                    <i class="fas fa-info mr-2"></i>
-                    Información del Sistema
+
+            <!-- Información de Compra -->
+            <div class="info-card">
+                <h2 class="text-base font-bold text-main mb-4 flex items-center gap-2">
+                    <i class="fas fa-shopping-cart" style="color:#73956F;"></i>Información de Compra
                 </h2>
-                
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                        <p class="detail-label"><i class="fas fa-calendar mr-1"></i>Fecha Compra</p>
+                        {% if article.purchase_date %}
+                        <p class="detail-value">{{ article.purchase_date|date:"d/m/Y" }}</p>
+                        {% else %}<p class="detail-muted">No especificado</p>{% endif %}
+                    </div>
+                    <div>
+                        <p class="detail-label"><i class="fas fa-store mr-1"></i>Proveedor</p>
+                        {% if article.supplier %}
+                        <p class="detail-value">{{ article.supplier }}</p>
+                        {% else %}<p class="detail-muted">No especificado</p>{% endif %}
+                    </div>
+                    <div>
+                        <p class="detail-label"><i class="fas fa-dollar-sign mr-1"></i>Precio Unitario</p>
+                        {% if article.price %}
+                        <p class="text-lg font-bold text-green-500">${{ article.price|floatformat:0 }}</p>
+                        {% else %}<p class="detail-muted">No especificado</p>{% endif %}
+                    </div>
+                    <div>
+                        <p class="detail-label"><i class="fas fa-calculator mr-1"></i>Valor Total</p>
+                        {% if article.total_value %}
+                        <p class="text-lg font-bold text-green-500">${{ article.total_value|floatformat:0 }}</p>
+                        {% else %}<p class="detail-muted">—</p>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Movimientos -->
+            <div class="info-card">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-bold text-main flex items-center gap-2">
+                        <i class="fas fa-history" style="color:#73956F;"></i>Movimientos Recientes
+                    </h2>
+                    <a href="{% url 'movement_list' %}" class="text-xs hover:underline" style="color:#73956F;">Ver todos →</a>
+                </div>
+                {% if movements %}
+                <div class="space-y-2">
+                    {% for mov in movements %}
+                    <div class="flex items-center justify-between py-2.5 border-b card-border last:border-0">
+                        <div class="flex items-center gap-3">
+                            <span class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold
+                                {% if mov.movement_type == 'entry' %}bg-green-100 text-green-700
+                                {% elif mov.movement_type == 'exit' %}bg-red-100 text-red-700
+                                {% elif mov.movement_type == 'loan' %}bg-purple-100 text-purple-700
+                                {% elif mov.movement_type == 'return' %}bg-blue-100 text-blue-700
+                                {% else %}bg-gray-100 text-gray-600{% endif %}">
+                                <i class="fas
+                                    {% if mov.movement_type == 'entry' %}fa-arrow-down
+                                    {% elif mov.movement_type == 'exit' %}fa-arrow-up
+                                    {% elif mov.movement_type == 'loan' %}fa-handshake
+                                    {% elif mov.movement_type == 'return' %}fa-undo
+                                    {% else %}fa-sliders-h{% endif %} text-xs"></i>
+                            </span>
+                            <div>
+                                <p class="text-sm font-semibold text-main">{{ mov.get_movement_type_display }}</p>
+                                <p class="text-xs text-muted">{{ mov.reason|truncatewords:6|default:"—" }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm font-bold {% if mov.movement_type == 'entry' or mov.movement_type == 'return' %}text-green-500{% else %}text-red-400{% endif %}">
+                                {% if mov.movement_type == 'entry' or mov.movement_type == 'return' %}+{% else %}-{% endif %}{{ mov.quantity }}
+                            </p>
+                            <p class="text-xs text-muted">{{ mov.created_at|date:"d/m/Y" }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-sm text-center py-4">No hay movimientos registrados</p>
+                {% endif %}
+            </div>
+
+            <!-- Préstamos -->
+            <div class="info-card">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-base font-bold text-main flex items-center gap-2">
+                        <i class="fas fa-handshake" style="color:#916C80;"></i>Préstamos
+                    </h2>
+                    <a href="{% url 'loan_create' %}?article={{ article.pk }}"
+                       class="text-xs text-white font-semibold px-3 py-1.5 rounded-lg inline-flex items-center gap-1"
+                       style="background:#916C80;">
+                        <i class="fas fa-plus text-xs"></i>Nuevo préstamo
+                    </a>
+                </div>
+                {% if loans %}
+                <div class="space-y-2">
+                    {% for loan in loans %}
+                    <div class="flex items-center justify-between py-2.5 border-b card-border last:border-0">
+                        <div class="flex items-center gap-3">
+                            <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                                 style="background:#916C80;">
+                                {{ loan.borrower_name|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-main">{{ loan.borrower_name }}</p>
+                                <p class="text-xs text-muted">{{ loan.loan_date|date:"d/m/Y" }} → {{ loan.due_date|date:"d/m/Y" }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded-full text-xs font-semibold
+                                {% if loan.status == 'active' %}bg-green-100 text-green-700
+                                {% elif loan.status == 'returned' %}bg-blue-100 text-blue-700
+                                {% elif loan.status == 'overdue' %}bg-red-100 text-red-700
+                                {% else %}bg-gray-100 text-gray-600{% endif %}">
+                                {{ loan.get_status_display }}
+                            </span>
+                            <span class="text-xs font-bold text-main">×{{ loan.quantity }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-sm text-center py-4">No hay préstamos para este artículo</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ── Columna lateral ── -->
+        <div class="space-y-5">
+
+            <!-- Imagen -->
+            {% if article.image %}
+            <div class="info-card p-0 overflow-hidden">
+                <img src="{{ article.image.url }}" alt="{{ article.name }}" class="w-full object-cover rounded-xl">
+            </div>
+            {% endif %}
+
+            <!-- Stock -->
+            <div class="info-card text-center">
+                <h2 class="text-base font-bold text-main mb-4 flex items-center justify-center gap-2">
+                    <i class="fas fa-boxes" style="color:#73956F;"></i>Stock
+                </h2>
+                <p class="stock-number text-main">{{ article.quantity }}</p>
+                <p class="text-muted text-sm mt-1 mb-4">{{ article.unit }}(s) disponibles</p>
+
+                <div class="text-left space-y-2 text-sm border-t card-border pt-4">
+                    <div class="flex justify-between">
+                        <span class="text-sub">Mínimo requerido</span>
+                        <span class="font-semibold text-main">{{ article.min_quantity }}</span>
+                    </div>
+                </div>
+
+                <div class="mt-4 px-4 py-3 rounded-xl {% if article.is_low_stock %}bg-red-50 border border-red-200{% else %}bg-green-50 border border-green-200{% endif %}">
+                    {% if article.is_low_stock %}
+                    <i class="fas fa-exclamation-triangle text-red-500 mr-1.5"></i>
+                    <span class="text-red-700 font-semibold text-sm">Stock Bajo</span>
+                    {% else %}
+                    <i class="fas fa-check-circle text-green-500 mr-1.5"></i>
+                    <span class="text-green-700 font-semibold text-sm">Stock Normal</span>
+                    {% endif %}
+                </div>
+
+                <!-- Acción rápida registro movimiento -->
+                <a href="{% url 'movement_create' %}"
+                   class="mt-4 flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-white text-sm font-semibold transition hover:opacity-90"
+                   style="background:#73956F;">
+                    <i class="fas fa-exchange-alt"></i>Registrar Movimiento
+                </a>
+            </div>
+
+            <!-- Sistema -->
+            <div class="info-card">
+                <h2 class="text-base font-bold text-main mb-4 flex items-center gap-2">
+                    <i class="fas fa-cog" style="color:#73956F;"></i>Sistema
+                </h2>
                 <div class="space-y-3 text-sm">
                     <div>
-                        <span class="text-gray-600">Creado por:</span>
-                        <p class="font-medium">{{ article.created_by.username|default:"Sistema" }}</p>
+                        <p class="detail-label">Creado por</p>
+                        <p class="detail-value">{{ article.created_by.username|default:"Sistema" }}</p>
                     </div>
                     <div>
-                        <span class="text-gray-600">Fecha de creación:</span>
-                        <p class="font-medium">{{ article.created_at|date:"d/m/Y H:i" }}</p>
+                        <p class="detail-label">Fecha de creación</p>
+                        <p class="detail-value">{{ article.created_at|date:"d/m/Y H:i" }}</p>
                     </div>
                     <div>
-                        <span class="text-gray-600">Última actualización:</span>
-                        <p class="font-medium">{{ article.updated_at|date:"d/m/Y H:i" }}</p>
+                        <p class="detail-label">Última actualización</p>
+                        <p class="detail-value">{{ article.updated_at|date:"d/m/Y H:i" }}</p>
                     </div>
                 </div>
             </div>

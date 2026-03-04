@@ -1,65 +1,91 @@
 {% extends 'base.html' %}
+{% block title %}Inventario: {{ category.name }} - Gestor Escolar{% endblock %}
 
-{% block title %}Inventario: {{ category.name }} - Inventario Escolar{% endblock %}
+{% block extra_css %}
+<style>
+.cat-input {
+    padding: 0.6rem 0.9rem;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    background: #f9fafb;
+    color: #111827;
+    outline: none;
+    transition: border-color 0.2s;
+}
+html.dark .cat-input {
+    background: #242424;
+    border-color: #333;
+    color: #f5f5f5;
+}
+.cat-input:focus { border-color: #73956F; box-shadow: 0 0 0 3px rgba(115,149,111,0.12); }
+</style>
+{% endblock %}
 
 {% block content %}
-<!-- Header con info de la categoría -->
-<div class="bg-white rounded-lg shadow-lg p-6 mb-8 border-l-4" style="border-color: {{ category.color }};">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-        <div class="flex-1">
-            <div class="flex items-center mb-2">
-                <a href="{% url 'category_list' %}" class="text-gray-500 hover:text-gray-700 mr-3">
-                    <i class="fas fa-arrow-left text-xl"></i>
-                </a>
-                <h1 class="text-4xl font-bold text-gray-800">
-                    <i class="fas fa-{{ category.icon }} mr-3" style="color: {{ category.color }};"></i>
-                    {{ category.name }}
-                </h1>
+
+<!-- Header categoría -->
+<div class="card-bg rounded-xl shadow-sm p-6 mb-6 border card-border"
+     style="border-left: 4px solid {{ category.color }};">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-start gap-3">
+            <a href="{% url 'category_list' %}"
+               class="mt-1 w-8 h-8 rounded-lg flex items-center justify-center text-muted hover:text-main transition flex-shrink-0"
+               style="background:rgba(115,149,111,0.1);">
+                <i class="fas fa-arrow-left text-sm"></i>
+            </a>
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <i class="fas fa-{{ category.icon }}" style="color:{{ category.color }};"></i>
+                    <h1 class="text-2xl font-bold text-main">{{ category.name }}</h1>
+                </div>
+                {% if category.description %}
+                <p class="text-sub text-sm">{{ category.description }}</p>
+                {% endif %}
             </div>
-            <p class="text-gray-600 ml-12">{{ category.description }}</p>
         </div>
-        
-        <!-- Estadísticas rápidas -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 md:mt-0 md:ml-6">
-            <div class="text-center">
-                <p class="text-sm text-gray-600">Artículos</p>
-                <p class="text-2xl font-bold" style="color: {{ category.color }};">{{ total_items }}</p>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 flex-shrink-0">
+            <div class="text-center px-4 py-2 rounded-xl" style="background:rgba(115,149,111,0.08);">
+                <p class="text-xs text-muted mb-0.5">Artículos</p>
+                <p class="text-xl font-bold" style="color:{{ category.color }};">{{ total_items }}</p>
             </div>
-            <div class="text-center">
-                <p class="text-sm text-gray-600">Cantidad Total</p>
-                <p class="text-2xl font-bold text-gray-800">{{ total_quantity }}</p>
+            <div class="text-center px-4 py-2 rounded-xl" style="background:rgba(115,149,111,0.08);">
+                <p class="text-xs text-muted mb-0.5">Cantidad</p>
+                <p class="text-xl font-bold text-main">{{ total_quantity }}</p>
             </div>
-            <div class="text-center">
-                <p class="text-sm text-gray-600">Stock Bajo</p>
-                <p class="text-2xl font-bold text-red-600">{{ low_stock_count }}</p>
+            <div class="text-center px-4 py-2 rounded-xl" style="background:rgba(239,68,68,0.08);">
+                <p class="text-xs text-muted mb-0.5">Stock Bajo</p>
+                <p class="text-xl font-bold text-red-500">{{ low_stock_count }}</p>
             </div>
-            <div class="text-center">
-                <p class="text-sm text-gray-600">Valor Total</p>
-                <p class="text-2xl font-bold text-green-600">${{ total_value|floatformat:2 }}</p>
+            <div class="text-center px-4 py-2 rounded-xl" style="background:rgba(34,197,94,0.08);">
+                <p class="text-xs text-muted mb-0.5">Valor Total</p>
+                <p class="text-xl font-bold text-green-500">${{ total_value|floatformat:0 }}</p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Acciones y filtros -->
-<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-        <!-- Búsqueda y filtros -->
-        <form method="get" class="flex-1 flex flex-wrap gap-3">
-            <input type="text" name="q" value="{{ search_query }}" 
-                   placeholder="Buscar en {{ category.name }}..." 
-                   class="flex-1 min-w-[200px] px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-            
-            <select name="status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+<!-- Filtros + Acciones -->
+<div class="card-bg rounded-xl shadow-sm p-5 mb-6 border card-border">
+    <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+        <!-- Búsqueda -->
+        <form method="get" class="flex flex-wrap gap-3 flex-1">
+            <input type="text" name="q" value="{{ search_query }}"
+                   placeholder="Buscar en {{ category.name }}..."
+                   class="cat-input flex-1 min-w-[180px]">
+
+            <select name="status" class="cat-input">
                 <option value="">Todos los estados</option>
-                <option value="available" {% if request.GET.status == 'available' %}selected{% endif %}>Disponible</option>
-                <option value="in_use" {% if request.GET.status == 'in_use' %}selected{% endif %}>En uso</option>
-                <option value="maintenance" {% if request.GET.status == 'maintenance' %}selected{% endif %}>Mantenimiento</option>
-                <option value="damaged" {% if request.GET.status == 'damaged' %}selected{% endif %}>Dañado</option>
-                <option value="retired" {% if request.GET.status == 'retired' %}selected{% endif %}>Retirado</option>
+                <option value="available"    {% if request.GET.status == 'available' %}selected{% endif %}>Disponible</option>
+                <option value="in_use"       {% if request.GET.status == 'in_use' %}selected{% endif %}>En uso</option>
+                <option value="maintenance"  {% if request.GET.status == 'maintenance' %}selected{% endif %}>Mantenimiento</option>
+                <option value="damaged"      {% if request.GET.status == 'damaged' %}selected{% endif %}>Dañado</option>
+                <option value="retired"      {% if request.GET.status == 'retired' %}selected{% endif %}>Retirado</option>
             </select>
-            
-            <select name="location" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+
+            <select name="location" class="cat-input">
                 <option value="">Todas las ubicaciones</option>
                 {% for location in locations %}
                 <option value="{{ location.id }}" {% if request.GET.location == location.id|stringformat:"s" %}selected{% endif %}>
@@ -67,126 +93,132 @@
                 </option>
                 {% endfor %}
             </select>
-            
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition">
-                <i class="fas fa-search mr-2"></i> Filtrar
+
+            <button type="submit" class="text-white font-semibold py-2 px-5 rounded-xl transition text-sm" style="background:#73956F;">
+                <i class="fas fa-search mr-1.5"></i>Filtrar
             </button>
-            
             {% if search_query or request.GET.status or request.GET.location %}
-            <a href="{% url 'category_inventory' category.pk %}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-semibold transition">
-                <i class="fas fa-times mr-2"></i> Limpiar
+            <a href="{% url 'category_inventory' category.pk %}"
+               class="font-semibold py-2 px-5 rounded-xl transition text-sm"
+               style="background:rgba(145,108,128,0.15);color:#916C80;">
+                <i class="fas fa-times mr-1.5"></i>Limpiar
             </a>
             {% endif %}
         </form>
-        
-        <!-- Botones de acción -->
-        <div class="flex flex-wrap gap-3">
-            <a href="{% url 'category_import' category.pk %}" class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2 rounded-lg font-semibold transition shadow-lg">
-                <i class="fas fa-file-import mr-2"></i> Importar
+
+        <!-- Botones acción -->
+        <div class="flex flex-wrap gap-2 flex-shrink-0">
+            <a href="{% url 'category_import' category.pk %}"
+               class="text-white font-semibold py-2 px-4 rounded-xl transition text-sm shadow inline-flex items-center"
+               style="background:#e97316;">
+                <i class="fas fa-file-import mr-1.5"></i>Importar
             </a>
-            <a href="{% url 'category_export' category.pk %}?{{ request.GET.urlencode }}" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-semibold transition shadow-lg">
-                <i class="fas fa-file-export mr-2"></i> Exportar
+            <a href="{% url 'category_export' category.pk %}?{{ request.GET.urlencode }}"
+               class="text-white font-semibold py-2 px-4 rounded-xl transition text-sm shadow inline-flex items-center"
+               style="background:#916C80;">
+                <i class="fas fa-file-export mr-1.5"></i>Exportar
             </a>
-            <a href="{% url 'article_create' %}?category={{ category.pk }}" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold transition shadow-lg">
-                <i class="fas fa-plus mr-2"></i> Nuevo Artículo
+            <a href="{% url 'article_create' %}?category={{ category.pk }}"
+               class="text-white font-semibold py-2 px-4 rounded-xl transition text-sm shadow inline-flex items-center"
+               style="background:#73956F;">
+                <i class="fas fa-plus mr-1.5"></i>Nuevo Artículo
             </a>
         </div>
     </div>
 </div>
 
-<!-- Tabla de artículos -->
-<div class="bg-white rounded-lg shadow-lg overflow-hidden">
+<!-- Tabla -->
+<div class="card-bg rounded-xl shadow-sm overflow-hidden border card-border">
     {% if articles %}
     <div class="overflow-x-auto">
         <table class="w-full">
-            <thead class="bg-gray-50 border-b-2 border-gray-200">
-                <tr>
-                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Imagen</th>
-                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                        <a href="?sort=name&{{ request.GET.urlencode }}" class="hover:text-blue-600">
-                            Artículo <i class="fas fa-sort text-xs"></i>
+            <thead>
+                <tr class="border-b card-border" style="background:rgba(115,149,111,0.08);">
+                    <th class="px-5 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider w-16">Img</th>
+                    <th class="px-5 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">
+                        <a href="?sort=name&{{ request.GET.urlencode }}" class="hover:opacity-70 flex items-center gap-1">
+                            Artículo <i class="fas fa-sort text-xs opacity-50"></i>
                         </a>
                     </th>
-                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Código</th>
-                    <th class="px-6 py-4 text-left text-sm font-semibold text-gray-700">Ubicación</th>
-                    <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">
-                        <a href="?sort=-quantity&{{ request.GET.urlencode }}" class="hover:text-blue-600">
-                            Cantidad <i class="fas fa-sort text-xs"></i>
+                    <th class="px-5 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Código</th>
+                    <th class="px-5 py-4 text-left text-xs font-semibold text-muted uppercase tracking-wider">Ubicación</th>
+                    <th class="px-5 py-4 text-center text-xs font-semibold text-muted uppercase tracking-wider">
+                        <a href="?sort=-quantity&{{ request.GET.urlencode }}" class="hover:opacity-70 flex items-center justify-center gap-1">
+                            Cantidad <i class="fas fa-sort text-xs opacity-50"></i>
                         </a>
                     </th>
-                    <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Estado</th>
-                    <th class="px-6 py-4 text-right text-sm font-semibold text-gray-700">Precio</th>
-                    <th class="px-6 py-4 text-center text-sm font-semibold text-gray-700">Acciones</th>
+                    <th class="px-5 py-4 text-center text-xs font-semibold text-muted uppercase tracking-wider">Estado</th>
+                    <th class="px-5 py-4 text-right text-xs font-semibold text-muted uppercase tracking-wider">Precio</th>
+                    <th class="px-5 py-4 text-center text-xs font-semibold text-muted uppercase tracking-wider">Acciones</th>
                 </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
+            <tbody class="divide-y divider">
                 {% for article in articles %}
-                <tr class="hover:bg-gray-50 transition {% if article.is_low_stock %}bg-yellow-50{% endif %}">
-                    <td class="px-6 py-4">
+                <tr class="hover-row transition {% if article.is_low_stock %}border-l-2 border-yellow-400{% endif %}">
+                    <td class="px-5 py-4">
                         {% if article.image %}
-                        <img src="{{ article.image.url }}" alt="{{ article.name }}" class="w-16 h-16 object-cover rounded">
+                        <img src="{{ article.image.url }}" alt="{{ article.name }}" class="w-12 h-12 object-cover rounded-lg">
                         {% else %}
-                        <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center">
-                            <i class="fas fa-box text-gray-400 text-2xl"></i>
+                        <div class="w-12 h-12 rounded-lg flex items-center justify-center"
+                             style="background:rgba(115,149,111,0.1);">
+                            <i class="fas fa-box text-sm" style="color:#73956F;"></i>
                         </div>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4">
-                        <a href="{% url 'article_detail' article.pk %}" class="font-semibold text-blue-600 hover:underline">
+                    <td class="px-5 py-4">
+                        <a href="{% url 'article_detail' article.pk %}"
+                           class="text-sm font-semibold hover:underline" style="color:#73956F;">
                             {{ article.name }}
                         </a>
                         {% if article.description %}
-                        <p class="text-sm text-gray-500">{{ article.description|truncatewords:8 }}</p>
+                        <p class="text-xs text-muted truncate max-w-[180px]">{{ article.description|truncatewords:7 }}</p>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4 font-mono text-sm text-gray-600">{{ article.code }}</td>
-                    <td class="px-6 py-4 text-gray-600">
+                    <td class="px-5 py-4 font-mono text-xs text-sub">{{ article.code|default:"—" }}</td>
+                    <td class="px-5 py-4 text-sm text-sub">
                         {% if article.location %}
-                        {{ article.location.name }}
+                        <i class="fas fa-map-marker-alt mr-1 text-muted"></i>{{ article.location.name }}
                         {% else %}
-                        <span class="text-gray-400 italic">Sin ubicación</span>
+                        <span class="text-muted italic text-xs">Sin ubicación</span>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="font-bold {% if article.is_low_stock %}text-red-600{% else %}text-gray-800{% endif %}">
+                    <td class="px-5 py-4 text-center">
+                        <span class="font-bold text-sm {% if article.is_low_stock %}text-red-500{% else %}text-main{% endif %}">
                             {{ article.quantity }}
                         </span>
-                        <span class="text-sm text-gray-500">{{ article.unit }}</span>
+                        <span class="text-xs text-muted ml-0.5">{{ article.unit }}</span>
                         {% if article.is_low_stock %}
-                        <p class="text-xs text-red-600 mt-1">
-                            <i class="fas fa-exclamation-triangle"></i> Stock bajo
-                        </p>
+                        <br><span class="text-xs text-yellow-500"><i class="fas fa-exclamation-triangle mr-0.5"></i>Bajo</span>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold
-                            {% if article.status == 'available' %}bg-green-100 text-green-800
-                            {% elif article.status == 'in_use' %}bg-blue-100 text-blue-800
-                            {% elif article.status == 'maintenance' %}bg-yellow-100 text-yellow-800
-                            {% elif article.status == 'damaged' %}bg-red-100 text-red-800
-                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    <td class="px-5 py-4 text-center">
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold
+                            {% if article.status == 'available' %}bg-green-100 text-green-700
+                            {% elif article.status == 'in_use' %}bg-blue-100 text-blue-700
+                            {% elif article.status == 'maintenance' %}bg-yellow-100 text-yellow-700
+                            {% elif article.status == 'damaged' %}bg-red-100 text-red-700
+                            {% else %}bg-gray-100 text-gray-600{% endif %}">
                             {{ article.get_status_display }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-right">
+                    <td class="px-5 py-4 text-right text-sm">
                         {% if article.price %}
-                        <span class="font-semibold text-green-600">${{ article.price|floatformat:2 }}</span>
+                        <span class="font-semibold text-green-500">${{ article.price|floatformat:2 }}</span>
                         {% else %}
-                        <span class="text-gray-400">—</span>
+                        <span class="text-muted">—</span>
                         {% endif %}
                     </td>
-                    <td class="px-6 py-4 text-center">
-                        <div class="flex justify-center space-x-2">
-                            <a href="{% url 'article_detail' article.pk %}" class="text-blue-600 hover:text-blue-800" title="Ver">
+                    <td class="px-5 py-4">
+                        <div class="flex justify-center gap-3">
+                            <a href="{% url 'article_detail' article.pk %}" class="text-blue-400 hover:text-blue-600 transition" title="Ver">
                                 <i class="fas fa-eye"></i>
                             </a>
-                            <a href="{% url 'article_update' article.pk %}" class="text-green-600 hover:text-green-800" title="Editar">
+                            <a href="{% url 'article_update' article.pk %}" style="color:#73956F;" class="hover:opacity-60 transition" title="Editar">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <button onclick="toggleArticleStatus({{ article.pk }}, this)" 
-                                    class="{% if article.status == 'available' %}text-yellow-600 hover:text-yellow-800{% else %}text-green-600 hover:text-green-800{% endif %}" 
-                                    title="{% if article.status == 'available' %}Deshabilitar{% else %}Habilitar{% endif %}"
-                                    data-status="{{ article.status }}">
+                            <button onclick="toggleArticleStatus({{ article.pk }}, this)"
+                                    class="{% if article.status == 'available' %}text-yellow-500{% else %}text-green-500{% endif %} hover:opacity-60 transition"
+                                    title="Cambiar estado" data-status="{{ article.status }}">
                                 <i class="fas {% if article.status == 'available' %}fa-toggle-on{% else %}fa-toggle-off{% endif %}"></i>
                             </button>
                         </div>
@@ -198,10 +230,18 @@
     </div>
     {% else %}
     <div class="text-center py-16">
-        <i class="fas fa-box-open text-gray-300 text-6xl mb-4"></i>
-        <p class="text-gray-500 text-lg mb-4">No hay artículos en esta categoría</p>
-        <a href="{% url 'article_create' %}?category={{ category.pk }}" class="text-blue-600 hover:underline font-semibold">
-            <i class="fas fa-plus mr-2"></i> Agregar el primer artículo
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
+             style="background:rgba(115,149,111,0.1);">
+            <i class="fas fa-box-open text-xl" style="color:#73956F;"></i>
+        </div>
+        <p class="text-sub text-lg mb-1">No hay artículos en esta categoría</p>
+        <p class="text-muted text-sm mb-4">
+            {% if search_query %}Intenta con otros términos de búsqueda{% else %}Agrega el primer artículo{% endif %}
+        </p>
+        <a href="{% url 'article_create' %}?category={{ category.pk }}"
+           class="inline-flex items-center gap-2 text-sm font-semibold text-white py-2.5 px-5 rounded-xl"
+           style="background:#73956F;">
+            <i class="fas fa-plus"></i>Agregar artículo
         </a>
     </div>
     {% endif %}
@@ -209,44 +249,31 @@
 
 <script>
 function toggleArticleStatus(articleId, button) {
-    if (!confirm('¿Estás seguro de cambiar el estado de este artículo?')) {
-        return;
-    }
-
+    if (!confirm('¿Cambiar el estado de este artículo?')) return;
     fetch(`/articles/${articleId}/toggle-status/`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        }
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') }
     })
-    .then(response => response.json())
+    .then(r => r.json())
     .then(data => {
         if (data.success) {
-            location.reload();
-        } else {
-            alert(data.message);
+            const icon = button.querySelector('i');
+            const row = button.closest('tr');
+            const statusCell = row.querySelector('td:nth-child(6) span');
+            if (data.new_status === 'available') {
+                button.className = 'text-yellow-500 hover:opacity-60 transition';
+                icon.className = 'fas fa-toggle-on';
+                if (statusCell) { statusCell.className = 'px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-700'; }
+            } else {
+                button.className = 'text-green-500 hover:opacity-60 transition';
+                icon.className = 'fas fa-toggle-off';
+                if (statusCell) { statusCell.className = 'px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-600'; }
+            }
+            if (statusCell) statusCell.textContent = data.status_display;
+            if (typeof showNotification === 'function') showNotification(data.message, 'success');
         }
     })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('Error al cambiar el estado');
-    });
-}
-
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
-    }
-    return cookieValue;
+    .catch(() => { if (typeof showNotification === 'function') showNotification('Error al cambiar el estado', 'error'); });
 }
 </script>
 {% endblock %}
