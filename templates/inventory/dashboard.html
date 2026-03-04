@@ -1,203 +1,188 @@
 {% extends 'base.html' %}
 
-{% block title %}Dashboard - Inventario de Inventarios{% endblock %}
+{% block title %}Dashboard - Gestor Escolar{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
 
 {% block content %}
 <div class="mb-8 flex items-center justify-between">
     <div>
-        <h1 class="text-4xl font-bold text-gray-800 mb-2">
-            <i class="fas fa-tachometer-alt text-blue-600 mr-3"></i>Dashboard
-        </h1>
-        <p class="text-gray-600">Resumen general del inventario</p>
+        <h1 class="text-3xl font-bold text-gray-800 mb-1">Dashboard</h1>
+        <p class="text-gray-500 text-sm">Resumen general del inventario</p>
     </div>
     <a href="{% url 'select_inventory' %}"
-       class="flex items-center gap-3 px-6 py-3 rounded-xl font-semibold text-white shadow-lg hover:opacity-90 transition hover:scale-105"
+       class="flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-white shadow hover:opacity-90 transition text-sm"
        style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
-        <i class="fas fa-exchange-alt text-lg"></i>
+        <i class="fas fa-exchange-alt"></i>
         Cambiar Inventario
     </a>
 </div>
 
 <!-- Stats Cards -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-blue-500 hover:shadow-xl transition">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 hover:shadow-md transition" style="border-color: #424C55;">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-600 text-sm mb-1">Total Artículos</p>
+                <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Total Artículos</p>
                 <p class="text-3xl font-bold text-gray-800">{{ total_articles }}</p>
             </div>
-            <div class="bg-blue-100 rounded-full p-4">
-                <i class="fas fa-box text-blue-600 text-2xl"></i>
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(66,76,85,0.08);">
+                <i class="fas fa-box" style="color: #424C55;"></i>
             </div>
         </div>
     </div>
-
-    <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-green-500 hover:shadow-xl transition">
+    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 hover:shadow-md transition" style="border-color: #886F68;">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-600 text-sm mb-1">Categorías</p>
+                <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Categorías</p>
                 <p class="text-3xl font-bold text-gray-800">{{ total_categories }}</p>
             </div>
-            <div class="bg-green-100 rounded-full p-4">
-                <i class="fas fa-tags text-green-600 text-2xl"></i>
+            <div class="w-12 h-12 rounded-xl flex items-center justify-center" style="background: rgba(136,111,104,0.08);">
+                <i class="fas fa-tags" style="color: #886F68;"></i>
             </div>
         </div>
     </div>
-
-    <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-yellow-500 hover:shadow-xl transition">
+    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-yellow-400 hover:shadow-md transition">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-600 text-sm mb-1">Stock Bajo</p>
+                <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Stock Bajo</p>
                 <p class="text-3xl font-bold text-gray-800">{{ low_stock_count }}</p>
             </div>
-            <div class="bg-yellow-100 rounded-full p-4">
-                <i class="fas fa-exclamation-triangle text-yellow-600 text-2xl"></i>
+            <div class="w-12 h-12 rounded-xl bg-yellow-50 flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
             </div>
         </div>
     </div>
-
-    <div class="bg-white rounded-lg shadow-lg p-6 border-l-4 border-red-500 hover:shadow-xl transition">
+    <div class="bg-white rounded-xl shadow-sm p-5 border-l-4 border-red-400 hover:shadow-md transition">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-600 text-sm mb-1">Préstamos Vencidos</p>
+                <p class="text-gray-400 text-xs uppercase tracking-wider mb-1">Préstamos Vencidos</p>
                 <p class="text-3xl font-bold text-gray-800">{{ overdue_loans }}</p>
             </div>
-            <div class="bg-red-100 rounded-full p-4">
-                <i class="fas fa-clock text-red-600 text-2xl"></i>
+            <div class="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center">
+                <i class="fas fa-clock text-red-400"></i>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Buscador de Artículos -->
-<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4">
-        <i class="fas fa-search mr-2" style="color: #424C55;"></i>Buscar Artículo
-    </h2>
-    <div class="flex gap-4">
-        <input type="text" id="dashboardSearch"
-               placeholder="Buscar por nombre, código o descripción..."
-               class="flex-1 px-5 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-gray-500 text-gray-800 text-lg"
-               autocomplete="off">
-        <a id="btnVerTodos" href="#" class="hidden px-6 py-3 border-2 rounded-xl font-semibold transition hover:opacity-80 flex items-center"
-           style="border-color: #424C55; color: #424C55;">
-            Ver todos <i class="fas fa-arrow-right ml-2"></i>
-        </a>
-    </div>
+<!-- Buscador + Gráfica -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
 
-    <!-- Resultados en vivo -->
-    <div id="searchResults" class="hidden mt-4">
-        <div id="searchLoading" class="hidden text-center py-6 text-gray-400">
-            <i class="fas fa-spinner fa-spin text-2xl mb-2 block"></i>
-            Buscando...
-        </div>
-        <div id="searchEmpty" class="hidden text-center py-8 text-gray-400">
-            <i class="fas fa-box-open text-3xl mb-2 block"></i>
-            No se encontraron artículos
-        </div>
-        <div id="searchList" class="divide-y divide-gray-100 rounded-xl border border-gray-200 overflow-hidden"></div>
-    </div>
-</div>
-
-<!-- Quick Actions -->
-<div class="bg-white rounded-lg shadow-lg p-6 mb-8">
-    <h2 class="text-2xl font-bold text-gray-800 mb-4">
-        <i class="fas fa-bolt text-yellow-500 mr-2"></i>Acciones Rápidas
-    </h2>
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <a href="{% url 'article_create' %}" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-4 px-6 rounded-lg text-center transition transform hover:scale-105 shadow-md">
-            <i class="fas fa-plus-circle text-2xl mb-2 block"></i>
-            Nuevo Artículo
-        </a>
-        <a href="{% url 'movement_create' %}" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-4 px-6 rounded-lg text-center transition transform hover:scale-105 shadow-md">
-            <i class="fas fa-exchange-alt text-2xl mb-2 block"></i>
-            Registrar Movimiento
-        </a>
-        <a href="{% url 'loan_create' %}" class="bg-purple-500 hover:bg-purple-600 text-white font-semibold py-4 px-6 rounded-lg text-center transition transform hover:scale-105 shadow-md">
-            <i class="fas fa-handshake text-2xl mb-2 block"></i>
-            Nuevo Préstamo
-        </a>
-        <a href="{% url 'import_preview' %}" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-4 px-6 rounded-lg text-center transition transform hover:scale-105 shadow-md">
-            <i class="fas fa-file-import text-2xl mb-2 block"></i>
-            Importar Excel
-        </a>
-    </div>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-    <!-- Alertas Recientes -->
-    <div class="bg-white rounded-lg shadow-lg p-6">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">
-            <i class="fas fa-bell text-blue-500 mr-2"></i>Alertas Recientes
+    <!-- Buscador -->
+    <div class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <i class="fas fa-search" style="color: #424C55;"></i> Buscar Artículo
         </h2>
-        {% if unread_alerts %}
-        <div class="space-y-3">
-            {% for alert in unread_alerts %}
-            <div class="border-l-4 {% if alert.alert_type == 'low_stock' %}border-yellow-500 bg-yellow-50{% elif alert.alert_type == 'overdue_loan' %}border-red-500 bg-red-50{% else %}border-blue-500 bg-blue-50{% endif %} p-4 rounded">
-                <div class="flex items-start justify-between">
-                    <div class="flex-1">
-                        <p class="text-sm font-semibold text-gray-800">{{ alert.get_alert_type_display }}</p>
-                        <p class="text-sm text-gray-600 mt-1">{{ alert.message }}</p>
-                        <p class="text-xs text-gray-500 mt-2">{{ alert.created_at|date:"d/m/Y H:i" }}</p>
-                    </div>
-                    <a href="{% url 'alert_mark_read' alert.pk %}" class="text-gray-400 hover:text-gray-600 ml-2">
-                        <i class="fas fa-times"></i>
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
-        </div>
-        <div class="mt-4">
-            <a href="{% url 'alert_list' %}" class="text-blue-600 hover:underline text-sm">
-                Ver todas las alertas <i class="fas fa-arrow-right ml-1"></i>
+        <div class="flex gap-3 mb-3">
+            <input type="text" id="dashboardSearch"
+                   placeholder="Nombre, código o descripción..."
+                   class="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400 text-gray-800 text-sm"
+                   autocomplete="off">
+            <a id="btnVerTodos" href="#"
+               class="hidden px-4 py-2.5 border rounded-lg font-medium transition hover:opacity-80 flex items-center text-xs"
+               style="border-color: #424C55; color: #424C55;">
+                Ver todos <i class="fas fa-arrow-right ml-2"></i>
             </a>
         </div>
-        {% else %}
-        <p class="text-gray-500 text-center py-8">
-            <i class="fas fa-check-circle text-green-500 text-3xl mb-2 block"></i>
-            No hay alertas pendientes
-        </p>
-        {% endif %}
+        <div id="searchResults" class="hidden">
+            <div id="searchLoading" class="hidden text-center py-5 text-gray-400 text-sm">
+                <i class="fas fa-spinner fa-spin mb-2 block"></i>Buscando...
+            </div>
+            <div id="searchEmpty" class="hidden text-center py-6 text-gray-400 text-sm">
+                <i class="fas fa-box-open mb-2 block text-xl"></i>Sin resultados
+            </div>
+            <div id="searchList" class="divide-y divide-gray-100 rounded-lg border border-gray-100 overflow-hidden"></div>
+        </div>
+    </div>
+
+    <!-- Gráfica -->
+    {% if grafica_activa %}
+    <div class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <i class="fas fa-chart-bar" style="color: #424C55;"></i>
+            <span id="graficaTitulo"></span>
+        </h2>
+        <div style="height: 280px;">
+            <canvas id="graficaPrincipal"></canvas>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Acciones Rápidas + Movimientos -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Acciones Rápidas -->
+    <div class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <i class="fas fa-bolt text-yellow-400"></i> Acciones Rápidas
+        </h2>
+        <div class="grid grid-cols-2 gap-3">
+            <a href="{% url 'article_create' %}"
+               class="flex flex-col items-center justify-center py-5 px-4 rounded-xl text-white font-medium transition hover:opacity-90 text-sm"
+               style="background: linear-gradient(135deg, #424C55, #3D2C2E);">
+                <i class="fas fa-plus-circle text-xl mb-2 opacity-90"></i>
+                Nuevo Artículo
+            </a>
+            <a href="{% url 'movement_create' %}"
+               class="flex flex-col items-center justify-center py-5 px-4 rounded-xl text-white font-medium transition hover:opacity-90 text-sm bg-green-600">
+                <i class="fas fa-exchange-alt text-xl mb-2 opacity-90"></i>
+                Registrar Movimiento
+            </a>
+            <a href="{% url 'loan_create' %}"
+               class="flex flex-col items-center justify-center py-5 px-4 rounded-xl text-white font-medium transition hover:opacity-90 text-sm bg-purple-600">
+                <i class="fas fa-handshake text-xl mb-2 opacity-90"></i>
+                Nuevo Préstamo
+            </a>
+            <a href="{% url 'import_preview' %}"
+               class="flex flex-col items-center justify-center py-5 px-4 rounded-xl text-white font-medium transition hover:opacity-90 text-sm bg-orange-500">
+                <i class="fas fa-file-import text-xl mb-2 opacity-90"></i>
+                Importar Excel
+            </a>
+        </div>
     </div>
 
     <!-- Movimientos Recientes -->
-    <div class="bg-white rounded-lg shadow-lg p-6">
-        <h2 class="text-2xl font-bold text-gray-800 mb-4">
-            <i class="fas fa-history text-purple-500 mr-2"></i>Movimientos Recientes
+    <div class="bg-white rounded-xl shadow-sm p-6">
+        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <i class="fas fa-history" style="color: #886F68;"></i> Movimientos Recientes
         </h2>
         {% if recent_movements %}
         <div class="divide-y divide-gray-100">
             {% for movement in recent_movements %}
             <div class="py-3 flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                    <span class="px-2 py-1 rounded-full text-xs font-semibold
-                        {% if movement.movement_type == 'entry' %}bg-green-100 text-green-800
-                        {% elif movement.movement_type == 'exit' %}bg-red-100 text-red-800
-                        {% elif movement.movement_type == 'loan' %}bg-purple-100 text-purple-800
-                        {% elif movement.movement_type == 'return' %}bg-blue-100 text-blue-800
-                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    <span class="px-2 py-0.5 rounded-full text-xs font-medium
+                        {% if movement.movement_type == 'entry' %}bg-green-100 text-green-700
+                        {% elif movement.movement_type == 'exit' %}bg-red-100 text-red-700
+                        {% elif movement.movement_type == 'loan' %}bg-purple-100 text-purple-700
+                        {% elif movement.movement_type == 'return' %}bg-blue-100 text-blue-700
+                        {% else %}bg-gray-100 text-gray-600{% endif %}">
                         {{ movement.get_movement_type_display }}
                     </span>
                     <div>
-                        <a href="{% url 'article_detail' movement.article.pk %}" class="text-blue-600 hover:underline text-sm font-medium">
+                        <a href="{% url 'article_detail' movement.article.pk %}" class="text-sm font-medium hover:underline" style="color: #424C55;">
                             {{ movement.article.name }}
                         </a>
                         <p class="text-xs text-gray-400">{{ movement.created_at|date:"d/m/Y H:i" }}</p>
                     </div>
                 </div>
-                <span class="font-semibold text-gray-700 text-sm">
+                <span class="text-sm font-semibold text-gray-600">
                     {{ movement.quantity }} {{ movement.article.unit }}
                 </span>
             </div>
             {% endfor %}
         </div>
         <div class="mt-4">
-            <a href="{% url 'movement_list' %}" class="text-blue-600 hover:underline text-sm">
+            <a href="{% url 'movement_list' %}" class="text-xs font-medium hover:underline" style="color: #424C55;">
                 Ver todos <i class="fas fa-arrow-right ml-1"></i>
             </a>
         </div>
         {% else %}
-        <p class="text-gray-500 text-center py-8">No hay movimientos registrados</p>
+        <p class="text-gray-400 text-center py-8 text-sm">No hay movimientos registrados</p>
         {% endif %}
     </div>
 </div>
@@ -206,24 +191,23 @@
 
 {% block extra_js %}
 <script>
+// BÚSQUEDA
 let searchTimeout = null;
-const input = document.getElementById('dashboardSearch');
-const results = document.getElementById('searchResults');
-const loading = document.getElementById('searchLoading');
-const list = document.getElementById('searchList');
-const empty = document.getElementById('searchEmpty');
+const input       = document.getElementById('dashboardSearch');
+const results     = document.getElementById('searchResults');
+const loading     = document.getElementById('searchLoading');
+const list        = document.getElementById('searchList');
+const empty       = document.getElementById('searchEmpty');
 const btnVerTodos = document.getElementById('btnVerTodos');
 
 input.addEventListener('input', function() {
     const query = this.value.trim();
     clearTimeout(searchTimeout);
-
     if (query.length < 2) {
         results.classList.add('hidden');
         btnVerTodos.classList.add('hidden');
         return;
     }
-
     results.classList.remove('hidden');
     loading.classList.remove('hidden');
     list.innerHTML = '';
@@ -234,35 +218,34 @@ input.addEventListener('input', function() {
             .then(r => r.json())
             .then(data => {
                 loading.classList.add('hidden');
-
                 if (data.results.length === 0) {
                     empty.classList.remove('hidden');
                     btnVerTodos.classList.add('hidden');
                     return;
                 }
-
                 btnVerTodos.href = `/articles/?query=${encodeURIComponent(query)}`;
                 btnVerTodos.classList.remove('hidden');
-
                 list.innerHTML = data.results.map(a => `
-                    <a href="${a.url}" class="flex items-center justify-between px-5 py-4 hover:bg-gray-50 transition">
-                        <div class="flex items-center gap-4">
-                            <div class="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    <a href="${a.url}" class="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                                  style="background: ${a.color}20;">
-                                <i class="fas fa-box" style="color: ${a.color};"></i>
+                                <i class="fas fa-box text-xs" style="color: ${a.color};"></i>
                             </div>
                             <div>
-                                <p class="font-semibold text-gray-800">${a.name}</p>
+                                <p class="font-medium text-gray-800 text-sm">${a.name}</p>
                                 <p class="text-xs text-gray-400">
-                                    <span class="mr-3"><i class="fas fa-barcode mr-1"></i>${a.code}</span>
-                                    <span class="mr-3"><i class="fas fa-tag mr-1"></i>${a.category}</span>
-                                    <span><i class="fas fa-map-marker-alt mr-1"></i>${a.location}</span>
+                                    <i class="fas fa-barcode mr-1"></i>${a.code}
+                                    &nbsp;&middot;&nbsp;
+                                    <i class="fas fa-tag mr-1"></i>${a.category}
+                                    &nbsp;&middot;&nbsp;
+                                    <i class="fas fa-map-marker-alt mr-1"></i>${a.location}
                                 </p>
                             </div>
                         </div>
-                        <div class="text-right flex-shrink-0 ml-4">
-                            <p class="font-bold text-gray-700">${a.quantity} ${a.unit}</p>
-                            <span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-600">${a.status}</span>
+                        <div class="text-right ml-4 flex-shrink-0">
+                            <p class="font-semibold text-gray-700 text-sm">${a.quantity} ${a.unit}</p>
+                            <span class="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-500">${a.status}</span>
                         </div>
                     </a>
                 `).join('');
@@ -275,9 +258,8 @@ input.addEventListener('input', function() {
 });
 
 input.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' && this.value.trim().length >= 2) {
+    if (e.key === 'Enter' && this.value.trim().length >= 2)
         window.location.href = `/articles/?query=${encodeURIComponent(this.value.trim())}`;
-    }
     if (e.key === 'Escape') {
         results.classList.add('hidden');
         btnVerTodos.classList.add('hidden');
@@ -286,9 +268,121 @@ input.addEventListener('keydown', function(e) {
 });
 
 document.addEventListener('click', function(e) {
-    if (!input.contains(e.target) && !results.contains(e.target)) {
+    if (!input.contains(e.target) && !results.contains(e.target))
         results.classList.add('hidden');
-    }
 });
+
+// GRÁFICA
+const PALETA = ['#424C55','#886F68','#3D2C2E','#D1CCDC','#6B7280','#9CA3AF','#F5EDF0','#4B5563'];
+const graficaActiva = '{{ grafica_activa }}';
+
+const datos = {
+    cantidad_categoria: {
+        titulo: 'Cantidad por categoría',
+        tipo: 'bar',
+        labels: [{% for d in cantidad_categoria %}'{{ d.name }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        valores: [{% for d in cantidad_categoria %}{{ d.total }}{% if not forloop.last %},{% endif %}{% endfor %}],
+        colores: [{% for d in cantidad_categoria %}'{{ d.color }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        labelEje: 'Unidades'
+    },
+    top_precio: {
+        titulo: 'Artículos con mayor precio',
+        tipo: 'bar',
+        labels: [{% for d in top_precio %}'{{ d.name|truncatechars:18 }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        valores: [{% for d in top_precio %}{{ d.price }}{% if not forloop.last %},{% endif %}{% endfor %}],
+        colores: null,
+        labelEje: 'Precio ($)'
+    },
+    movimientos_mes: {
+        titulo: 'Movimientos del último mes',
+        tipo: 'doughnut',
+        labels: [{% for d in movimientos_mes %}'{{ d.label }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        valores: [{% for d in movimientos_mes %}{{ d.total }}{% if not forloop.last %},{% endif %}{% endfor %}],
+        colores: null,
+        labelEje: null
+    },
+    valor_categoria: {
+        titulo: 'Valor del inventario por categoría',
+        tipo: 'bar',
+        labels: [{% for d in valor_categoria %}'{{ d.name }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        valores: [{% for d in valor_categoria %}{{ d.valor|floatformat:0 }}{% if not forloop.last %},{% endif %}{% endfor %}],
+        colores: [{% for d in valor_categoria %}'{{ d.color }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        labelEje: 'Valor ($)'
+    },
+    cantidad_ubicacion: {
+        titulo: 'Ubicaciones con más objetos',
+        tipo: 'bar',
+        labels: [{% for d in cantidad_ubicacion %}'{{ d.name }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        valores: [{% for d in cantidad_ubicacion %}{{ d.total }}{% if not forloop.last %},{% endif %}{% endfor %}],
+        colores: null,
+        labelEje: 'Cantidad'
+    },
+    valor_ubicacion: {
+        titulo: 'Ubicaciones más valorizadas',
+        tipo: 'bar',
+        labels: [{% for d in valor_ubicacion %}'{{ d.name }}'{% if not forloop.last %},{% endif %}{% endfor %}],
+        valores: [{% for d in valor_ubicacion %}{{ d.valor|floatformat:0 }}{% if not forloop.last %},{% endif %}{% endfor %}],
+        colores: null,
+        labelEje: 'Valor ($)'
+    }
+};
+
+if (graficaActiva && datos[graficaActiva]) {
+    const d = datos[graficaActiva];
+    document.getElementById('graficaTitulo').textContent = d.titulo;
+
+    const colores = d.colores && d.colores.length
+        ? d.colores
+        : d.labels.map((_, i) => PALETA[i % PALETA.length]);
+
+    const ctx = document.getElementById('graficaPrincipal').getContext('2d');
+
+    if (d.tipo === 'doughnut') {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: d.labels,
+                datasets: [{ data: d.valores, backgroundColor: colores, borderWidth: 2, borderColor: '#fff' }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'right', labels: { font: { size: 11 }, padding: 14 } } }
+            }
+        });
+    } else {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: d.labels,
+                datasets: [{
+                    label: d.labelEje,
+                    data: d.valores,
+                    backgroundColor: colores.map(c => c + 'BB'),
+                    borderColor: colores,
+                    borderWidth: 1.5,
+                    borderRadius: 5,
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { font: { size: 11 }, color: '#9CA3AF' },
+                        grid: { color: 'rgba(0,0,0,0.04)' },
+                        title: { display: true, text: d.labelEje, font: { size: 11 }, color: '#9CA3AF' }
+                    },
+                    x: {
+                        ticks: { font: { size: 10 }, color: '#9CA3AF' },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+    }
+}
 </script>
 {% endblock %}

@@ -117,36 +117,105 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
-    """Dashboard principal con estadísticas"""
-    # Estadísticas generales
+    import random
+    from django.db.models import Sum, Count, F, FloatField, ExpressionWrapper
+
+    # Stats existentes
     total_articles = Article.objects.count()
     total_categories = Category.objects.count()
     total_locations = Location.objects.count()
     low_stock_count = Article.objects.filter(quantity__lte=F('min_quantity')).count()
-    
-    # Artículos con stock bajo
     low_stock_articles = Article.objects.filter(
         quantity__lte=F('min_quantity')
     ).select_related('category', 'location')[:10]
-    
-    # Préstamos activos y vencidos
     active_loans = Loan.objects.filter(status='active').count()
     overdue_loans = Loan.objects.filter(
-        status='active',
-        due_date__lt=timezone.now()
+        status='active', due_date__lt=timezone.now()
     ).count()
-    
-    # Movimientos recientes
     recent_movements = Movement.objects.select_related(
         'article', 'user', 'article__category'
     ).order_by('-created_at')[:10]
-    
-    # Alertas no leídas
     unread_alerts = Alert.objects.filter(is_read=False).order_by('-created_at')[:5]
-    
-    # Estadísticas por categoría
     category_stats = Category.objects.all().order_by('-created_at')[:5]
 
+    # ── DATOS PARA GRÁFICAS ──────────────────────────────────────
+
+    # 1. Cantidad por categoría
+    cantidad_categoria = list(
+        Category.objects.annotate(
+            total=Sum('articles__quantity')
+        ).filter(total__gt=0).values('name', 'color', 'total').order_by('-total')[:8]
+    )
+
+    # 2. Artículos con mayor precio
+    top_precio = list(
+        Article.objects.filter(price__isnull=False)
+        .order_by('-price')
+        .values('name', 'price', 'category__color')[:8]
+    )
+
+    # 3. Movimientos del último mes
+    last_month = timezone.now() - timedelta(days=30)
+    movimientos_mes = list(
+        Movement.objects.filter(created_at__gte=last_month)
+        .values('movement_type')
+        .annotate(total=Count('id'))
+        .order_by('-total')
+    )
+    tipo_labels = {
+        'entry': 'Entrada', 'exit': 'Salida', 'adjustment': 'Ajuste',
+        'transfer': 'Transferencia', 'loan': 'Préstamo', 'return': 'Devolución'
+    }
+    for m in movimientos_mes:
+        m['label'] = tipo_labels.get(m['movement_type'], m['movement_type'])
+
+    # 4. Categorías con más valor
+    valor_categoria = list(
+        Category.objects.annotate(
+            valor=Sum(
+                ExpressionWrapper(
+                    F('articles__quantity') * F('articles__price'),
+                    output_field=FloatField()
+                )
+            )
+        ).filter(valor__gt=0).values('name', 'color', 'valor').order_by('-valor')[:8]
+    )
+
+    # 5. Ubicaciones con más objetos
+    cantidad_ubicacion = list(
+        Location.objects.annotate(
+            total=Sum('articles__quantity')
+        ).filter(total__gt=0).values('name', 'total').order_by('-total')[:8]
+    )
+
+    # 6. Ubicaciones más valorizadas
+    valor_ubicacion = list(
+        Location.objects.annotate(
+            valor=Sum(
+                ExpressionWrapper(
+                    F('articles__quantity') * F('articles__price'),
+                    output_field=FloatField()
+                )
+            )
+        ).filter(valor__gt=0).values('name', 'valor').order_by('-valor')[:8]
+    )
+
+    # Elegir gráfica aleatoria con datos disponibles
+    graficas_disponibles = []
+    if cantidad_categoria:
+        graficas_disponibles.append('cantidad_categoria')
+    if top_precio:
+        graficas_disponibles.append('top_precio')
+    if movimientos_mes:
+        graficas_disponibles.append('movimientos_mes')
+    if valor_categoria:
+        graficas_disponibles.append('valor_categoria')
+    if cantidad_ubicacion:
+        graficas_disponibles.append('cantidad_ubicacion')
+    if valor_ubicacion:
+        graficas_disponibles.append('valor_ubicacion')
+
+    grafica_activa = random.choice(graficas_disponibles) if graficas_disponibles else None
 
     context = {
         'total_articles': total_articles,
@@ -159,11 +228,17 @@ def dashboard(request):
         'recent_movements': recent_movements,
         'unread_alerts': unread_alerts,
         'category_stats': category_stats,
+        # gráficas
+        'grafica_activa': grafica_activa,
+        'cantidad_categoria': cantidad_categoria,
+        'top_precio': top_precio,
+        'movimientos_mes': movimientos_mes,
+        'valor_categoria': valor_categoria,
+        'cantidad_ubicacion': cantidad_ubicacion,
+        'valor_ubicacion': valor_ubicacion,
     }
-    
+
     return render(request, 'inventory/dashboard.html', context)
-
-
 # ==================== CATEGORÍAS ====================
 
 @login_required
@@ -1158,18 +1233,15 @@ def category_location_articles(request, category_pk, location_pk):
 @login_required
 def aseo_dashboard(request):
     """Dashboard simplificado solo para artículos de aseo"""
-    # Obtener categoría de Aseo y Limpieza
     try:
         aseo_category = Category.objects.get(name__icontains='aseo')
     except Category.DoesNotExist:
         aseo_category = None
-    
-    # Filtrar solo artículos de aseo
+
     productos = Article.objects.filter(
         category=aseo_category
     ).select_related('category', 'location') if aseo_category else Article.objects.none()
-    
-    # Búsqueda simple
+
     query = request.GET.get('q', '')
     if query:
         productos = productos.filter(
@@ -1177,15 +1249,19 @@ def aseo_dashboard(request):
             Q(code__icontains=query) |
             Q(description__icontains=query)
         )
-    
-    # Estadísticas
+
     total_productos = productos.count()
     disponibles = productos.filter(status='available').count()
     stock_bajo = productos.filter(quantity__lte=F('min_quantity')).count()
     ubicaciones = Location.objects.filter(
         articles__category=aseo_category
     ).distinct().count() if aseo_category else 0
-    
+
+    # Historial de movimientos de aseo
+    historial = Movement.objects.filter(
+        article__category=aseo_category
+    ).select_related('article', 'user').order_by('-created_at')[:30] if aseo_category else []
+
     context = {
         'productos': productos,
         'query': query,
@@ -1193,60 +1269,54 @@ def aseo_dashboard(request):
         'disponibles': disponibles,
         'stock_bajo': stock_bajo,
         'ubicaciones': ubicaciones,
-        'locations': Location.objects.all(),        
-        
+        'locations': Location.objects.all(),
+        'historial': historial,
     }
-    
-    return render(request, 'inventory/aseo_dashboard.html', context)
 
+    return render(request, 'inventory/aseo_dashboard.html', context)
 # ==================== NUEVA VISTA PARA AJUSTAR CANTIDAD ====================
 # Agregar a inventory/views.py
 
 @login_required
 def aseo_ajustar_cantidad(request, pk):
-    """Ajustar cantidad de producto de aseo con botones +/-"""
+    """Ajustar cantidad desde el dashboard de aseo"""
     if request.method == 'POST':
-        try:
-            import json
-            data = json.loads(request.body)
-            cambio = data.get('cambio', 0)  # +1 o -1
-            
-            article = get_object_or_404(Article, pk=pk)
-            
-            # Calcular nueva cantidad
-            nueva_cantidad = article.quantity + cambio
-            
-            # Validar que no sea negativa
-            if nueva_cantidad < 0:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'La cantidad no puede ser negativa'
-                })
-            
-            # Actualizar cantidad
-            article.quantity = nueva_cantidad
-            article.save()
-            
-            # Determinar mensaje
-            if cambio > 0:
-                mensaje = f'+{cambio} {article.unit} agregado'
-            else:
-                mensaje = f'{abs(cambio)} {article.unit} removido'
-            
-            return JsonResponse({
-                'success': True,
-                'message': mensaje,
-                'nueva_cantidad': nueva_cantidad,
-                'is_low_stock': article.is_low_stock
-            })
-            
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': f'Error: {str(e)}'
-            })
-    
-    return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
+        import json
+        article = get_object_or_404(Article, pk=pk)
+        data = json.loads(request.body)
+        cambio = int(data.get('cambio', 0))
+
+        if cambio == 0:
+            return JsonResponse({'success': False, 'message': 'Cambio inválido'})
+
+        nueva_cantidad = article.quantity + cambio
+
+        if nueva_cantidad < 0:
+            return JsonResponse({'success': False, 'message': 'No hay suficiente stock'})
+
+        cantidad_anterior = article.quantity
+        article.quantity = nueva_cantidad
+        article.save()
+
+        Movement.objects.create(
+            article=article,
+            movement_type='entry' if cambio > 0 else 'exit',
+            quantity=abs(cambio),
+            previous_quantity=cantidad_anterior,
+            new_quantity=nueva_cantidad,
+            reason='Ajuste desde inventario de aseo',
+            user=request.user
+        )
+
+        return JsonResponse({
+            'success': True,
+            'nueva_cantidad': nueva_cantidad,
+            'cantidad_anterior': cantidad_anterior,
+            'nombre': article.name,
+            'message': f'{"+" if cambio > 0 else ""}{cambio} — nuevo stock: {nueva_cantidad}'
+        })
+
+    return JsonResponse({'success': False, 'message': 'Método no permitido'})
 
 @login_required
 def aseo_eliminar_producto(request, pk):

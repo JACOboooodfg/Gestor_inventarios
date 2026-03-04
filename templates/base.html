@@ -5,362 +5,235 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Gestor Escolar{% endblock %}</title>
     
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <style>
-        * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-        
-        /* Paleta de colores personalizada - INTERCALADA */
+        * { font-family: 'Inter', -apple-system, sans-serif; }
+
         :root {
             --lavender: #D1CCDC;
             --charcoal: #424C55;
-            --blush: #F5EDF0;
-            --taupe: #886F68;
-            --mocha: #3D2C2E;
+            --blush:    #F5EDF0;
+            --taupe:    #886F68;
+            --mocha:    #3D2C2E;
         }
-        
+
         body {
-            /* Intercalado: Blush → Charcoal (antes era Lavender → Taupe) */
             background: linear-gradient(135deg, #F5EDF0 0%, #424C55 100%);
             min-height: 100vh;
         }
-        
-        /* Glassmorphism */
+
         .glass {
-            background: rgba(66, 76, 85, 0.85);
+            background: rgba(61, 44, 46, 0.93);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
-        
+
         .glass-strong {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.97);
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(255,255,255,0.5);
         }
-        
-        /* Animaciones */
+
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-8px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-        
         @keyframes fadeIn {
             from { opacity: 0; }
-            to { opacity: 1; }
+            to   { opacity: 1; }
         }
-        
         @keyframes pulse-slow {
             0%, 100% { opacity: 1; }
-            50% { opacity: 0.8; }
+            50%      { opacity: 0.6; }
         }
-        
-        .animate-slide-in {
-            animation: slideIn 0.4s ease-out;
-        }
-        
-        .animate-fade-in {
-            animation: fadeIn 0.3s ease-out;
-        }
-        
-        /* Botones modernos */
-        .btn-modern {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .btn-modern::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-        
-        .btn-modern:hover::before {
-            width: 400px;
-            height: 400px;
-        }
-        
-        .btn-modern:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(61, 44, 46, 0.3);
-        }
-        
-        /* Cards con hover efecto */
-        .card-hover {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .card-hover:hover {
-            transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 20px 40px -10px rgba(61, 44, 46, 0.3);
-        }
-        
-        /* Badge con pulso */
-        .badge-pulse {
-            animation: pulse-slow 2s ease-in-out infinite;
-        }
-        
-        /* Navbar items */
+
+        .animate-slide-in { animation: slideIn 0.3s ease-out; }
+        .animate-fade-in  { animation: fadeIn  0.3s ease-out; }
+        .badge-pulse      { animation: pulse-slow 2s ease-in-out infinite; }
+
         .nav-link {
             position: relative;
-            transition: all 0.3s ease;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            letter-spacing: 0.01em;
         }
-        
         .nav-link::after {
             content: '';
             position: absolute;
-            bottom: -2px;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            background: white;
-            transition: all 0.3s ease;
+            bottom: -2px; left: 50%;
+            width: 0; height: 2px;
+            background: rgba(209,204,220,0.8);
+            transition: all 0.2s ease;
             transform: translateX(-50%);
         }
-        
-        .nav-link:hover::after {
-            width: 100%;
-        }
-        
-        .nav-link.active::after {
-            width: 100%;
-        }
-        
-        /* Scrollbar personalizado */
-        ::-webkit-scrollbar {
-            width: 10px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: rgba(245, 237, 240, 0.1);
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: rgba(209, 204, 220, 0.5);
-            border-radius: 5px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(209, 204, 220, 0.7);
-        }
-        
-        /* Dropdown mejorado */
+        .nav-link:hover::after { width: 100%; }
+
         .dropdown-menu {
             opacity: 0;
             visibility: hidden;
-            transform: translateY(-10px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: translateY(-8px);
+            transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
         }
-        
         .dropdown:hover .dropdown-menu {
             opacity: 1;
             visibility: visible;
             transform: translateY(0);
         }
-        
-        /* Gradientes personalizados - INTERCALADOS */
-        .gradient-primary {
-            /* Intercalado: Charcoal → Mocha (antes era Taupe → Mocha) */
-            background: linear-gradient(135deg, #424C55 0%, #3D2C2E 100%);
-        }
-        
-        .gradient-secondary {
-            /* Intercalado: Taupe → Lavender (invertido) */
-            background: linear-gradient(135deg, #886F68 0%, #D1CCDC 100%);
-        }
-        
-        .gradient-soft {
-            /* Intercalado: Lavender → Blush (invertido) */
-            background: linear-gradient(135deg, #D1CCDC 0%, #F5EDF0 100%);
-        }
-        
-        .gradient-dark {
-            /* Intercalado: Mocha → Charcoal (invertido) */
-            background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);
-        }
+
+        .gradient-primary   { background: linear-gradient(135deg, #424C55 0%, #3D2C2E 100%); }
+        .gradient-secondary { background: linear-gradient(135deg, #886F68 0%, #D1CCDC 100%); }
+        .gradient-soft      { background: linear-gradient(135deg, #D1CCDC 0%, #F5EDF0 100%); }
+        .gradient-dark      { background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%); }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track  { background: rgba(245,237,240,0.1); }
+        ::-webkit-scrollbar-thumb  { background: rgba(66,76,85,0.4); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(66,76,85,0.6); }
     </style>
-    
+
     {% block extra_css %}{% endblock %}
 </head>
 <body class="min-h-screen">
+
     {% if user.is_authenticated %}
-    <!-- Navbar Moderno con Glassmorphism -->
     <nav class="glass sticky top-0 z-50 animate-slide-in">
-        <div class="container mx-auto px-4 py-4">
+        <div class="container mx-auto px-6 py-3">
             <div class="flex items-center justify-between">
-                <!-- Logo y Título -->
-                <div class="flex items-center space-x-4">
-                    <a href="{% url 'dashboard' %}" class="flex items-center space-x-3 group">
-                        <div class="bg-white bg-opacity-20 p-3 rounded-xl group-hover:bg-opacity-30 transition-all">
-                            <i class="fas fa-boxes text-white text-2xl"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-white text-xl font-bold">Gestor Escolar</h1>
-                            <p class="text-white text-opacity-70 text-xs">Inventarios</p>
-                        </div>
-                    </a>
-                </div>
-                
-                <!-- Navigation Links -->
+
+                <!-- Logo -->
+                <a href="{% url 'dashboard' %}" class="flex items-center space-x-3 group">
+                    <div class="p-2.5 rounded-lg transition-all" style="background: rgba(255,255,255,0.12);">
+                        <i class="fas fa-boxes text-white text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-white text-sm font-bold tracking-tight">Gestor Escolar</h1>
+                        <p class="text-xs" style="color: rgba(209,204,220,0.7); letter-spacing: 0.08em;">INVENTARIOS</p>
+                    </div>
+                </a>
+
+                <!-- Nav Links -->
                 <div class="hidden lg:flex items-center space-x-1">
                     <a href="{% url 'dashboard' %}" class="nav-link text-white px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
-                        <i class="fas fa-home mr-2"></i>Dashboard
+                        <i class="fas fa-home mr-2 opacity-60"></i>Dashboard
                     </a>
                     <a href="{% url 'article_list' %}" class="nav-link text-white px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
-                        <i class="fas fa-box mr-2"></i>Artículos
+                        <i class="fas fa-box mr-2 opacity-60"></i>Artículos
                     </a>
                     <a href="{% url 'category_list' %}" class="nav-link text-white px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
-                        <i class="fas fa-tags mr-2"></i>Categorías
+                        <i class="fas fa-tags mr-2 opacity-60"></i>Categorías
                     </a>
                     <a href="{% url 'loan_list' %}" class="nav-link text-white px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
-                        <i class="fas fa-handshake mr-2"></i>Préstamos
+                        <i class="fas fa-handshake mr-2 opacity-60"></i>Préstamos
                     </a>
-                    
-                    <!-- Dropdown Más -->
+
                     <div class="relative dropdown">
-                        <button class="nav-link text-white px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10 flex items-center">
-                            <i class="fas fa-ellipsis-h mr-2"></i>Más
-                            <i class="fas fa-chevron-down ml-2 text-xs"></i>
+                        <button class="nav-link text-white px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10 flex items-center gap-2">
+                            <i class="fas fa-ellipsis-h opacity-60"></i>
+                            <span>Más</span>
+                            <i class="fas fa-chevron-down text-xs opacity-40"></i>
                         </button>
                         <div class="dropdown-menu absolute right-0 mt-2 w-56 glass-strong rounded-xl shadow-2xl overflow-hidden">
-                            <a href="{% url 'import_preview' %}" class="block px-4 py-3 text-gray-700 hover:bg-gradient-primary hover:text-white transition-all">
-                                <i class="fas fa-file-import mr-3"></i>Importar Excel
+                            <a href="{% url 'import_preview' %}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 transition text-sm">
+                                <i class="fas fa-file-import mr-3 w-4 opacity-50"></i>Importar Excel
                             </a>
-                            <div class="border-t border-gray-200"></div>
-                            <a href="{% url 'movement_list' %}" class="block px-4 py-3 text-gray-700 hover:bg-gradient-secondary hover:text-white transition-all">
-                                <i class="fas fa-exchange-alt mr-3"></i>Movimientos
+                            <div class="border-t border-gray-100"></div>
+                            <a href="{% url 'movement_list' %}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 transition text-sm">
+                                <i class="fas fa-exchange-alt mr-3 w-4 opacity-50"></i>Movimientos
                             </a>
-                            <a href="{% url 'location_list' %}" class="block px-4 py-3 text-gray-700 hover:bg-gradient-dark hover:text-white transition-all">
-                                <i class="fas fa-map-marker-alt mr-3"></i>Ubicaciones
+                            <a href="{% url 'location_list' %}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 transition text-sm">
+                                <i class="fas fa-map-marker-alt mr-3 w-4 opacity-50"></i>Ubicaciones
                             </a>
-                            <a href="{% url 'alert_list' %}" class="block px-4 py-3 text-gray-700 hover:bg-gradient-soft hover:text-gray-800 transition-all">
-                                <i class="fas fa-bell mr-3"></i>Alertas
+                            <a href="{% url 'alert_list' %}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 transition text-sm">
+                                <i class="fas fa-bell mr-3 w-4 opacity-50"></i>Alertas
                             </a>
-                            <div class="border-t border-gray-200"></div>
-                            <a href="{% url 'delete_all_articles_confirm' %}" class="block px-4 py-3 text-red-600 hover:bg-red-50 transition-all">
-                                <i class="fas fa-trash-alt mr-3"></i>Borrar Todo
+                            <div class="border-t border-gray-100"></div>
+                            <a href="{% url 'delete_all_articles_confirm' %}" class="flex items-center px-4 py-3 text-red-500 hover:bg-red-50 transition text-sm">
+                                <i class="fas fa-trash-alt mr-3 w-4"></i>Borrar Todo
                             </a>
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- User Menu -->
-                <div class="flex items-center space-x-4">
-                    <!-- Notifications -->
-                    {% if user.is_authenticated %}
-                    <a href="{% url 'alert_list' %}" class="relative bg-white bg-opacity-10 hover:bg-opacity-20 text-white p-3 rounded-lg transition-all">
-                        <i class="fas fa-bell text-lg"></i>
+                <div class="flex items-center space-x-3">
+                    <a href="{% url 'alert_list' %}" class="relative p-2.5 rounded-lg transition-all" style="background: rgba(255,255,255,0.1);">
+                        <i class="fas fa-bell text-white text-sm"></i>
                         {% if unread_alerts_count > 0 %}
-                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center badge-pulse">
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center badge-pulse">
                             {{ unread_alerts_count }}
                         </span>
                         {% endif %}
                     </a>
-                    {% endif %}
-                    
-                    <!-- User Dropdown -->
+
                     <div class="relative dropdown">
-                        <button class="flex items-center space-x-3 bg-white bg-opacity-10 hover:bg-opacity-20 px-4 py-2 rounded-lg transition-all">
-                            <div class="w-8 h-8 rounded-full gradient-secondary flex items-center justify-center text-white font-bold">
+                        <button class="flex items-center space-x-2 px-3 py-2 rounded-lg transition-all" style="background: rgba(255,255,255,0.1);">
+                            <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold"
+                                 style="background: linear-gradient(135deg, #886F68, #D1CCDC);">
                                 {{ user.username|slice:":1"|upper }}
                             </div>
-                            <span class="text-white font-medium hidden md:block">{{ user.username }}</span>
-                            <i class="fas fa-chevron-down text-white text-xs"></i>
+                            <span class="text-white text-sm font-medium hidden md:block">{{ user.username }}</span>
+                            <i class="fas fa-chevron-down text-white text-xs opacity-40"></i>
                         </button>
-                        <div class="dropdown-menu absolute right-0 mt-2 w-56 glass-strong rounded-xl shadow-2xl overflow-hidden">
-                            <div class="px-4 py-3 border-b border-gray-200">
-                                <p class="text-sm font-medium text-gray-900">{{ user.username }}</p>
-                                <p class="text-xs text-gray-500">{{ user.email }}</p>
+                        <div class="dropdown-menu absolute right-0 mt-2 w-52 glass-strong rounded-xl shadow-2xl overflow-hidden">
+                            <div class="px-4 py-3 border-b border-gray-100">
+                                <p class="text-sm font-semibold text-gray-800">{{ user.username }}</p>
+                                <p class="text-xs text-gray-400 mt-0.5">{{ user.email }}</p>
                             </div>
-                            <a href="#" class="block px-4 py-3 text-gray-700 hover:bg-gradient-secondary hover:text-white transition-all">
-                                <i class="fas fa-user-circle mr-3"></i>Mi Perfil
+                            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 transition text-sm">
+                                <i class="fas fa-user-circle mr-3 w-4 opacity-50"></i>Mi Perfil
                             </a>
-                            <div class="border-t border-gray-200"></div>
-                            <a href="{% url 'logout' %}" class="block px-4 py-3 text-red-600 hover:bg-red-50 transition-all">
-                                <i class="fas fa-sign-out-alt mr-3"></i>Cerrar Sesión
+                            <div class="border-t border-gray-100"></div>
+                            <a href="{% url 'logout' %}" class="flex items-center px-4 py-3 text-red-500 hover:bg-red-50 transition text-sm">
+                                <i class="fas fa-sign-out-alt mr-3 w-4"></i>Cerrar Sesión
                             </a>
                         </div>
                     </div>
                 </div>
+
             </div>
         </div>
     </nav>
     {% endif %}
-    
-    <!-- Messages con animación -->
+
+    <!-- Messages -->
     {% if messages %}
-    <div class="container mx-auto px-4 mt-6 animate-slide-in">
+    <div class="container mx-auto px-6 mt-5 animate-slide-in">
         {% for message in messages %}
-        <div class="glass-strong rounded-xl p-4 mb-3 flex items-center justify-between shadow-lg
-                    {% if message.tags == 'error' %}border-l-4 border-red-500
-                    {% elif message.tags == 'warning' %}border-l-4 border-yellow-500
-                    {% elif message.tags == 'success' %}border-l-4 border-green-500
-                    {% else %}border-l-4 border-blue-500{% endif %}">
-            <div class="flex items-center">
-                <div class="mr-4">
-                    {% if message.tags == 'error' %}
-                    <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                        <i class="fas fa-times-circle text-red-500 text-xl"></i>
-                    </div>
-                    {% elif message.tags == 'warning' %}
-                    <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center">
-                        <i class="fas fa-exclamation-triangle text-yellow-500 text-xl"></i>
-                    </div>
-                    {% elif message.tags == 'success' %}
-                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                        <i class="fas fa-check-circle text-green-500 text-xl"></i>
-                    </div>
-                    {% else %}
-                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <i class="fas fa-info-circle text-blue-500 text-xl"></i>
-                    </div>
-                    {% endif %}
-                </div>
-                <div>
-                    <p class="font-medium text-gray-800">{{ message }}</p>
-                </div>
+        <div class="glass-strong rounded-xl px-5 py-3.5 mb-3 flex items-center justify-between shadow-sm
+                    {% if message.tags == 'error' %}border-l-4 border-red-400
+                    {% elif message.tags == 'warning' %}border-l-4 border-yellow-400
+                    {% elif message.tags == 'success' %}border-l-4 border-green-400
+                    {% else %}border-l-4 border-blue-400{% endif %}">
+            <div class="flex items-center gap-3">
+                {% if message.tags == 'error' %}
+                <i class="fas fa-times-circle text-red-400"></i>
+                {% elif message.tags == 'warning' %}
+                <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                {% elif message.tags == 'success' %}
+                <i class="fas fa-check-circle text-green-400"></i>
+                {% else %}
+                <i class="fas fa-info-circle text-blue-400"></i>
+                {% endif %}
+                <p class="text-sm font-medium text-gray-700">{{ message }}</p>
             </div>
-            <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600 transition-all">
-                <i class="fas fa-times text-xl"></i>
+            <button onclick="this.parentElement.remove()" class="text-gray-300 hover:text-gray-500 transition ml-6">
+                <i class="fas fa-times text-sm"></i>
             </button>
         </div>
         {% endfor %}
     </div>
     {% endif %}
-    
-    <!-- Main Content -->
-    <main class="{% if user.is_authenticated %}container mx-auto px-4 py-8{% endif %} animate-fade-in">
+
+    <main class="{% if user.is_authenticated %}container mx-auto px-6 py-8{% endif %} animate-fade-in">
         {% block content %}{% endblock %}
     </main>
-    
-    <!-- Footer -->
-    
-    
+
     {% block extra_js %}{% endblock %}
 </body>
 </html>

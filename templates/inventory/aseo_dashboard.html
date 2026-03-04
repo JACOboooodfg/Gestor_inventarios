@@ -3,200 +3,243 @@
 {% block title %}Productos de Aseo{% endblock %}
 
 {% block content %}
-<!-- Estadísticas Simples -->
+<!-- Estadísticas -->
 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
     <div class="glass-strong rounded-xl p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-600 mb-1">Total Productos</p>
+                <p class="text-gray-500 text-xs uppercase tracking-wider mb-1">Total Productos</p>
                 <p class="text-4xl font-bold" style="color: #424C55;">{{ total_productos }}</p>
             </div>
-            <div class="w-16 h-16 rounded-lg flex items-center justify-center" style="background: rgba(66,76,85,0.1);">
-                <i class="fas fa-box text-3xl" style="color: #424C55;"></i>
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center" style="background: rgba(66,76,85,0.1);">
+                <i class="fas fa-box text-2xl" style="color: #424C55;"></i>
             </div>
         </div>
     </div>
-
     <div class="glass-strong rounded-xl p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-600 mb-1">Stock Bajo</p>
+                <p class="text-gray-500 text-xs uppercase tracking-wider mb-1">Stock Bajo</p>
                 <p class="text-4xl font-bold text-yellow-600">{{ stock_bajo }}</p>
             </div>
-            <div class="w-16 h-16 rounded-lg bg-yellow-100 flex items-center justify-center">
-                <i class="fas fa-exclamation-triangle text-yellow-600 text-3xl"></i>
+            <div class="w-14 h-14 rounded-xl bg-yellow-50 flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-yellow-500 text-2xl"></i>
             </div>
         </div>
     </div>
-
     <div class="glass-strong rounded-xl p-6">
         <div class="flex items-center justify-between">
             <div>
-                <p class="text-gray-600 mb-1">Ubicaciones</p>
+                <p class="text-gray-500 text-xs uppercase tracking-wider mb-1">Ubicaciones</p>
                 <p class="text-4xl font-bold" style="color: #424C55;">{{ ubicaciones }}</p>
             </div>
-            <div class="w-16 h-16 rounded-lg flex items-center justify-center" style="background: rgba(66,76,85,0.1);">
-                <i class="fas fa-map-marker-alt text-3xl" style="color: #424C55;"></i>
+            <div class="w-14 h-14 rounded-xl flex items-center justify-center" style="background: rgba(66,76,85,0.1);">
+                <i class="fas fa-map-marker-alt text-2xl" style="color: #424C55;"></i>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Búsqueda + Botón Nuevo Producto -->
+<!-- Búsqueda + Nuevo Producto -->
 <div class="glass-strong rounded-xl p-6 mb-8">
     <div class="flex flex-col md:flex-row gap-4">
         <form method="get" class="flex gap-4 flex-1">
             <input type="text" name="q" value="{{ query }}"
                    placeholder="Buscar producto..."
-                   class="flex-1 px-6 py-4 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-gray-500 text-lg">
+                   class="flex-1 px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 text-gray-800">
             <button type="submit"
-                    class="px-8 py-4 text-white rounded-xl hover:opacity-90 transition font-bold text-lg"
+                    class="px-6 py-3 text-white rounded-xl hover:opacity-90 transition font-medium"
                     style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
-                Buscar
+                <i class="fas fa-search mr-2"></i>Buscar
             </button>
             {% if query %}
             <a href="{% url 'aseo_dashboard' %}"
-               class="px-6 py-4 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition font-semibold">
-                Limpiar
+               class="px-5 py-3 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition font-medium">
+                <i class="fas fa-times mr-1"></i>Limpiar
             </a>
             {% endif %}
         </form>
-
         <button onclick="document.getElementById('modalNuevoProducto').classList.remove('hidden')"
-                class="px-6 py-4 text-white rounded-xl font-bold transition hover:opacity-90 flex items-center gap-2"
+                class="px-6 py-3 text-white rounded-xl font-medium transition hover:opacity-90 flex items-center gap-2"
                 style="background: linear-gradient(135deg, #886F68 0%, #3D2C2E 100%);">
-            <i class="fas fa-plus text-xl"></i>
-            Nuevo Producto
+            <i class="fas fa-plus"></i> Nuevo Producto
         </button>
     </div>
 </div>
 
-<!-- Lista de Productos -->
-<div class="glass-strong rounded-xl overflow-hidden">
-    <div class="px-6 py-5" style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
-        <h2 class="text-2xl font-bold text-white">
-            <i class="fas fa-spray-can mr-3"></i>Productos de Aseo
-        </h2>
-    </div>
+<!-- Productos + Historial lado a lado -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-    {% if productos %}
-    <div class="p-6">
-        <div class="space-y-4">
-            {% for producto in productos %}
-            <div id="producto-{{ producto.pk }}" class="bg-white border-2 {% if producto.is_low_stock %}border-yellow-300 bg-yellow-50{% else %}border-gray-200{% endif %} rounded-xl p-6 hover:shadow-lg transition">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4 flex-1">
-                        <div class="w-14 h-14 rounded-xl flex items-center justify-center"
-                             style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
-                            <i class="fas fa-spray-can text-white text-2xl"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="text-xl font-bold text-gray-900 mb-1">{{ producto.name }}</h3>
-                            {% if producto.location %}
-                            <p class="text-sm text-gray-500">
-                                <i class="fas fa-map-marker-alt mr-1"></i>{{ producto.location.name }}
-                            </p>
-                            {% endif %}
-                        </div>
-                    </div>
+    <!-- Lista de Productos (2/3) -->
+    <div class="lg:col-span-2">
+        <div class="glass-strong rounded-xl overflow-hidden">
+            <div class="px-6 py-4 flex items-center justify-between"
+                 style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
+                <h2 class="text-lg font-bold text-white">
+                    <i class="fas fa-spray-can mr-2"></i>Productos de Aseo
+                </h2>
+                {% if query %}
+                <span class="text-xs text-white opacity-70">{{ productos|length }} resultado(s)</span>
+                {% endif %}
+            </div>
 
-                    <div class="flex items-center space-x-4">
-                        <!-- Botón Disminuir -->
-                        <button onclick="ajustarCantidad({{ producto.pk }}, -1)"
-                                class="w-12 h-12 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold text-2xl transition">
-                            <i class="fas fa-minus"></i>
-                        </button>
-
-                        <!-- Cantidad -->
-                        <div class="text-center min-w-[120px]">
-                            <p class="text-4xl font-bold {% if producto.is_low_stock %}text-red-600{% else %}text-gray-800{% endif %}"
-                               id="cantidad-{{ producto.pk }}">
-                                {{ producto.quantity }}
-                            </p>
-                            <p class="text-sm text-gray-500 mt-1">{{ producto.unit }}</p>
-                            {% if producto.is_low_stock %}
-                            <p class="text-xs text-red-600 font-semibold mt-1">
-                                <i class="fas fa-exclamation-triangle"></i> Stock bajo
-                            </p>
-                            {% endif %}
+            {% if productos %}
+            <div class="p-4 space-y-3">
+                {% for producto in productos %}
+                <div id="producto-{{ producto.pk }}"
+                     class="bg-white border {% if producto.is_low_stock %}border-yellow-300 bg-yellow-50{% else %}border-gray-100{% endif %} rounded-xl p-4 hover:shadow-md transition">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3 flex-1">
+                            <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0"
+                                 style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
+                                <i class="fas fa-spray-can text-white"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-800">{{ producto.name }}</h3>
+                                {% if producto.location %}
+                                <p class="text-xs text-gray-400">
+                                    <i class="fas fa-map-marker-alt mr-1"></i>{{ producto.location.name }}
+                                </p>
+                                {% endif %}
+                                {% if producto.is_low_stock %}
+                                <span class="text-xs text-yellow-600 font-medium">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>Stock bajo
+                                </span>
+                                {% endif %}
+                            </div>
                         </div>
 
-                        <!-- Botón Aumentar -->
-                        <button onclick="ajustarCantidad({{ producto.pk }}, 1)"
-                                class="w-12 h-12 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold text-2xl transition">
-                            <i class="fas fa-plus"></i>
-                        </button>
-
-                        <!-- Separador visual -->
-                        <div class="w-px h-12 bg-gray-200 mx-2"></div>
-
-                        <!-- Botón Eliminar -->
-                        <form method="post" action="{% url 'aseo_eliminar_producto' producto.pk %}"
-                              onsubmit="return confirm('¿Eliminar {{ producto.name }} permanentemente? Esta acción no se puede deshacer.')">
-                            {% csrf_token %}
-                            <button type="submit"
-                                    class="w-12 h-12 hover:bg-red-100 text-red-500 hover:text-red-700 rounded-lg transition"
-                                    title="Eliminar producto">
-                                <i class="fas fa-trash text-lg"></i>
+                        <div class="flex items-center gap-3">
+                            <button onclick="ajustarCantidad({{ producto.pk }}, -1)"
+                                    class="w-10 h-10 bg-red-500 hover:bg-red-600 text-white rounded-lg font-bold transition">
+                                <i class="fas fa-minus text-sm"></i>
                             </button>
-                        </form>
+
+                            <div class="text-center min-w-[70px]">
+                                <p class="text-3xl font-bold {% if producto.is_low_stock %}text-red-500{% else %}text-gray-800{% endif %}"
+                                   id="cantidad-{{ producto.pk }}">{{ producto.quantity }}</p>
+                                <p class="text-xs text-gray-400">{{ producto.unit }}</p>
+                            </div>
+
+                            <button onclick="ajustarCantidad({{ producto.pk }}, 1)"
+                                    class="w-10 h-10 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold transition">
+                                <i class="fas fa-plus text-sm"></i>
+                            </button>
+
+                            <div class="w-px h-8 bg-gray-200 mx-1"></div>
+
+                            <form method="post" action="{% url 'aseo_eliminar_producto' producto.pk %}"
+                                  onsubmit="return confirm('¿Eliminar {{ producto.name }} permanentemente?')">
+                                {% csrf_token %}
+                                <button type="submit"
+                                        class="w-10 h-10 hover:bg-red-50 text-red-400 hover:text-red-600 rounded-lg transition">
+                                    <i class="fas fa-trash text-sm"></i>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
+                {% endfor %}
             </div>
-            {% endfor %}
+            {% else %}
+            <div class="text-center py-16">
+                <i class="fas fa-broom text-gray-200 text-6xl mb-4 block"></i>
+                <p class="text-gray-400 font-medium">
+                    {% if query %}No se encontró "{{ query }}"{% else %}No hay productos de aseo{% endif %}
+                </p>
+            </div>
+            {% endif %}
         </div>
     </div>
-    {% else %}
-    <div class="text-center py-20">
-        <i class="fas fa-broom text-gray-300 text-8xl mb-6"></i>
-        <p class="text-gray-500 text-xl font-semibold">
-            {% if query %}No se encontró "{{ query }}"{% else %}No hay productos de aseo{% endif %}
-        </p>
+
+    <!-- Historial (1/3) -->
+    <div class="lg:col-span-1">
+        <div class="glass-strong rounded-xl overflow-hidden">
+            <div class="px-6 py-4"
+                 style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
+                <h2 class="text-lg font-bold text-white">
+                    <i class="fas fa-history mr-2"></i>Historial
+                </h2>
+            </div>
+
+            {% if historial %}
+            <div id="historialLista" class="divide-y divide-gray-100 max-h-[600px] overflow-y-auto">
+                {% for mov in historial %}
+                <div class="px-4 py-3 hover:bg-gray-50 transition">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-start gap-2 flex-1">
+                            <div class="mt-0.5 w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0
+                                {% if mov.movement_type == 'entry' %}bg-green-100{% else %}bg-red-100{% endif %}">
+                                <i class="fas {% if mov.movement_type == 'entry' %}fa-plus text-green-600{% else %}fa-minus text-red-600{% endif %} text-xs"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-800 truncate">{{ mov.article.name }}</p>
+                                <p class="text-xs text-gray-400">
+                                    {{ mov.previous_quantity }} 
+                                    <i class="fas fa-arrow-right mx-1"></i>
+                                    {{ mov.new_quantity }} {{ mov.article.unit }}
+                                </p>
+                                <p class="text-xs text-gray-400">{{ mov.user.username|default:"Sistema" }}</p>
+                            </div>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <span class="text-xs font-semibold {% if mov.movement_type == 'entry' %}text-green-600{% else %}text-red-500{% endif %}">
+                                {% if mov.movement_type == 'entry' %}+{% else %}-{% endif %}{{ mov.quantity }}
+                            </span>
+                            <p class="text-xs text-gray-400 mt-0.5">{{ mov.created_at|date:"d/m H:i" }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-12">
+                <i class="fas fa-history text-gray-200 text-4xl mb-3 block"></i>
+                <p class="text-gray-400 text-sm">Sin movimientos registrados</p>
+            </div>
+            {% endif %}
+        </div>
     </div>
-    {% endif %}
+
 </div>
 
 <!-- MODAL: Nuevo Producto -->
 <div id="modalNuevoProducto" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4"
      style="background: rgba(61,44,46,0.6); backdrop-filter: blur(4px);">
     <div class="glass-strong rounded-2xl shadow-2xl w-full max-w-lg">
-
         <div class="px-8 py-6 rounded-t-2xl flex items-center justify-between"
              style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
-            <h3 class="text-2xl font-bold text-white">
+            <h3 class="text-xl font-bold text-white">
                 <i class="fas fa-plus-circle mr-3"></i>Nuevo Producto de Aseo
             </h3>
             <button onclick="document.getElementById('modalNuevoProducto').classList.add('hidden')"
-                    class="text-white hover:opacity-70 transition text-2xl">
+                    class="text-white hover:opacity-70 transition text-xl">
                 <i class="fas fa-times"></i>
             </button>
         </div>
-
         <form method="post" action="{% url 'aseo_crear_producto' %}" class="p-8 space-y-5">
             {% csrf_token %}
-
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    <i class="fas fa-tag mr-1"></i> Nombre del producto *
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    Nombre del producto *
                 </label>
                 <input type="text" name="name" required
                        placeholder="Ej: Jabón líquido, Desinfectante..."
-                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-gray-500 text-gray-800">
+                       class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 text-gray-800">
             </div>
-
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-hashtag mr-1"></i> Cantidad inicial
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                        Cantidad inicial
                     </label>
                     <input type="number" name="quantity" value="0" min="0"
-                           class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-gray-500 text-gray-800">
+                           class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 text-gray-800">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">
-                        <i class="fas fa-ruler mr-1"></i> Unidad
+                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                        Unidad
                     </label>
-                    <select name="unit" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-gray-500 text-gray-800">
+                    <select name="unit" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 text-gray-800">
                         <option value="unidad">Unidad</option>
                         <option value="litro">Litro</option>
                         <option value="kg">Kilogramo</option>
@@ -207,37 +250,34 @@
                     </select>
                 </div>
             </div>
-
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    <i class="fas fa-map-marker-alt mr-1"></i> Ubicación
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    Ubicación
                 </label>
-                <select name="location" class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-gray-500 text-gray-800">
+                <select name="location" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 text-gray-800">
                     <option value="">Sin ubicación</option>
                     {% for loc in locations %}
                     <option value="{{ loc.pk }}">{{ loc.name }}</option>
                     {% endfor %}
                 </select>
             </div>
-
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">
-                    <i class="fas fa-exclamation-circle mr-1"></i> Cantidad mínima (alerta stock bajo)
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                    Cantidad mínima (alerta stock bajo)
                 </label>
                 <input type="number" name="min_quantity" value="5" min="0"
-                       class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-gray-500 text-gray-800">
+                       class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:border-gray-400 text-gray-800">
             </div>
-
             <div class="flex gap-4 pt-2">
                 <button type="button"
                         onclick="document.getElementById('modalNuevoProducto').classList.add('hidden')"
-                        class="flex-1 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition">
+                        class="flex-1 py-3 bg-gray-100 text-gray-600 rounded-xl font-medium hover:bg-gray-200 transition">
                     Cancelar
                 </button>
                 <button type="submit"
                         class="flex-1 py-3 text-white rounded-xl font-bold hover:opacity-90 transition"
                         style="background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%);">
-                    <i class="fas fa-save mr-2"></i>Guardar Producto
+                    <i class="fas fa-save mr-2"></i>Guardar
                 </button>
             </div>
         </form>
@@ -260,8 +300,46 @@ function ajustarCantidad(productoId, cambio) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            // Actualizar cantidad en pantalla
             document.getElementById('cantidad-' + productoId).textContent = data.nueva_cantidad;
             showNotification(data.message, 'success');
+
+            // Agregar al historial en vivo sin recargar
+            const lista = document.getElementById('historialLista');
+            if (lista) {
+                const esEntrada = cambio > 0;
+                const ahora = new Date();
+                const hora = ahora.toLocaleDateString('es-CO', {day:'2-digit', month:'2-digit'})
+                            + ' ' + ahora.toLocaleTimeString('es-CO', {hour:'2-digit', minute:'2-digit'});
+
+                const div = document.createElement('div');
+                div.className = 'px-4 py-3 hover:bg-gray-50 transition border-b border-gray-100 bg-yellow-50';
+                div.innerHTML = `
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex items-start gap-2 flex-1">
+                            <div class="mt-0.5 w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0
+                                ${esEntrada ? 'bg-green-100' : 'bg-red-100'}">
+                                <i class="fas ${esEntrada ? 'fa-plus text-green-600' : 'fa-minus text-red-600'} text-xs"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium text-gray-800">${data.nombre || 'Producto'}</p>
+                                <p class="text-xs text-gray-400">
+                                    ${data.cantidad_anterior} <i class="fas fa-arrow-right mx-1"></i> ${data.nueva_cantidad}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="text-right flex-shrink-0">
+                            <span class="text-xs font-semibold ${esEntrada ? 'text-green-600' : 'text-red-500'}">
+                                ${esEntrada ? '+' : ''}${cambio}
+                            </span>
+                            <p class="text-xs text-gray-400 mt-0.5">${hora}</p>
+                        </div>
+                    </div>
+                `;
+                lista.insertBefore(div, lista.firstChild);
+                // Quitar fondo amarillo después de 2s
+                setTimeout(() => div.classList.remove('bg-yellow-50'), 2000);
+            }
         } else {
             showNotification(data.message, 'error');
         }
