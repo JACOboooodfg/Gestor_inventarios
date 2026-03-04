@@ -70,6 +70,64 @@ def register_view(request):
     
     return render(request, 'inventory/register.html')
 
+from django.contrib.auth import update_session_auth_hash
+
+def profile_view(request):
+    movimientos_recientes = Movement.objects.filter(
+        user=request.user
+    ).select_related('article').order_by('-created_at')[:10]
+
+    total_movimientos = Movement.objects.filter(user=request.user).count()
+    total_prestamos   = Loan.objects.filter(approved_by=request.user).count()
+    alertas_resueltas = Alert.objects.filter(read_by=request.user).count()
+
+    return render(request, 'inventory/profile.html', {
+        'movimientos_recientes': movimientos_recientes,
+        'total_movimientos':     total_movimientos,
+        'total_prestamos':       total_prestamos,
+        'alertas_resueltas':     alertas_resueltas,
+    })
+
+def profile_update(request):
+    if request.method != 'POST':
+        return redirect('profile')
+
+    form_type = request.POST.get('form_type')
+
+    if form_type == 'info':
+        user = request.user
+        user.first_name = request.POST.get('first_name', '').strip()
+        user.last_name  = request.POST.get('last_name', '').strip()
+        user.email      = request.POST.get('email', '').strip()
+        new_username    = request.POST.get('username', '').strip()
+        if new_username and new_username != user.username:
+            if User.objects.filter(username=new_username).exists():
+                messages.error(request, 'Ese nombre de usuario ya está en uso.')
+                return redirect('profile')
+            user.username = new_username
+        user.save()
+        messages.success(request, 'Información actualizada correctamente.')
+
+    elif form_type == 'password':
+        user            = request.user
+        current         = request.POST.get('current_password', '')
+        new_pass        = request.POST.get('new_password', '')
+        confirm         = request.POST.get('confirm_password', '')
+
+        if not user.check_password(current):
+            messages.error(request, 'La contraseña actual es incorrecta.')
+        elif new_pass != confirm:
+            messages.error(request, 'Las contraseñas nuevas no coinciden.')
+        elif len(new_pass) < 8:
+            messages.error(request, 'La contraseña debe tener al menos 8 caracteres.')
+        else:
+            user.set_password(new_pass)
+            user.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, 'Contraseña actualizada correctamente.')
+
+    return redirect('profile')
+
 # views.py
 def aseo_borrar_todo(request):
     if request.method == 'POST':

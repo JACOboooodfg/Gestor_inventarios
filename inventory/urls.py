@@ -80,5 +80,7 @@ urlpatterns = [
     path('aseo/eliminar/<int:pk>/', views.aseo_eliminar_producto, name='aseo_eliminar_producto'),
     path('articles/search/json/', views.article_search_json, name='article_search_json'),
     # urls.py
+    path('profile/',        views.profile_view,   name='profile'),
+    path('profile/update/', views.profile_update, name='profile_update'),
     path('aseo/borrar-todo/', views.aseo_borrar_todo, name='aseo_borrar_todo'),
 ]

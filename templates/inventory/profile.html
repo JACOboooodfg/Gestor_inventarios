@@ -1,0 +1,303 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Perfil - Gestor Escolar{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-main mb-1">Mi Perfil</h1>
+    <p class="text-sub text-sm">Gestiona tu información personal y seguridad</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- Columna izquierda: Avatar + info -->
+    <div class="space-y-6">
+
+        <!-- Card Avatar -->
+        <div class="card-bg rounded-xl shadow-sm border card-border p-6 text-center">
+            <div class="w-24 h-24 rounded-2xl flex items-center justify-center mx-auto mb-4 text-white text-4xl font-bold"
+                 style="background: linear-gradient(135deg, #73956F 0%, #916C80 100%);">
+                {{ user.username|slice:":1"|upper }}
+            </div>
+            <h2 class="text-xl font-bold text-main">{{ user.get_full_name|default:user.username }}</h2>
+            <p class="text-muted text-sm mb-3">{{ user.email|default:"Sin email registrado" }}</p>
+            <span class="px-3 py-1 rounded-full text-xs font-semibold"
+                  style="background: rgba(115,149,111,0.12); color: #73956F;">
+                {% if user.is_superuser %}
+                <i class="fas fa-crown mr-1"></i>Superadmin
+                {% elif user.is_staff %}
+                <i class="fas fa-shield-alt mr-1"></i>Staff
+                {% else %}
+                <i class="fas fa-user mr-1"></i>Usuario
+                {% endif %}
+            </span>
+        </div>
+
+        <!-- Card Info de cuenta -->
+        <div class="card-bg rounded-xl shadow-sm border card-border p-6">
+            <h3 class="text-xs font-semibold text-muted uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i class="fas fa-info-circle" style="color: #73956F;"></i>Información de Cuenta
+            </h3>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-muted">Usuario</span>
+                    <span class="text-sm font-semibold text-main">{{ user.username }}</span>
+                </div>
+                <div class="border-t divider pt-3 flex justify-between items-center">
+                    <span class="text-xs text-muted">Miembro desde</span>
+                    <span class="text-sm font-semibold text-main">{{ user.date_joined|date:"d/m/Y" }}</span>
+                </div>
+                <div class="border-t divider pt-3 flex justify-between items-center">
+                    <span class="text-xs text-muted">Último acceso</span>
+                    <span class="text-sm font-semibold text-main">{{ user.last_login|date:"d/m/Y H:i"|default:"—" }}</span>
+                </div>
+                <div class="border-t divider pt-3 flex justify-between items-center">
+                    <span class="text-xs text-muted">Estado</span>
+                    <span class="text-xs font-semibold px-2 py-0.5 rounded-full
+                        {% if user.is_active %}bg-green-100 text-green-700{% else %}bg-red-100 text-red-500{% endif %}">
+                        {% if user.is_active %}Activo{% else %}Inactivo{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Estadísticas -->
+        <div class="card-bg rounded-xl shadow-sm border card-border p-6">
+            <h3 class="text-xs font-semibold text-muted uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i class="fas fa-chart-bar" style="color: #916C80;"></i>Mi Actividad
+            </h3>
+            <div class="space-y-3">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-muted flex items-center gap-2">
+                        <i class="fas fa-exchange-alt" style="color: #73956F;"></i>Movimientos registrados
+                    </span>
+                    <span class="text-sm font-bold text-main">{{ total_movimientos }}</span>
+                </div>
+                <div class="border-t divider pt-3 flex justify-between items-center">
+                    <span class="text-xs text-muted flex items-center gap-2">
+                        <i class="fas fa-handshake" style="color: #A594F9;"></i>Préstamos gestionados
+                    </span>
+                    <span class="text-sm font-bold text-main">{{ total_prestamos }}</span>
+                </div>
+                <div class="border-t divider pt-3 flex justify-between items-center">
+                    <span class="text-xs text-muted flex items-center gap-2">
+                        <i class="fas fa-check-circle text-green-500"></i>Alertas resueltas
+                    </span>
+                    <span class="text-sm font-bold text-main">{{ alertas_resueltas }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Columna derecha: Formularios -->
+    <div class="lg:col-span-2 space-y-6">
+
+        <!-- Editar info personal -->
+        <div class="card-bg rounded-xl shadow-sm border card-border p-6">
+            <h3 class="text-xs font-semibold text-muted uppercase tracking-wider mb-6 flex items-center gap-2">
+                <i class="fas fa-user-edit" style="color: #73956F;"></i>Información Personal
+            </h3>
+            <form method="post" action="{% url 'profile_update' %}">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="info">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                    <div>
+                        <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                            Nombre
+                        </label>
+                        <input type="text" name="first_name" value="{{ user.first_name }}"
+                               placeholder="Tu nombre"
+                               class="input-bg w-full px-4 py-3 border rounded-xl focus:outline-none text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                            Apellido
+                        </label>
+                        <input type="text" name="last_name" value="{{ user.last_name }}"
+                               placeholder="Tu apellido"
+                               class="input-bg w-full px-4 py-3 border rounded-xl focus:outline-none text-sm">
+                    </div>
+                </div>
+                <div class="mb-5">
+                    <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                        Correo Electrónico
+                    </label>
+                    <input type="email" name="email" value="{{ user.email }}"
+                           placeholder="tu@email.com"
+                           class="input-bg w-full px-4 py-3 border rounded-xl focus:outline-none text-sm">
+                </div>
+                <div class="mb-5">
+                    <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                        Nombre de Usuario
+                    </label>
+                    <input type="text" name="username" value="{{ user.username }}" required
+                           class="input-bg w-full px-4 py-3 border rounded-xl focus:outline-none text-sm">
+                </div>
+                <div class="flex justify-end">
+                    <button type="submit"
+                            class="text-white font-semibold py-2.5 px-6 rounded-xl transition hover:opacity-90 text-sm"
+                            style="background: #73956F;">
+                        <i class="fas fa-save mr-2"></i>Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Cambiar contraseña -->
+        <div class="card-bg rounded-xl shadow-sm border card-border p-6">
+            <h3 class="text-xs font-semibold text-muted uppercase tracking-wider mb-6 flex items-center gap-2">
+                <i class="fas fa-lock" style="color: #916C80;"></i>Cambiar Contraseña
+            </h3>
+            <form method="post" action="{% url 'profile_update' %}" id="formPassword">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="password">
+                <div class="space-y-5">
+                    <div>
+                        <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                            Contraseña Actual
+                        </label>
+                        <div class="relative">
+                            <input type="password" name="current_password" required
+                                   placeholder="••••••••"
+                                   class="input-bg w-full px-4 py-3 border rounded-xl focus:outline-none text-sm pr-12"
+                                   id="current_password">
+                            <button type="button" onclick="togglePass('current_password')"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-sub transition">
+                                <i class="fas fa-eye text-sm"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                            Nueva Contraseña
+                        </label>
+                        <div class="relative">
+                            <input type="password" name="new_password" required
+                                   placeholder="••••••••"
+                                   class="input-bg w-full px-4 py-3 border rounded-xl focus:outline-none text-sm pr-12"
+                                   id="new_password" oninput="checkStrength(this.value)">
+                            <button type="button" onclick="togglePass('new_password')"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-sub transition">
+                                <i class="fas fa-eye text-sm"></i>
+                            </button>
+                        </div>
+                        <!-- Barra de fortaleza -->
+                        <div class="mt-2 h-1.5 rounded-full overflow-hidden" style="background: rgba(128,128,128,0.15);">
+                            <div id="strengthBar" class="h-full rounded-full transition-all duration-300" style="width: 0%;"></div>
+                        </div>
+                        <p id="strengthLabel" class="text-xs text-muted mt-1"></p>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-muted uppercase tracking-wider mb-2">
+                            Confirmar Nueva Contraseña
+                        </label>
+                        <div class="relative">
+                            <input type="password" name="confirm_password" required
+                                   placeholder="••••••••"
+                                   class="input-bg w-full px-4 py-3 border rounded-xl focus:outline-none text-sm pr-12"
+                                   id="confirm_password" oninput="checkMatch()">
+                            <button type="button" onclick="togglePass('confirm_password')"
+                                    class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-sub transition">
+                                <i class="fas fa-eye text-sm"></i>
+                            </button>
+                        </div>
+                        <p id="matchLabel" class="text-xs mt-1"></p>
+                    </div>
+                </div>
+                <div class="flex justify-end mt-6">
+                    <button type="submit"
+                            class="text-white font-semibold py-2.5 px-6 rounded-xl transition hover:opacity-90 text-sm"
+                            style="background: #916C80;">
+                        <i class="fas fa-key mr-2"></i>Cambiar Contraseña
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Actividad reciente -->
+        <div class="card-bg rounded-xl shadow-sm border card-border p-6">
+            <h3 class="text-xs font-semibold text-muted uppercase tracking-wider mb-4 flex items-center gap-2">
+                <i class="fas fa-history" style="color: #A594F9;"></i>Actividad Reciente
+            </h3>
+            {% if movimientos_recientes %}
+            <div class="divide-y divider">
+                {% for mov in movimientos_recientes %}
+                <div class="py-3 flex items-center justify-between hover-row px-2 rounded transition">
+                    <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0
+                            {% if mov.movement_type == 'entry' %}bg-green-100{% elif mov.movement_type == 'exit' %}bg-red-100{% else %}bg-purple-100{% endif %}">
+                            <i class="fas
+                                {% if mov.movement_type == 'entry' %}fa-plus text-green-600
+                                {% elif mov.movement_type == 'exit' %}fa-minus text-red-600
+                                {% else %}fa-exchange-alt text-purple-600{% endif %} text-xs"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-main">{{ mov.article.name }}</p>
+                            <p class="text-xs text-muted">{{ mov.get_movement_type_display }} · {{ mov.quantity }} {{ mov.article.unit }}</p>
+                        </div>
+                    </div>
+                    <span class="text-xs text-muted">{{ mov.created_at|date:"d/m H:i" }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-8">
+                <i class="fas fa-history text-3xl mb-3 block text-muted"></i>
+                <p class="text-muted text-sm">Sin actividad reciente</p>
+            </div>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+
+<script>
+function togglePass(id) {
+    const input = document.getElementById(id);
+    const btn = input.nextElementSibling.querySelector('i');
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.className = 'fas fa-eye-slash text-sm';
+    } else {
+        input.type = 'password';
+        btn.className = 'fas fa-eye text-sm';
+    }
+}
+
+function checkStrength(val) {
+    const bar   = document.getElementById('strengthBar');
+    const label = document.getElementById('strengthLabel');
+    let score = 0;
+    if (val.length >= 8)              score++;
+    if (/[A-Z]/.test(val))            score++;
+    if (/[0-9]/.test(val))            score++;
+    if (/[^A-Za-z0-9]/.test(val))     score++;
+
+    const levels = [
+        { w: '25%', color: '#ef4444', text: 'Muy débil' },
+        { w: '50%', color: '#f59e0b', text: 'Débil' },
+        { w: '75%', color: '#A594F9', text: 'Moderada' },
+        { w: '100%', color: '#73956F', text: 'Fuerte' },
+    ];
+    const l = levels[score - 1] || { w: '0%', color: 'transparent', text: '' };
+    bar.style.width = l.w;
+    bar.style.background = l.color;
+    label.textContent = l.text;
+    label.style.color = l.color;
+}
+
+function checkMatch() {
+    const np  = document.getElementById('new_password').value;
+    const cp  = document.getElementById('confirm_password').value;
+    const lbl = document.getElementById('matchLabel');
+    if (!cp) { lbl.textContent = ''; return; }
+    if (np === cp) {
+        lbl.textContent = '✓ Las contraseñas coinciden';
+        lbl.style.color = '#73956F';
+    } else {
+        lbl.textContent = '✗ Las contraseñas no coinciden';
+        lbl.style.color = '#ef4444';
+    }
+}
+</script>
+{% endblock %}
