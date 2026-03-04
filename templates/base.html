@@ -15,28 +15,20 @@
         * { font-family: 'Inter', -apple-system, sans-serif; }
 
         :root {
-            --lavender: #D1CCDC;
-            --charcoal: #424C55;
-            --blush:    #F5EDF0;
-            --taupe:    #886F68;
-            --mocha:    #3D2C2E;
+            --black:      #000000;
+            --sage:       #73956F;
+            --linen:      #F1E9DB;
+            --mauve:      #916C80;
+            --periwinkle: #A594F9;
         }
 
         body {
-            background: linear-gradient(135deg, #F5EDF0 0%, #424C55 100%);
+            background: #F1E9DB;
             min-height: 100vh;
         }
 
-        .glass {
-            background: rgba(61, 44, 46, 0.93);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
-
-        .glass-strong {
-            background: rgba(255, 255, 255, 0.97);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.5);
+        .navbar-bg {
+            background: #000000;
         }
 
         @keyframes slideIn {
@@ -61,14 +53,13 @@
             font-size: 0.875rem;
             font-weight: 500;
             transition: all 0.2s ease;
-            letter-spacing: 0.01em;
         }
         .nav-link::after {
             content: '';
             position: absolute;
             bottom: -2px; left: 50%;
             width: 0; height: 2px;
-            background: rgba(209,204,220,0.8);
+            background: #73956F;
             transition: all 0.2s ease;
             transform: translateX(-50%);
         }
@@ -86,15 +77,10 @@
             transform: translateY(0);
         }
 
-        .gradient-primary   { background: linear-gradient(135deg, #424C55 0%, #3D2C2E 100%); }
-        .gradient-secondary { background: linear-gradient(135deg, #886F68 0%, #D1CCDC 100%); }
-        .gradient-soft      { background: linear-gradient(135deg, #D1CCDC 0%, #F5EDF0 100%); }
-        .gradient-dark      { background: linear-gradient(135deg, #3D2C2E 0%, #424C55 100%); }
-
         ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track  { background: rgba(245,237,240,0.1); }
-        ::-webkit-scrollbar-thumb  { background: rgba(66,76,85,0.4); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: rgba(66,76,85,0.6); }
+        ::-webkit-scrollbar-track  { background: #F1E9DB; }
+        ::-webkit-scrollbar-thumb  { background: #73956F; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #5a7a56; }
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -102,54 +88,54 @@
 <body class="min-h-screen">
 
     {% if user.is_authenticated %}
-    <nav class="glass sticky top-0 z-50 animate-slide-in">
+    <nav class="navbar-bg sticky top-0 z-50 animate-slide-in shadow-lg">
         <div class="container mx-auto px-6 py-3">
             <div class="flex items-center justify-between">
 
                 <!-- Logo -->
                 <a href="{% url 'dashboard' %}" class="flex items-center space-x-3 group">
-                    <div class="p-2.5 rounded-lg transition-all" style="background: rgba(255,255,255,0.12);">
+                    <div class="p-2.5 rounded-lg" style="background: rgba(115,149,111,0.25);">
                         <i class="fas fa-boxes text-white text-lg"></i>
                     </div>
                     <div>
                         <h1 class="text-white text-sm font-bold tracking-tight">Gestor Escolar</h1>
-                        <p class="text-xs" style="color: rgba(209,204,220,0.7); letter-spacing: 0.08em;">INVENTARIOS</p>
+                        <p class="text-xs" style="color: #73956F; letter-spacing: 0.08em;">INVENTARIOS</p>
                     </div>
                 </a>
 
                 <!-- Nav Links -->
                 <div class="hidden lg:flex items-center space-x-1">
-                    <a href="{% url 'dashboard' %}" class="nav-link text-white px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
+                    <a href="{% url 'dashboard' %}" class="nav-link text-gray-300 px-4 py-2 rounded-lg hover:text-white hover:bg-white hover:bg-opacity-10">
                         <i class="fas fa-home mr-2 opacity-60"></i>Dashboard
                     </a>
-                    <a href="{% url 'article_list' %}" class="nav-link text-white px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
+                    <a href="{% url 'article_list' %}" class="nav-link text-gray-300 px-4 py-2 rounded-lg hover:text-white hover:bg-white hover:bg-opacity-10">
                         <i class="fas fa-box mr-2 opacity-60"></i>Artículos
                     </a>
-                    <a href="{% url 'category_list' %}" class="nav-link text-white px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
+                    <a href="{% url 'category_list' %}" class="nav-link text-gray-300 px-4 py-2 rounded-lg hover:text-white hover:bg-white hover:bg-opacity-10">
                         <i class="fas fa-tags mr-2 opacity-60"></i>Categorías
                     </a>
-                    <a href="{% url 'loan_list' %}" class="nav-link text-white px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10">
+                    <a href="{% url 'loan_list' %}" class="nav-link text-gray-300 px-4 py-2 rounded-lg hover:text-white hover:bg-white hover:bg-opacity-10">
                         <i class="fas fa-handshake mr-2 opacity-60"></i>Préstamos
                     </a>
 
                     <div class="relative dropdown">
-                        <button class="nav-link text-white px-4 py-2 rounded-lg hover:bg-white hover:bg-opacity-10 flex items-center gap-2">
+                        <button class="nav-link text-gray-300 px-4 py-2 rounded-lg hover:text-white hover:bg-white hover:bg-opacity-10 flex items-center gap-2">
                             <i class="fas fa-ellipsis-h opacity-60"></i>
                             <span>Más</span>
                             <i class="fas fa-chevron-down text-xs opacity-40"></i>
                         </button>
-                        <div class="dropdown-menu absolute right-0 mt-2 w-56 glass-strong rounded-xl shadow-2xl overflow-hidden">
-                            <a href="{% url 'import_preview' %}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 transition text-sm">
+                        <div class="dropdown-menu absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100">
+                            <a href="{% url 'import_preview' %}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-stone-50 transition text-sm">
                                 <i class="fas fa-file-import mr-3 w-4 opacity-50"></i>Importar Excel
                             </a>
                             <div class="border-t border-gray-100"></div>
-                            <a href="{% url 'movement_list' %}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 transition text-sm">
+                            <a href="{% url 'movement_list' %}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-stone-50 transition text-sm">
                                 <i class="fas fa-exchange-alt mr-3 w-4 opacity-50"></i>Movimientos
                             </a>
-                            <a href="{% url 'location_list' %}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 transition text-sm">
+                            <a href="{% url 'location_list' %}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-stone-50 transition text-sm">
                                 <i class="fas fa-map-marker-alt mr-3 w-4 opacity-50"></i>Ubicaciones
                             </a>
-                            <a href="{% url 'alert_list' %}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 transition text-sm">
+                            <a href="{% url 'alert_list' %}" class="flex items-center px-4 py-3 text-gray-600 hover:bg-stone-50 transition text-sm">
                                 <i class="fas fa-bell mr-3 w-4 opacity-50"></i>Alertas
                             </a>
                             <div class="border-t border-gray-100"></div>
@@ -162,8 +148,8 @@
 
                 <!-- User Menu -->
                 <div class="flex items-center space-x-3">
-                    <a href="{% url 'alert_list' %}" class="relative p-2.5 rounded-lg transition-all" style="background: rgba(255,255,255,0.1);">
-                        <i class="fas fa-bell text-white text-sm"></i>
+                    <a href="{% url 'alert_list' %}" class="relative p-2.5 rounded-lg transition-all" style="background: rgba(255,255,255,0.08);">
+                        <i class="fas fa-bell text-gray-300 text-sm"></i>
                         {% if unread_alerts_count > 0 %}
                         <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] w-4 h-4 rounded-full flex items-center justify-center badge-pulse">
                             {{ unread_alerts_count }}
@@ -172,20 +158,20 @@
                     </a>
 
                     <div class="relative dropdown">
-                        <button class="flex items-center space-x-2 px-3 py-2 rounded-lg transition-all" style="background: rgba(255,255,255,0.1);">
+                        <button class="flex items-center space-x-2 px-3 py-2 rounded-lg" style="background: rgba(255,255,255,0.08);">
                             <div class="w-7 h-7 rounded-lg flex items-center justify-center text-white text-xs font-bold"
-                                 style="background: linear-gradient(135deg, #886F68, #D1CCDC);">
+                                 style="background: #73956F;">
                                 {{ user.username|slice:":1"|upper }}
                             </div>
-                            <span class="text-white text-sm font-medium hidden md:block">{{ user.username }}</span>
-                            <i class="fas fa-chevron-down text-white text-xs opacity-40"></i>
+                            <span class="text-gray-300 text-sm font-medium hidden md:block">{{ user.username }}</span>
+                            <i class="fas fa-chevron-down text-gray-400 text-xs"></i>
                         </button>
-                        <div class="dropdown-menu absolute right-0 mt-2 w-52 glass-strong rounded-xl shadow-2xl overflow-hidden">
+                        <div class="dropdown-menu absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100">
                             <div class="px-4 py-3 border-b border-gray-100">
                                 <p class="text-sm font-semibold text-gray-800">{{ user.username }}</p>
                                 <p class="text-xs text-gray-400 mt-0.5">{{ user.email }}</p>
                             </div>
-                            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-gray-50 transition text-sm">
+                            <a href="#" class="flex items-center px-4 py-3 text-gray-600 hover:bg-stone-50 transition text-sm">
                                 <i class="fas fa-user-circle mr-3 w-4 opacity-50"></i>Mi Perfil
                             </a>
                             <div class="border-t border-gray-100"></div>
@@ -205,7 +191,7 @@
     {% if messages %}
     <div class="container mx-auto px-6 mt-5 animate-slide-in">
         {% for message in messages %}
-        <div class="glass-strong rounded-xl px-5 py-3.5 mb-3 flex items-center justify-between shadow-sm
+        <div class="bg-white rounded-xl px-5 py-3.5 mb-3 flex items-center justify-between shadow-sm
                     {% if message.tags == 'error' %}border-l-4 border-red-400
                     {% elif message.tags == 'warning' %}border-l-4 border-yellow-400
                     {% elif message.tags == 'success' %}border-l-4 border-green-400
