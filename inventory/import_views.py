@@ -392,7 +392,7 @@ def import_preview(request):
 #  IMPORTACIÓN CON BATCH  ← OPTIMIZADO
 # ─────────────────────────────────────────────
 
-BATCH_SIZE = 50  # Registros por bulk_create (ajustable)
+BATCH_SIZE = 10  # Registros por bulk_create (ajustable)
 
 
 def import_colegio_excel(file_path, user):
