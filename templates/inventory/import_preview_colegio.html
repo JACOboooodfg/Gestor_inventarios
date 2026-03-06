@@ -25,8 +25,6 @@
 
         <form method="post" enctype="multipart/form-data" class="space-y-6">
             {% csrf_token %}
-
-            <!-- Drop Zone -->
             <div id="drop-zone"
                  class="border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-all"
                  style="border-color: #73956F; background: rgba(115,149,111,0.05);">
@@ -38,23 +36,20 @@
                        style="background: #73956F;">
                     <i class="fas fa-folder-open mr-2"></i>Seleccionar Archivo
                 </label>
-                <input type="file" name="excel_file" id="id_excel_file"
-                       accept=".xlsx,.xls" class="hidden" required>
+                <input type="file" name="excel_file" id="id_excel_file" accept=".xlsx,.xls" class="hidden" required>
                 <p class="text-xs text-muted mt-4">Formatos soportados: .xlsx, .xls</p>
             </div>
 
-            <!-- Info Box -->
             <div class="rounded-xl p-5 border-l-4" style="border-color: #73956F; background: rgba(115,149,111,0.06);">
                 <div class="flex gap-4">
                     <i class="fas fa-info-circle text-xl flex-shrink-0 mt-0.5" style="color: #73956F;"></i>
                     <div>
                         <h3 class="font-semibold text-main mb-2 text-sm">Información Importante</h3>
                         <ul class="text-sm text-sub space-y-1">
-                            <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color: #73956F;"></i>El sistema procesará 15 hojas automáticamente</li>
+                            <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color: #73956F;"></i>El sistema procesará todas las hojas automáticamente</li>
                             <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color: #73956F;"></i>Los datos deben comenzar en la <strong>fila 8</strong></li>
                             <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color: #73956F;"></i>El estado se detecta por la <strong>X</strong> en BUENO, REGULAR o MALO</li>
                             <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color: #73956F;"></i>Las categorías se infieren automáticamente</li>
-                            <li class="flex items-center gap-2"><i class="fas fa-check text-xs" style="color: #73956F;"></i>Las ubicaciones se crean según los códigos</li>
                         </ul>
                     </div>
                 </div>
@@ -69,17 +64,16 @@
     </div>
 
     {% elif step == 'preview' %}
-    <!-- PASO 2: Vista Previa -->
+    <!-- PASO 2: Vista Previa + Importación chunked -->
     <div class="space-y-6 animate-slide-in">
 
-        <!-- Resumen -->
         <div class="card-bg rounded-xl shadow-sm border card-border p-6">
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-xl font-bold text-main mb-1 flex items-center gap-2">
                         <i class="fas fa-eye" style="color: #73956F;"></i>Vista Previa
                     </h2>
-                    <p class="text-sub text-sm">Revisa las hojas detectadas antes de importar</p>
+                    <p class="text-sub text-sm">{{ total_rows }} registros listos en {{ total_sheets }} hojas</p>
                 </div>
                 <div class="text-right">
                     <div class="text-4xl font-bold" style="color: #73956F;">{{ total_sheets }}</div>
@@ -88,90 +82,140 @@
             </div>
         </div>
 
-        <!-- Lista de Hojas -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {% for sheet in sheets_info %}
-            <div class="card-bg rounded-xl border card-border p-5 shadow-sm hover:shadow-md transition">
+            <div class="card-bg rounded-xl border card-border p-5 shadow-sm">
                 <div class="flex items-start justify-between mb-4">
                     <div>
                         <h3 class="text-base font-bold text-main mb-1 flex items-center gap-2">
                             <i class="fas fa-table text-sm" style="color: #73956F;"></i>{{ sheet.name }}
                         </h3>
-                        <p class="text-xs text-muted">
-                            <i class="fas fa-database mr-1"></i>~{{ sheet.row_count }} registros
-                        </p>
+                        <p class="text-xs text-muted"><i class="fas fa-database mr-1"></i>~{{ sheet.row_count }} registros</p>
                     </div>
                     <span class="text-xs font-medium px-2.5 py-1 rounded-full"
                           style="background: rgba(115,149,111,0.12); color: #73956F;">
                         <i class="fas fa-check mr-1"></i>Detectada
                     </span>
                 </div>
-
-                <!-- Headers -->
                 <div class="rounded-lg p-3 mb-3" style="background: rgba(115,149,111,0.06);">
-                    <p class="text-xs font-semibold text-muted mb-2 uppercase tracking-wider">Columnas detectadas</p>
+                    <p class="text-xs font-semibold text-muted mb-2 uppercase tracking-wider">Columnas</p>
                     <div class="flex flex-wrap gap-1.5">
-                        {% for header in sheet.headers|slice:":6" %}
-                        <span class="card-bg text-sub text-xs px-2 py-0.5 rounded border card-border">
-                            {{ header }}
-                        </span>
+                        {% for header in sheet.headers %}
+                        <span class="card-bg text-sub text-xs px-2 py-0.5 rounded border card-border">{{ header }}</span>
                         {% endfor %}
-                        {% if sheet.headers|length > 6 %}
-                        <span class="text-muted text-xs px-2 py-0.5">+{{ sheet.headers|length|add:"-6" }} más</span>
-                        {% endif %}
                     </div>
                 </div>
-
-                <!-- Data Preview -->
                 {% if sheet.preview %}
                 <div class="rounded-lg p-3" style="background: rgba(145,108,128,0.06);">
                     <p class="text-xs font-semibold text-muted mb-2 uppercase tracking-wider">Vista previa</p>
-                    <div class="space-y-1">
-                        {% for row in sheet.preview|slice:":3" %}
-                        <div class="text-xs text-sub truncate">
-                            Fila {{ row.row_number }}: {{ row.data|slice:":3"|join:", " }}...
-                        </div>
-                        {% endfor %}
-                    </div>
+                    {% for row in sheet.preview %}
+                    <div class="text-xs text-sub truncate">Fila {{ row.row_number }}: {{ row.data|join:", " }}...</div>
+                    {% endfor %}
                 </div>
                 {% endif %}
             </div>
             {% endfor %}
         </div>
 
-        <!-- Confirmación -->
+        <!-- Panel de importación -->
         <div class="card-bg rounded-xl shadow-sm border card-border p-8">
-            <div class="rounded-xl p-5 mb-6 border-l-4 border-yellow-400"
-                 style="background: rgba(250,204,21,0.06);">
+            <div class="rounded-xl p-5 mb-6 border-l-4 border-yellow-400" style="background: rgba(250,204,21,0.06);">
                 <div class="flex gap-4">
                     <i class="fas fa-exclamation-triangle text-yellow-500 text-xl flex-shrink-0 mt-0.5"></i>
                     <div>
-                        <h3 class="font-semibold text-main mb-2 text-sm">Antes de Importar</h3>
-                        <ul class="text-sm text-sub space-y-1">
-                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[6px] text-muted"></i>Este proceso puede tardar varios minutos</li>
-                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[6px] text-muted"></i>Las categorías se crearán automáticamente si no existen</li>
-                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[6px] text-muted"></i>Las ubicaciones se crearán según los códigos detectados</li>
-                            <li class="flex items-center gap-2"><i class="fas fa-circle text-[6px] text-muted"></i>El estado se detectará por la posición de la "X"</li>
-                        </ul>
+                        <h3 class="font-semibold text-main mb-1 text-sm">{{ total_rows }} registros serán importados</h3>
+                        <p class="text-sm text-sub">La importación se hace en bloques de 50 filas. No cierres esta página hasta que termine.</p>
                     </div>
                 </div>
             </div>
 
-            <form method="post" class="flex gap-4">
-                {% csrf_token %}
-                <button type="submit" name="confirm_import"
+            <!-- Barra de progreso -->
+            <div id="progress-section" class="hidden mb-6">
+                <div class="flex justify-between text-sm font-medium text-main mb-2">
+                    <span id="progress-label">Importando...</span>
+                    <span id="progress-count">0 / {{ total_rows }}</span>
+                </div>
+                <div class="w-full rounded-full h-4" style="background: rgba(128,128,128,0.15);">
+                    <div id="progress-bar" class="h-4 rounded-full transition-all duration-300"
+                         style="width: 0%; background: #73956F;"></div>
+                </div>
+                <p class="text-xs text-muted mt-2" id="progress-detail">Preparando...</p>
+            </div>
+
+            <div class="flex gap-4" id="action-buttons">
+                <button id="btn-import" onclick="startImport()"
                         class="flex-1 text-white font-bold py-3.5 px-6 rounded-xl shadow transition hover:opacity-90 text-sm"
                         style="background: #73956F;">
-                    <i class="fas fa-check-circle mr-2"></i>Confirmar e Importar Todo
+                    <i class="fas fa-check-circle mr-2"></i>Confirmar e Importar {{ total_rows }} registros
                 </button>
                 <a href="{% url 'import_preview' %}"
                    class="font-bold py-3.5 px-6 rounded-xl transition text-sm flex items-center gap-2"
                    style="background: rgba(128,128,128,0.12); color: #9ca3af;">
                     <i class="fas fa-times"></i>Cancelar
                 </a>
-            </form>
+            </div>
+
+            <div id="result-section" class="hidden mt-6 p-5 rounded-xl border-l-4 border-green-400"
+                 style="background: rgba(34,197,94,0.06);">
+                <div class="flex gap-3 items-center">
+                    <i class="fas fa-check-circle text-green-500 text-xl"></i>
+                    <div>
+                        <p class="font-bold text-main" id="result-msg">Importación completada</p>
+                        <a href="/articles/" class="text-sm font-semibold mt-1 inline-block" style="color: #73956F;">
+                            <i class="fas fa-arrow-right mr-1"></i>Ver artículos importados
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <script>
+    const FILE_ID = "{{ file_id }}";
+    const TOTAL   = {{ total_rows }};
+    const CHUNK   = 50;
+    const CSRF    = "{{ csrf_token }}";
+
+    async function startImport() {
+        document.getElementById('btn-import').disabled = true;
+        document.getElementById('btn-import').innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Importando...';
+        document.getElementById('progress-section').classList.remove('hidden');
+
+        let offset   = 0;
+        let inserted = 0;
+
+        while (offset < TOTAL) {
+            try {
+                const res = await fetch('/import/chunk/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': CSRF },
+                    body: JSON.stringify({ file_id: FILE_ID, offset: offset, limit: CHUNK }),
+                });
+                const data = await res.json();
+                inserted += data.inserted || 0;
+                offset   += CHUNK;
+
+                const pct = Math.min(100, Math.round((offset / TOTAL) * 100));
+                document.getElementById('progress-bar').style.width   = pct + '%';
+                document.getElementById('progress-count').textContent = inserted + ' / ' + TOTAL;
+                document.getElementById('progress-detail').textContent = `Bloque ${Math.ceil(offset / CHUNK)} procesado — ${pct}%`;
+
+                if (data.done) break;
+                await new Promise(r => setTimeout(r, 80));
+            } catch (err) {
+                offset += CHUNK;
+            }
+        }
+
+        document.getElementById('progress-bar').style.width         = '100%';
+        document.getElementById('progress-label').textContent       = '¡Importación completada!';
+        document.getElementById('progress-count').textContent       = inserted + ' / ' + TOTAL;
+        document.getElementById('progress-detail').textContent      = 'Todos los registros fueron procesados.';
+        document.getElementById('result-msg').textContent           = inserted + ' artículos importados exitosamente';
+        document.getElementById('result-section').classList.remove('hidden');
+        document.getElementById('btn-import').classList.add('hidden');
+    }
+    </script>
     {% endif %}
 </div>
 
@@ -179,28 +223,22 @@
 const dropZone  = document.getElementById('drop-zone');
 const fileInput = document.getElementById('id_excel_file');
 const dropLabel = document.getElementById('drop-label');
-
 if (dropZone && fileInput) {
     ['dragenter','dragover','dragleave','drop'].forEach(e =>
         dropZone.addEventListener(e, ev => { ev.preventDefault(); ev.stopPropagation(); })
     );
-
     ['dragenter','dragover'].forEach(e => dropZone.addEventListener(e, () => {
         dropZone.style.background = 'rgba(115,149,111,0.12)';
     }));
     ['dragleave','drop'].forEach(e => dropZone.addEventListener(e, () => {
         dropZone.style.background = 'rgba(115,149,111,0.05)';
     }));
-
     dropZone.addEventListener('drop', e => {
         fileInput.files = e.dataTransfer.files;
-        if (e.dataTransfer.files.length > 0)
-            dropLabel.textContent = '✓ ' + e.dataTransfer.files[0].name;
+        if (e.dataTransfer.files.length > 0) dropLabel.textContent = '✓ ' + e.dataTransfer.files[0].name;
     });
-
     fileInput.addEventListener('change', function() {
-        if (this.files.length > 0)
-            dropLabel.textContent = '✓ ' + this.files[0].name;
+        if (this.files.length > 0) dropLabel.textContent = '✓ ' + this.files[0].name;
     });
 }
 </script>

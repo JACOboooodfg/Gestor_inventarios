@@ -10,6 +10,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('inventory.urls')),
     
+    
 ]
 
 if settings.DEBUG:

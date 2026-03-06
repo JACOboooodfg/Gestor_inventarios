@@ -1,6 +1,6 @@
 from django.urls import path, include
 from . import views
-from .import_views import import_preview, article_toggle_status
+from .import_views import import_preview, article_toggle_status, import_chunk
 
 urlpatterns = [
     # Autenticación
@@ -15,6 +15,7 @@ urlpatterns = [
     path('papeleria/crear/',                   views.papeleria_crear_producto,    name='papeleria_crear_producto'),
     path('papeleria/eliminar/<int:pk>/',       views.papeleria_eliminar_producto, name='papeleria_eliminar_producto'),
     path('papeleria/borrar-todo/',             views.papeleria_borrar_todo,       name='papeleria_borrar_todo'),
+    path('import/chunk/', import_chunk, name='import_chunk'),
     # Categorías
     path('categories/', views.category_list, name='category_list'),
     path('categories/create/', views.category_create, name='category_create'),
