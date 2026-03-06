@@ -129,11 +129,12 @@ def profile_update(request):
     return redirect('profile')
 
 # views.py
+@login_required
 def aseo_borrar_todo(request):
     if request.method == 'POST':
         confirm = request.POST.get('confirm_text', '')
         if confirm == 'BORRAR TODO':
-            aseo_category = Category.objects.filter(name__iexact='aseo').first()
+            aseo_category = Category.objects.filter(name__icontains='aseo').first()
             if aseo_category:
                 Article.objects.filter(category=aseo_category).delete()
             messages.success(request, 'Todos los productos de aseo han sido eliminados.')
