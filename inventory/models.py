@@ -4,6 +4,15 @@ from django.core.validators import MinValueValidator
 from django.utils import timezone
 from decimal import Decimal
 
+# ══════════════════════════════════════════════════════════════════════════
+#  AGREGAR AL FINAL DE inventory/models.py
+#  Tabla completamente separada para el inventario de aseo
+# ══════════════════════════════════════════════════════════════════════════
+
+
+
+
+    
 class Category(models.Model):
     """Categorías de artículos (Ciencias, Deportes, Tecnología, etc.)"""
     name = models.CharField(max_length=100, unique=True, verbose_name="Nombre")
@@ -248,3 +257,131 @@ class Alert(models.Model):
     
     def __str__(self):
         return f"{self.get_alert_type_display()} - {self.message[:50]}"
+    
+class AseoProducto(models.Model):
+    """Productos del inventario de aseo — tabla separada del inventario general"""
+
+    UNIT_CHOICES = [
+        ('unidad',   'Unidad'),
+        ('litro',    'Litro'),
+        ('kg',       'Kilogramo'),
+        ('galón',    'Galón'),
+        ('rollo',    'Rollo'),
+        ('paquete',  'Paquete'),
+        ('bolsa',    'Bolsa'),
+    ]
+
+    name         = models.CharField(max_length=200, verbose_name='Nombre')
+    quantity     = models.IntegerField(default=0, validators=[MinValueValidator(0)], verbose_name='Cantidad')
+    unit         = models.CharField(max_length=50, choices=UNIT_CHOICES, default='unidad', verbose_name='Unidad')
+    min_quantity = models.IntegerField(default=5, validators=[MinValueValidator(0)], verbose_name='Cantidad mínima')
+    location     = models.ForeignKey(
+        Location, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='aseo_productos', verbose_name='Ubicación'
+    )
+    created_by   = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True,
+        related_name='aseo_productos_created', verbose_name='Creado por'
+    )
+    created_at   = models.DateTimeField(auto_now_add=True, verbose_name='Fecha de creación')
+    updated_at   = models.DateTimeField(auto_now=True,     verbose_name='Última actualización')
+
+    class Meta:
+        verbose_name        = 'Producto de Aseo'
+        verbose_name_plural = 'Productos de Aseo'
+        ordering            = ['name']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def is_low_stock(self):
+        return self.quantity <= self.min_quantity
+
+class AseoMovimiento(models.Model):
+    """Historial de movimientos del inventario de aseo"""
+
+    TYPE_CHOICES = [
+        ('entry', 'Entrada'),
+        ('exit',  'Salida'),
+    ]
+
+    producto          = models.ForeignKey(AseoProducto, on_delete=models.CASCADE, related_name='movimientos')
+    movement_type     = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    quantity          = models.IntegerField(validators=[MinValueValidator(1)])
+    previous_quantity = models.IntegerField()
+    new_quantity      = models.IntegerField()
+    reason            = models.CharField(max_length=200, default='Ajuste manual')
+    user              = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at        = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = 'Movimiento de Aseo'
+        verbose_name_plural = 'Movimientos de Aseo'
+        ordering            = ['-created_at']
+
+    def __str__(self):
+        return f"{self.producto.name} {self.movement_type} {self.quantity}"
+    
+class PapeleriaProducto(models.Model):
+    UNIT_CHOICES = [
+        ('unidad',   'Unidad'),
+        ('caja',     'Caja'),
+        ('paquete',  'Paquete'),
+        ('resma',    'Resma'),
+        ('rollo',    'Rollo'),
+        ('kg',       'Kilogramo'),
+        ('litro',    'Litro'),
+    ]
+
+    name         = models.CharField(max_length=200, verbose_name='Nombre')
+    quantity     = models.IntegerField(default=0, validators=[MinValueValidator(0)], verbose_name='Cantidad')
+    unit         = models.CharField(max_length=50, choices=UNIT_CHOICES, default='unidad', verbose_name='Unidad')
+    min_quantity = models.IntegerField(default=5, validators=[MinValueValidator(0)], verbose_name='Cantidad mínima')
+    location     = models.ForeignKey(
+        Location, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='papeleria_productos', verbose_name='Ubicación'
+    )
+    created_by   = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True,
+        related_name='papeleria_productos_created', verbose_name='Creado por'
+    )
+    created_at   = models.DateTimeField(auto_now_add=True)
+    updated_at   = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name        = 'Producto de Papelería'
+        verbose_name_plural = 'Productos de Papelería'
+        ordering            = ['name']
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def is_low_stock(self):
+        return self.quantity <= self.min_quantity
+
+
+class PapeleriaMovimiento(models.Model):
+    TYPE_CHOICES = [
+        ('entry', 'Entrada'),
+        ('exit',  'Salida'),
+    ]
+
+    producto          = models.ForeignKey(PapeleriaProducto, on_delete=models.CASCADE, related_name='movimientos')
+    movement_type     = models.CharField(max_length=10, choices=TYPE_CHOICES)
+    quantity          = models.IntegerField(validators=[MinValueValidator(1)])
+    previous_quantity = models.IntegerField()
+    new_quantity      = models.IntegerField()
+    reason            = models.CharField(max_length=200, default='Ajuste manual')
+    user              = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    created_at        = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = 'Movimiento de Papelería'
+        verbose_name_plural = 'Movimientos de Papelería'
+        ordering            = ['-created_at']
+
+    def __str__(self):
+        return f"{self.producto.name} {self.movement_type} {self.quantity}"
+    

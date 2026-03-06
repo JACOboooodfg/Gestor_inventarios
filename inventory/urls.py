@@ -10,7 +10,11 @@ urlpatterns = [
     
     # Dashboard
     path('dashboard/', views.dashboard, name='dashboard'),
-    
+    path('papeleria/',                         views.papeleria_dashboard,         name='papeleria_dashboard'),
+    path('papeleria/ajustar/<int:pk>/',        views.papeleria_ajustar_cantidad,  name='papeleria_ajustar_cantidad'),
+    path('papeleria/crear/',                   views.papeleria_crear_producto,    name='papeleria_crear_producto'),
+    path('papeleria/eliminar/<int:pk>/',       views.papeleria_eliminar_producto, name='papeleria_eliminar_producto'),
+    path('papeleria/borrar-todo/',             views.papeleria_borrar_todo,       name='papeleria_borrar_todo'),
     # Categorías
     path('categories/', views.category_list, name='category_list'),
     path('categories/create/', views.category_create, name='category_create'),

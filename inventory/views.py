@@ -8,12 +8,18 @@ from django.http import JsonResponse
 from django.utils import timezone
 from datetime import timedelta
 from django.contrib.auth.models import User
-from .models import Category, Location, Article, Movement, Loan, Alert
+from .models import Category, Location, Article, Movement, Loan, Alert, AseoProducto, AseoMovimiento,PapeleriaProducto, PapeleriaMovimiento
+
 from .forms import (LoginForm, CategoryForm, LocationForm, ArticleForm, 
                    MovementForm, LoanForm, ImportExcelForm, ArticleSearchForm)
 from .utils import (export_articles_to_excel, import_articles_from_excel,
                    export_movements_to_excel, export_loans_to_excel)
-
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.http import JsonResponse
+from django.db.models import Q, F
+import json
 
 # ==================== AUTENTICACIÓN ====================
 
@@ -134,10 +140,10 @@ def aseo_borrar_todo(request):
     if request.method == 'POST':
         confirm = request.POST.get('confirm_text', '')
         if confirm == 'BORRAR TODO':
-            aseo_category = Category.objects.filter(name__icontains='aseo').first()
-            if aseo_category:
-                Article.objects.filter(category=aseo_category).delete()
-            messages.success(request, 'Todos los productos de aseo han sido eliminados.')
+            total = AseoProducto.objects.count()
+            AseoMovimiento.objects.all().delete()
+            AseoProducto.objects.all().delete()
+            messages.success(request, f'{total} productos de aseo eliminados.')
         else:
             messages.error(request, 'Texto de confirmación incorrecto.')
     return redirect('aseo_dashboard')
@@ -1303,154 +1309,114 @@ def category_location_articles(request, category_pk, location_pk):
 
 @login_required
 def aseo_dashboard(request):
-    """Dashboard simplificado solo para artículos de aseo"""
-    try:
-        aseo_category = Category.objects.get(name__icontains='aseo')
-    except Category.DoesNotExist:
-        aseo_category = None
-
-    productos = Article.objects.filter(
-        category=aseo_category
-    ).select_related('category', 'location') if aseo_category else Article.objects.none()
-
     query = request.GET.get('q', '')
+    productos = AseoProducto.objects.select_related('location').all()
+
     if query:
-        productos = productos.filter(
-            Q(name__icontains=query) |
-            Q(code__icontains=query) |
-            Q(description__icontains=query)
-        )
+        productos = productos.filter(name__icontains=query)
 
-    total_productos = productos.count()
-    disponibles = productos.filter(status='available').count()
-    stock_bajo = productos.filter(quantity__lte=F('min_quantity')).count()
-    ubicaciones = Location.objects.filter(
-        articles__category=aseo_category
-    ).distinct().count() if aseo_category else 0
-
-    # Historial de movimientos de aseo
-    historial = Movement.objects.filter(
-        article__category=aseo_category
-    ).select_related('article', 'user').order_by('-created_at')[:30] if aseo_category else []
+    historial = AseoMovimiento.objects.select_related(
+        'producto', 'user'
+    ).order_by('-created_at')[:30]
 
     context = {
-        'productos': productos,
-        'query': query,
-        'total_productos': total_productos,
-        'disponibles': disponibles,
-        'stock_bajo': stock_bajo,
-        'ubicaciones': ubicaciones,
-        'locations': Location.objects.all(),
-        'historial': historial,
+        'productos':       productos,
+        'query':           query,
+        'total_productos': productos.count(),
+        'stock_bajo':      productos.filter(quantity__lte=F('min_quantity')).count(),
+        'ubicaciones':     productos.values('location').distinct().count(),
+        'locations':       Location.objects.all(),
+        'historial':       historial,
     }
-
     return render(request, 'inventory/aseo_dashboard.html', context)
 # ==================== NUEVA VISTA PARA AJUSTAR CANTIDAD ====================
 # Agregar a inventory/views.py
 
 @login_required
 def aseo_ajustar_cantidad(request, pk):
-    """Ajustar cantidad desde el dashboard de aseo"""
-    if request.method == 'POST':
-        import json
-        article = get_object_or_404(Article, pk=pk)
-        data = json.loads(request.body)
-        cambio = int(data.get('cambio', 0))
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Método no permitido'})
 
-        if cambio == 0:
-            return JsonResponse({'success': False, 'message': 'Cambio inválido'})
+    producto = get_object_or_404(AseoProducto, pk=pk)
+    data     = json.loads(request.body)
+    cambio   = int(data.get('cambio', 0))
 
-        nueva_cantidad = article.quantity + cambio
+    if cambio == 0:
+        return JsonResponse({'success': False, 'message': 'Cambio inválido'})
 
-        if nueva_cantidad < 0:
-            return JsonResponse({'success': False, 'message': 'No hay suficiente stock'})
+    nueva_cantidad = producto.quantity + cambio
+    if nueva_cantidad < 0:
+        return JsonResponse({'success': False, 'message': 'No hay suficiente stock'})
 
-        cantidad_anterior = article.quantity
-        article.quantity = nueva_cantidad
-        article.save()
+    cantidad_anterior  = producto.quantity
+    producto.quantity  = nueva_cantidad
+    producto.save()
 
-        Movement.objects.create(
-            article=article,
-            movement_type='entry' if cambio > 0 else 'exit',
-            quantity=abs(cambio),
-            previous_quantity=cantidad_anterior,
-            new_quantity=nueva_cantidad,
-            reason='Ajuste desde inventario de aseo',
-            user=request.user
-        )
+    AseoMovimiento.objects.create(
+        producto          = producto,
+        movement_type     = 'entry' if cambio > 0 else 'exit',
+        quantity          = abs(cambio),
+        previous_quantity = cantidad_anterior,
+        new_quantity      = nueva_cantidad,
+        reason            = 'Ajuste desde inventario de aseo',
+        user              = request.user,
+    )
 
-        return JsonResponse({
-            'success': True,
-            'nueva_cantidad': nueva_cantidad,
-            'cantidad_anterior': cantidad_anterior,
-            'nombre': article.name,
-            'message': f'{"+" if cambio > 0 else ""}{cambio} — nuevo stock: {nueva_cantidad}'
-        })
+    return JsonResponse({
+        'success':          True,
+        'nueva_cantidad':   nueva_cantidad,
+        'cantidad_anterior': cantidad_anterior,
+        'nombre':           producto.name,
+        'message':          f'{"+" if cambio > 0 else ""}{cambio} — nuevo stock: {nueva_cantidad}',
+    })
 
-    return JsonResponse({'success': False, 'message': 'Método no permitido'})
 
 @login_required
 def aseo_eliminar_producto(request, pk):
-    """Eliminar producto desde el dashboard de aseo"""
     if request.method == 'POST':
-        article = get_object_or_404(Article, pk=pk)
-        name = article.name
-        article.delete()
-        messages.success(request, f'Producto "{name}" eliminado exitosamente')
-    
+        producto = get_object_or_404(AseoProducto, pk=pk)
+        name = producto.name
+        producto.delete()
+        messages.success(request, f'Producto "{name}" eliminado')
     return redirect('aseo_dashboard')
 
 @login_required
 def aseo_crear_producto(request):
-    """Crear producto directamente desde el dashboard de aseo"""
     if request.method == 'POST':
-        try:
-            # Obtener o buscar categoría de aseo
-            aseo_category = Category.objects.filter(name__icontains='aseo').first()
-            
-            name = request.POST.get('name', '').strip()
-            if not name:
-                messages.error(request, 'El nombre es requerido')
-                return redirect('aseo_dashboard')
-            
-            quantity = int(request.POST.get('quantity', 0))
-            unit = request.POST.get('unit', 'unidad')
-            min_quantity = int(request.POST.get('min_quantity', 5))
-            location_id = request.POST.get('location')
-            
-            location = None
-            if location_id:
-                location = Location.objects.filter(pk=location_id).first()
-            
-            article = Article.objects.create(
-                name=name,
-                category=aseo_category,
-                quantity=quantity,
-                unit=unit,
-                min_quantity=min_quantity,
-                location=location,
-                created_by=request.user,
-                status='available'
+        name = request.POST.get('name', '').strip()
+        if not name:
+            messages.error(request, 'El nombre es requerido')
+            return redirect('aseo_dashboard')
+
+        quantity     = int(request.POST.get('quantity', 0))
+        unit         = request.POST.get('unit', 'unidad')
+        min_quantity = int(request.POST.get('min_quantity', 5))
+        location_id  = request.POST.get('location')
+        location     = Location.objects.filter(pk=location_id).first() if location_id else None
+
+        producto = AseoProducto.objects.create(
+            name         = name,
+            quantity     = quantity,
+            unit         = unit,
+            min_quantity = min_quantity,
+            location     = location,
+            created_by   = request.user,
+        )
+
+        if quantity > 0:
+            AseoMovimiento.objects.create(
+                producto          = producto,
+                movement_type     = 'entry',
+                quantity          = quantity,
+                previous_quantity = 0,
+                new_quantity      = quantity,
+                reason            = 'Registro inicial',
+                user              = request.user,
             )
-            
-            # Movimiento inicial
-            if quantity > 0:
-                Movement.objects.create(
-                    article=article,
-                    movement_type='entry',
-                    quantity=quantity,
-                    previous_quantity=0,
-                    new_quantity=quantity,
-                    reason='Registro inicial desde inventario de aseo',
-                    user=request.user
-                )
-            
-            messages.success(request, f'Producto "{name}" creado exitosamente')
-        
-        except Exception as e:
-            messages.error(request, f'Error al crear producto: {str(e)}')
-    
+
+        messages.success(request, f'Producto "{name}" creado exitosamente')
     return redirect('aseo_dashboard')
+
 
 @login_required
 def article_search_json(request):
@@ -1482,3 +1448,99 @@ def article_search_json(request):
     } for a in articles]
     
     return JsonResponse({'results': results})
+
+@login_required
+def papeleria_dashboard(request):
+    query = request.GET.get('q', '')
+    productos = PapeleriaProducto.objects.select_related('location').all()
+    if query:
+        productos = productos.filter(name__icontains=query)
+    historial = PapeleriaMovimiento.objects.select_related('producto','user').order_by('-created_at')[:30]
+    context = {
+        'productos':       productos,
+        'query':           query,
+        'total_productos': productos.count(),
+        'stock_bajo':      productos.filter(quantity__lte=F('min_quantity')).count(),
+        'ubicaciones':     productos.values('location').distinct().count(),
+        'locations':       Location.objects.all(),
+        'historial':       historial,
+    }
+    return render(request, 'inventory/papeleria_dashboard.html', context)
+
+
+@login_required
+def papeleria_ajustar_cantidad(request, pk):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Método no permitido'})
+    producto = get_object_or_404(PapeleriaProducto, pk=pk)
+    data     = json.loads(request.body)
+    cambio   = int(data.get('cambio', 0))
+    if cambio == 0:
+        return JsonResponse({'success': False, 'message': 'Cambio inválido'})
+    nueva_cantidad = producto.quantity + cambio
+    if nueva_cantidad < 0:
+        return JsonResponse({'success': False, 'message': 'No hay suficiente stock'})
+    cantidad_anterior = producto.quantity
+    producto.quantity = nueva_cantidad
+    producto.save()
+    PapeleriaMovimiento.objects.create(
+        producto=producto, movement_type='entry' if cambio > 0 else 'exit',
+        quantity=abs(cambio), previous_quantity=cantidad_anterior,
+        new_quantity=nueva_cantidad, reason='Ajuste desde inventario de papelería',
+        user=request.user,
+    )
+    return JsonResponse({
+        'success': True, 'nueva_cantidad': nueva_cantidad,
+        'cantidad_anterior': cantidad_anterior, 'nombre': producto.name,
+        'message': f'{"+" if cambio > 0 else ""}{cambio} — nuevo stock: {nueva_cantidad}',
+    })
+
+
+@login_required
+def papeleria_crear_producto(request):
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        if not name:
+            messages.error(request, 'El nombre es requerido')
+            return redirect('papeleria_dashboard')
+        quantity     = int(request.POST.get('quantity', 0))
+        unit         = request.POST.get('unit', 'unidad')
+        min_quantity = int(request.POST.get('min_quantity', 5))
+        location_id  = request.POST.get('location')
+        location     = Location.objects.filter(pk=location_id).first() if location_id else None
+        producto = PapeleriaProducto.objects.create(
+            name=name, quantity=quantity, unit=unit,
+            min_quantity=min_quantity, location=location, created_by=request.user,
+        )
+        if quantity > 0:
+            PapeleriaMovimiento.objects.create(
+                producto=producto, movement_type='entry', quantity=quantity,
+                previous_quantity=0, new_quantity=quantity,
+                reason='Registro inicial', user=request.user,
+            )
+        messages.success(request, f'Producto "{name}" creado exitosamente')
+    return redirect('papeleria_dashboard')
+
+
+@login_required
+def papeleria_eliminar_producto(request, pk):
+    if request.method == 'POST':
+        producto = get_object_or_404(PapeleriaProducto, pk=pk)
+        name = producto.name
+        producto.delete()
+        messages.success(request, f'Producto "{name}" eliminado')
+    return redirect('papeleria_dashboard')
+
+
+@login_required
+def papeleria_borrar_todo(request):
+    if request.method == 'POST':
+        confirm = request.POST.get('confirm_text', '')
+        if confirm == 'BORRAR TODO':
+            total = PapeleriaProducto.objects.count()
+            PapeleriaMovimiento.objects.all().delete()
+            PapeleriaProducto.objects.all().delete()
+            messages.success(request, f'{total} productos de papelería eliminados.')
+        else:
+            messages.error(request, 'Texto de confirmación incorrecto.')
+    return redirect('papeleria_dashboard')
