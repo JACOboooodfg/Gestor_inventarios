@@ -193,7 +193,7 @@ def chatbot_ask(request):
     }
 
     try:
-        resp = requests.post(GEMINI_URL, json=payload, timeout=20)
+        resp = requests.post(_get_gemini_url(), json=payload, timeout=20)
         resp.raise_for_status()
         data = resp.json()
         answer = data['candidates'][0]['content']['parts'][0]['text']
