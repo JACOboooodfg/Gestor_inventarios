@@ -22,10 +22,9 @@ GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
 def _get_gemini_url():
     return (
         "https://generativelanguage.googleapis.com/v1beta/models/"
-        "gemini-1.5-flash:generateContent?key="
+        "gemini-pro:generateContent?key="
         + config('GEMINI_API_KEY', default='')
     )
-
 def _build_inventory_context():
     """Arma un resumen real del inventario para pasarle a Gemini como contexto."""
 
