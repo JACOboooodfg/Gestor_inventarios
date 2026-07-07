@@ -22,7 +22,7 @@ GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
 def _get_gemini_url():
     return (
         "https://generativelanguage.googleapis.com/v1beta/models/"
-        "gemini-pro:generateContent?key="
+        "gemini-2.0-flash-lite:generateContent?key="
         + config('GEMINI_API_KEY', default='')
     )
 def _build_inventory_context():
