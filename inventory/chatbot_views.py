@@ -23,8 +23,8 @@ def chatbot_models(request):
 def _get_gemini_url():
     key = config('GEMINI_API_KEY', default='')
     return (
-        "https://generativelanguage.googleapis.com/v1/models/"
-        f"gemini-pro:generateContent?key={key}"
+        "https://generativelanguage.googleapis.com/v1beta/models/"
+        f"gemini-2.0-flash:generateContent?key={key}"
     )
 
 
