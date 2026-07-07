@@ -1,12 +1,10 @@
 # inventory/chatbot_views.py
 import json
+import time
 import requests
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum, Count, F, FloatField, ExpressionWrapper
-from django.utils import timezone
-from datetime import timedelta
 from decouple import config
 
 from .models import (
@@ -14,21 +12,16 @@ from .models import (
     AseoProducto, PapeleriaProducto
 )
 
-GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
-# GEMINI_URL = (
-#     "https://generativelanguage.googleapis.com/v1beta/models/"
-#     "gemini-2.0-flash:generateContent?key=" + GEMINI_API_KEY
-# )
-def _get_gemini_url():
-    return (
-        "https://generativelanguage.googleapis.com/v1beta/models/"
-        "gemini-2.0-flash-lite:generateContent?key="
-        + config('GEMINI_API_KEY', default='')
-    )
-def _build_inventory_context():
-    """Arma un resumen real del inventario para pasarle a Gemini como contexto."""
 
-    # ── Categorías con totales ──────────────────────────────────
+def _get_gemini_url():
+    key = config('GEMINI_API_KEY', default='')
+    return (
+        "https://generativelanguage.googleapis.com/v1/models/"
+        f"gemini-pro:generateContent?key={key}"
+    )
+
+
+def _build_inventory_context():
     categorias = list(
         Category.objects.annotate(
             total_items=Count('articles'),
@@ -42,7 +35,6 @@ def _build_inventory_context():
         ).values('name', 'total_items', 'total_qty', 'valor')
     )
 
-    # ── Stock bajo ──────────────────────────────────────────────
     stock_bajo = list(
         Article.objects.filter(quantity__lte=F('min_quantity'))
         .select_related('category', 'location')
@@ -50,7 +42,6 @@ def _build_inventory_context():
                 'category__name', 'location__name')[:20]
     )
 
-    # ── Movimientos recientes ───────────────────────────────────
     movimientos = list(
         Movement.objects.select_related('article', 'user')
         .order_by('-created_at')
@@ -61,7 +52,6 @@ def _build_inventory_context():
         if m['created_at']:
             m['created_at'] = m['created_at'].strftime('%Y-%m-%d %H:%M')
 
-    # ── Resumen aseo y papelería ────────────────────────────────
     aseo_bajo = list(
         AseoProducto.objects.filter(quantity__lte=F('min_quantity'))
         .values('name', 'quantity', 'min_quantity')[:10]
@@ -71,14 +61,10 @@ def _build_inventory_context():
         .values('name', 'quantity', 'min_quantity')[:10]
     )
 
-    total_articulos = Article.objects.count()
-    total_categorias = Category.objects.count()
-    total_ubicaciones = Location.objects.count()
-
     return {
-        'total_articulos': total_articulos,
-        'total_categorias': total_categorias,
-        'total_ubicaciones': total_ubicaciones,
+        'total_articulos': Article.objects.count(),
+        'total_categorias': Category.objects.count(),
+        'total_ubicaciones': Location.objects.count(),
         'categorias': categorias,
         'stock_bajo': stock_bajo,
         'movimientos_recientes': movimientos,
@@ -88,7 +74,7 @@ def _build_inventory_context():
 
 
 SYSTEM_PROMPT = """
-Eres el asistente del Sistema de Inventario del Colegio. 
+Eres el asistente del Sistema de Inventario del Colegio.
 Ayudas a los usuarios a entender cómo funciona el sistema y a consultar datos del inventario.
 
 ## MÓDULOS DEL SISTEMA
@@ -154,35 +140,31 @@ def chatbot_ask(request):
     try:
         body = json.loads(request.body)
         pregunta = body.get('message', '').strip()
-        historial = body.get('history', [])  # [{role, text}, ...]
+        historial = body.get('history', [])
     except Exception:
         return JsonResponse({'error': 'Datos inválidos'}, status=400)
 
     if not pregunta:
         return JsonResponse({'error': 'Mensaje vacío'}, status=400)
 
-    if not GEMINI_API_KEY:
+    api_key = config('GEMINI_API_KEY', default='')
+    if not api_key:
         return JsonResponse({'error': 'API key de Gemini no configurada'}, status=500)
 
-    # Contexto real del inventario
     ctx = _build_inventory_context()
     context_json = json.dumps(ctx, ensure_ascii=False, default=str)
 
-    # Armar contents para Gemini
-    # Primer turno: system prompt + contexto + pregunta del usuario
     contents = []
 
-    # Historial previo
-    for msg in historial[-6:]:  # máx 6 turnos anteriores
+    for msg in historial[-6:]:
         role = 'user' if msg['role'] == 'user' else 'model'
         contents.append({'role': role, 'parts': [{'text': msg['text']}]})
 
-    # Turno actual: inyectamos contexto solo en la pregunta actual
     user_text = (
         f"{SYSTEM_PROMPT}\n\n"
         f"## DATOS ACTUALES DEL INVENTARIO\n```json\n{context_json}\n```\n\n"
         f"Usuario pregunta: {pregunta}"
-        if not historial  # solo en el primer mensaje
+        if not historial
         else pregunta
     )
 
@@ -198,6 +180,9 @@ def chatbot_ask(request):
 
     try:
         resp = requests.post(_get_gemini_url(), json=payload, timeout=20)
+        if resp.status_code == 429:
+            time.sleep(3)
+            resp = requests.post(_get_gemini_url(), json=payload, timeout=20)
         resp.raise_for_status()
         data = resp.json()
         answer = data['candidates'][0]['content']['parts'][0]['text']
