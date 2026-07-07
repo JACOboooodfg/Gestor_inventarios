@@ -11,6 +11,13 @@ from .models import (
     Article, Category, Location, Movement,
     AseoProducto, PapeleriaProducto
 )
+@login_required
+def chatbot_models(request):
+    key = config('GEMINI_API_KEY', default='')
+    resp = requests.get(
+        f"https://generativelanguage.googleapis.com/v1beta/models?key={key}"
+    )
+    return JsonResponse(resp.json())
 
 
 def _get_gemini_url():

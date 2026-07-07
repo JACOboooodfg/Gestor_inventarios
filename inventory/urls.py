@@ -2,12 +2,14 @@ from django.urls import path, include
 from . import views
 from .import_views import import_preview, article_toggle_status, import_chunk
 from .chatbot_views import chatbot_ask
+from .chatbot_views import chatbot_ask, chatbot_models
 
 urlpatterns = [
     # Autenticación
     path('', views.login_view, name='login'),
     path('register/', views.register_view, name='register'),
     path('logout/', views.logout_view, name='logout'),
+    path('chatbot/models/', chatbot_models, name='chatbot_models'),
     
     # Dashboard
     path('dashboard/', views.dashboard, name='dashboard'),
