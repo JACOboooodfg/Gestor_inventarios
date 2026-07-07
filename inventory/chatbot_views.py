@@ -4,20 +4,13 @@ import time
 import requests
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Count, F, FloatField, ExpressionWrapper
+from django.db.models import Sum, Count, F
 from decouple import config
 
 from .models import (
     Article, Category, Location, Movement,
     AseoProducto, PapeleriaProducto
 )
-@login_required
-def chatbot_models(request):
-    key = config('GEMINI_API_KEY', default='')
-    resp = requests.get(
-        f"https://generativelanguage.googleapis.com/v1beta/models?key={key}"
-    )
-    return JsonResponse(resp.json())
 
 
 def _get_gemini_url():
@@ -33,50 +26,21 @@ def _build_inventory_context():
         Category.objects.annotate(
             total_items=Count('articles'),
             total_qty=Sum('articles__quantity'),
-            valor=Sum(
-                ExpressionWrapper(
-                    F('articles__quantity') * F('articles__price'),
-                    output_field=FloatField()
-                )
-            )
-        ).values('name', 'total_items', 'total_qty', 'valor')
+        ).values('name', 'total_items', 'total_qty')[:10]
     )
 
-    stock_bajo = list(
+    stock_bajo_ejemplos = list(
         Article.objects.filter(quantity__lte=F('min_quantity'))
-        .select_related('category', 'location')
-        .values('name', 'code', 'quantity', 'min_quantity',
-                'category__name', 'location__name')[:20]
-    )
-
-    movimientos = list(
-        Movement.objects.select_related('article', 'user')
-        .order_by('-created_at')
-        .values('movement_type', 'quantity', 'article__name',
-                'reason', 'created_at')[:10]
-    )
-    for m in movimientos:
-        if m['created_at']:
-            m['created_at'] = m['created_at'].strftime('%Y-%m-%d %H:%M')
-
-    aseo_bajo = list(
-        AseoProducto.objects.filter(quantity__lte=F('min_quantity'))
-        .values('name', 'quantity', 'min_quantity')[:10]
-    )
-    papeleria_bajo = list(
-        PapeleriaProducto.objects.filter(quantity__lte=F('min_quantity'))
-        .values('name', 'quantity', 'min_quantity')[:10]
+        .values('name', 'quantity', 'min_quantity', 'category__name')[:5]
     )
 
     return {
         'total_articulos': Article.objects.count(),
         'total_categorias': Category.objects.count(),
         'total_ubicaciones': Location.objects.count(),
+        'stock_bajo_count': Article.objects.filter(quantity__lte=F('min_quantity')).count(),
         'categorias': categorias,
-        'stock_bajo': stock_bajo,
-        'movimientos_recientes': movimientos,
-        'aseo_stock_bajo': aseo_bajo,
-        'papeleria_stock_bajo': papeleria_bajo,
+        'stock_bajo_ejemplos': stock_bajo_ejemplos,
     }
 
 
@@ -140,6 +104,15 @@ Ayudas a los usuarios a entender cómo funciona el sistema y a consultar datos d
 
 
 @login_required
+def chatbot_models(request):
+    key = config('GEMINI_API_KEY', default='')
+    resp = requests.get(
+        f"https://generativelanguage.googleapis.com/v1beta/models?key={key}"
+    )
+    return JsonResponse(resp.json())
+
+
+@login_required
 def chatbot_ask(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Método no permitido'}, status=405)
@@ -163,14 +136,14 @@ def chatbot_ask(request):
 
     contents = []
 
-    for msg in historial[-6:]:
+    for msg in historial[-4:]:
         role = 'user' if msg['role'] == 'user' else 'model'
         contents.append({'role': role, 'parts': [{'text': msg['text']}]})
 
     user_text = (
         f"{SYSTEM_PROMPT}\n\n"
-        f"## DATOS ACTUALES DEL INVENTARIO\n```json\n{context_json}\n```\n\n"
-        f"Usuario pregunta: {pregunta}"
+        f"## DATOS ACTUALES DEL INVENTARIO\n{context_json}\n\n"
+        f"Pregunta: {pregunta}"
         if not historial
         else pregunta
     )
@@ -181,15 +154,15 @@ def chatbot_ask(request):
         'contents': contents,
         'generationConfig': {
             'temperature': 0.4,
-            'maxOutputTokens': 1024,
+            'maxOutputTokens': 512,
         },
     }
 
     try:
-        resp = requests.post(_get_gemini_url(), json=payload, timeout=20)
+        resp = requests.post(_get_gemini_url(), json=payload, timeout=25)
         if resp.status_code == 429:
-            time.sleep(3)
-            resp = requests.post(_get_gemini_url(), json=payload, timeout=20)
+            time.sleep(5)
+            resp = requests.post(_get_gemini_url(), json=payload, timeout=25)
         resp.raise_for_status()
         data = resp.json()
         answer = data['candidates'][0]['content']['parts'][0]['text']
